@@ -128,29 +128,53 @@ Test_FFmpeg/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/build
 .PHONY : Test_FFmpeg/fast
 
-test_ffmpeg.obj: test_ffmpeg.cpp.obj
-.PHONY : test_ffmpeg.obj
+ffmpegwrapper.obj: ffmpegwrapper.cpp.obj
+.PHONY : ffmpegwrapper.obj
 
 # target to build an object file
-test_ffmpeg.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj
-.PHONY : test_ffmpeg.cpp.obj
+ffmpegwrapper.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj
+.PHONY : ffmpegwrapper.cpp.obj
 
-test_ffmpeg.i: test_ffmpeg.cpp.i
-.PHONY : test_ffmpeg.i
+ffmpegwrapper.i: ffmpegwrapper.cpp.i
+.PHONY : ffmpegwrapper.i
 
 # target to preprocess a source file
-test_ffmpeg.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.i
-.PHONY : test_ffmpeg.cpp.i
+ffmpegwrapper.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.i
+.PHONY : ffmpegwrapper.cpp.i
 
-test_ffmpeg.s: test_ffmpeg.cpp.s
-.PHONY : test_ffmpeg.s
+ffmpegwrapper.s: ffmpegwrapper.cpp.s
+.PHONY : ffmpegwrapper.s
 
 # target to generate assembly for a file
-test_ffmpeg.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.s
-.PHONY : test_ffmpeg.cpp.s
+ffmpegwrapper.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.s
+.PHONY : ffmpegwrapper.cpp.s
+
+main.obj: main.cpp.obj
+.PHONY : main.obj
+
+# target to build an object file
+main.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.obj
+.PHONY : main.cpp.obj
+
+main.i: main.cpp.i
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.s
+.PHONY : main.cpp.s
 
 # Help Target
 help:
@@ -161,9 +185,12 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... Test_FFmpeg
-	@echo ... test_ffmpeg.obj
-	@echo ... test_ffmpeg.i
-	@echo ... test_ffmpeg.s
+	@echo ... ffmpegwrapper.obj
+	@echo ... ffmpegwrapper.i
+	@echo ... ffmpegwrapper.s
+	@echo ... main.obj
+	@echo ... main.i
+	@echo ... main.s
 .PHONY : help
 
 

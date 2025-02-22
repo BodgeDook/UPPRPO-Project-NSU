@@ -80,12 +80,12 @@ clean: CMakeFiles/Test_FFmpeg.dir/clean
 CMakeFiles/Test_FFmpeg.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=1,2 "Built target Test_FFmpeg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=1,2,3 "Built target Test_FFmpeg"
 .PHONY : CMakeFiles/Test_FFmpeg.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/Test_FFmpeg.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start D:\prog\UPPRPO-Project-NSU\build\CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start D:\prog\UPPRPO-Project-NSU\build\CMakeFiles 3
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/Test_FFmpeg.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start D:\prog\UPPRPO-Project-NSU\build\CMakeFiles 0
 .PHONY : CMakeFiles/Test_FFmpeg.dir/rule

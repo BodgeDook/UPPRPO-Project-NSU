@@ -8,7 +8,8 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "D:/prog/UPPRPO-Project-NSU/test_ffmpeg.cpp" "CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj.d"
+  "D:/prog/UPPRPO-Project-NSU/ffmpegwrapper.cpp" "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj.d"
+  "D:/prog/UPPRPO-Project-NSU/main.cpp" "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

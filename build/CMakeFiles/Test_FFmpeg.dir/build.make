@@ -68,29 +68,46 @@ include CMakeFiles/Test_FFmpeg.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Test_FFmpeg.dir/flags.make
 
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj: CMakeFiles/Test_FFmpeg.dir/flags.make
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj: CMakeFiles/Test_FFmpeg.dir/includes_CXX.rsp
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj: D:/prog/UPPRPO-Project-NSU/test_ffmpeg.cpp
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj: CMakeFiles/Test_FFmpeg.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj -MF CMakeFiles\Test_FFmpeg.dir\test_ffmpeg.cpp.obj.d -o CMakeFiles\Test_FFmpeg.dir\test_ffmpeg.cpp.obj -c D:\prog\UPPRPO-Project-NSU\test_ffmpeg.cpp
+CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: CMakeFiles/Test_FFmpeg.dir/flags.make
+CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: CMakeFiles/Test_FFmpeg.dir/includes_CXX.rsp
+CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: D:/prog/UPPRPO-Project-NSU/main.cpp
+CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: CMakeFiles/Test_FFmpeg.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/Test_FFmpeg.dir/main.cpp.obj"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Test_FFmpeg.dir/main.cpp.obj -MF CMakeFiles\Test_FFmpeg.dir\main.cpp.obj.d -o CMakeFiles\Test_FFmpeg.dir\main.cpp.obj -c D:\prog\UPPRPO-Project-NSU\main.cpp
 
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.i"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\test_ffmpeg.cpp > CMakeFiles\Test_FFmpeg.dir\test_ffmpeg.cpp.i
+CMakeFiles/Test_FFmpeg.dir/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test_FFmpeg.dir/main.cpp.i"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\main.cpp > CMakeFiles\Test_FFmpeg.dir\main.cpp.i
 
-CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.s"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\test_ffmpeg.cpp -o CMakeFiles\Test_FFmpeg.dir\test_ffmpeg.cpp.s
+CMakeFiles/Test_FFmpeg.dir/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test_FFmpeg.dir/main.cpp.s"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\main.cpp -o CMakeFiles\Test_FFmpeg.dir\main.cpp.s
+
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj: CMakeFiles/Test_FFmpeg.dir/flags.make
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj: CMakeFiles/Test_FFmpeg.dir/includes_CXX.rsp
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj: D:/prog/UPPRPO-Project-NSU/ffmpegwrapper.cpp
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj: CMakeFiles/Test_FFmpeg.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj -MF CMakeFiles\Test_FFmpeg.dir\ffmpegwrapper.cpp.obj.d -o CMakeFiles\Test_FFmpeg.dir\ffmpegwrapper.cpp.obj -c D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.cpp
+
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.i"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.cpp > CMakeFiles\Test_FFmpeg.dir\ffmpegwrapper.cpp.i
+
+CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.s"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.cpp -o CMakeFiles\Test_FFmpeg.dir\ffmpegwrapper.cpp.s
 
 # Object files for target Test_FFmpeg
 Test_FFmpeg_OBJECTS = \
-"CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj"
+"CMakeFiles/Test_FFmpeg.dir/main.cpp.obj" \
+"CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj"
 
 # External object files for target Test_FFmpeg
 Test_FFmpeg_EXTERNAL_OBJECTS =
 
-Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj
+Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/main.cpp.obj
+Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj
 Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/build.make
 Test_FFmpeg.exe: D:/prog/UPPRPO-Project-NSU/ffmpeg/lib/avcodec.lib
 Test_FFmpeg.exe: D:/prog/UPPRPO-Project-NSU/ffmpeg/lib/avformat.lib
@@ -99,8 +116,9 @@ Test_FFmpeg.exe: D:/prog/UPPRPO-Project-NSU/ffmpeg/lib/swscale.lib
 Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/linkLibs.rsp
 Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/objects1.rsp
 Test_FFmpeg.exe: CMakeFiles/Test_FFmpeg.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable Test_FFmpeg.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\prog\UPPRPO-Project-NSU\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable Test_FFmpeg.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\Test_FFmpeg.dir\link.txt --verbose=$(VERBOSE)
+	C:\mingw64\bin\cmake.exe -E copy_directory D:/prog/UPPRPO-Project-NSU/ffmpeg/bin D:/prog/UPPRPO-Project-NSU/build
 
 # Rule to build all files generated by this target.
 CMakeFiles/Test_FFmpeg.dir/build: Test_FFmpeg.exe

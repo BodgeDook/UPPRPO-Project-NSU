@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj"
-  "CMakeFiles/Test_FFmpeg.dir/test_ffmpeg.cpp.obj.d"
+  "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj"
+  "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj.d"
+  "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj"
+  "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj.d"
   "Test_FFmpeg.exe"
   "Test_FFmpeg.exe.manifest"
   "Test_FFmpeg.pdb"
