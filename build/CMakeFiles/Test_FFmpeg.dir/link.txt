@@ -1,0 +1,3 @@
+C:\mingw64\bin\cmake.exe -E rm -f CMakeFiles\Test_FFmpeg.dir/objects.a
+C:\mingw64\bin\ar.exe qc CMakeFiles\Test_FFmpeg.dir/objects.a @CMakeFiles\Test_FFmpeg.dir\objects1.rsp
+C:\mingw64\bin\c++.exe -Wl,--whole-archive CMakeFiles\Test_FFmpeg.dir/objects.a -Wl,--no-whole-archive -o Test_FFmpeg.exe -Wl,--out-implib,libTest_FFmpeg.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\Test_FFmpeg.dir\linkLibs.rsp
