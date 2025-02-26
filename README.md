@@ -1,4 +1,4 @@
 # uMoive 
 ## Audio Video computer editor
 UPPRPO project by NSU students (2nd year, 4th semester).
-All dependencies are included. FFmpeg, RapidJSON (Qt5 for python3)
+Qt5 development: UI part of the audio/video computer editor
