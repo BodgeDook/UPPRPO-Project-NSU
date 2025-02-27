@@ -1,6 +1,6 @@
-CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
- D:\prog\UPPRPO-Project-NSU\main.cpp \
- D:\prog\UPPRPO-Project-NSU\videoeditor.hpp \
+CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.obj: \
+ D:\prog\UPPRPO-Project-NSU\videooperations.cpp \
+ D:\prog\UPPRPO-Project-NSU\videooperations.hpp \
  C:/mingw64/include/c++/13.1.0/iostream \
  C:/mingw64/include/c++/13.1.0/bits/requires_hosted.h \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/c++config.h \
@@ -141,15 +141,4 @@ CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/basic_ios.tcc \
  C:/mingw64/include/c++/13.1.0/bits/ostream.tcc \
  C:/mingw64/include/c++/13.1.0/istream \
- C:/mingw64/include/c++/13.1.0/bits/istream.tcc \
- C:/mingw64/include/c++/13.1.0/fstream \
- C:/mingw64/include/c++/13.1.0/bits/codecvt.h \
- C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/basic_file.h \
- C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/c++io.h \
- C:/mingw64/include/c++/13.1.0/bits/fstream.tcc \
- C:/mingw64/include/c++/13.1.0/vector \
- C:/mingw64/include/c++/13.1.0/bits/stl_uninitialized.h \
- C:/mingw64/include/c++/13.1.0/bits/stl_vector.h \
- C:/mingw64/include/c++/13.1.0/bits/stl_bvector.h \
- C:/mingw64/include/c++/13.1.0/bits/vector.tcc \
- D:\prog\UPPRPO-Project-NSU\videooperations.hpp
+ C:/mingw64/include/c++/13.1.0/bits/istream.tcc

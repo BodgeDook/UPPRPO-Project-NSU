@@ -3,6 +3,9 @@
 #include <fstream>
 #include <string>
 #include <string_view>
+#include <vector>
+
+#include "videooperations.hpp"
 
 
 class VideoEditor{
@@ -14,6 +17,7 @@ public:
     int render();
 
 private:
-    std::ifstream input_file;
-    std::ofstream output_file;
+    std::string inputFilePath;
+    std::string outputFilePath;
+    std::vector<VideoOperation*> videoOperations;
 };

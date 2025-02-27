@@ -1,5 +1,5 @@
-CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
- D:\prog\UPPRPO-Project-NSU\main.cpp \
+CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.obj: \
+ D:\prog\UPPRPO-Project-NSU\videoeditor.cpp \
  D:\prog\UPPRPO-Project-NSU\videoeditor.hpp \
  C:/mingw64/include/c++/13.1.0/iostream \
  C:/mingw64/include/c++/13.1.0/bits/requires_hosted.h \
@@ -152,4 +152,6 @@ CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/stl_vector.h \
  C:/mingw64/include/c++/13.1.0/bits/stl_bvector.h \
  C:/mingw64/include/c++/13.1.0/bits/vector.tcc \
- D:\prog\UPPRPO-Project-NSU\videooperations.hpp
+ D:\prog\UPPRPO-Project-NSU\videooperations.hpp \
+ D:\prog\UPPRPO-Project-NSU\operationfactory.hpp \
+ D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.hpp

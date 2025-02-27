@@ -5,7 +5,7 @@
 
 class FFmpegWrapper{
 public:
-    FFmpegWrapper(std::string_view inputFilename, std::string_view outputFilename);
+    FFmpegWrapper(const std::string_view inputFilename, const std::string_view outputFilename);
 
     int openInput();
     int openOutput();

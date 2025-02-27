@@ -1,4 +1,5 @@
-#include "ffmpegwrapper.hpp"
+#include "videoeditor.hpp"
+
 #include <iostream>
 
 
@@ -7,11 +8,15 @@ int main(){
         std::cout << "Running DEBUG\n";
     #endif
 
+    VideoEditor editorMain("../server_review.mp4", "../server_review_modified.mp4");
 
-    FFmpegWrapper wrapper("input.mp4", "output.mp4");
-    wrapper.addFilter("resize 1920 1080");
-    wrapper.addFilter("crop 1000 1500 1200 1400");
-    wrapper.process();
+    editorMain.loadOperations("../operation_queue.json");
+    std::cout << "123\n";
+    #ifdef DEBUG
+        std::cout << "Operations loaded!" << std::endl;
+    #endif
+
+    editorMain.render();
     
     #ifdef DEBUG
         std::cout << "Done!\n";

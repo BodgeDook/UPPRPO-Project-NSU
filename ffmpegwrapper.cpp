@@ -20,17 +20,19 @@ FFmpegWrapper::FFmpegWrapper(std::string_view inputFilename, std::string_view ou
 // openInput, opens ifstream
 int FFmpegWrapper::openInput(){
     // inputFile.open(std::string{this->inputFile}, std::ios::in);
+    return 0;
 }
 
 
 // openOutput, opens ofstream
 int FFmpegWrapper::openOutput(){
-
+    
+    return 0;
 }
 
 // addFilter, adds string representation of filter into std::vector<std::string> filters
 void FFmpegWrapper::addFilter(const std::string_view filter){
-    this->filters.push_back(std::string{filter});
+    this->filters.push_back(std::string(filter));
 }
 
 

@@ -10,6 +10,9 @@ set(CMAKE_DEPENDS_LANGUAGES
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "D:/prog/UPPRPO-Project-NSU/ffmpegwrapper.cpp" "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj.d"
   "D:/prog/UPPRPO-Project-NSU/main.cpp" "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/main.cpp.obj.d"
+  "D:/prog/UPPRPO-Project-NSU/operationfactory.cpp" "CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.obj.d"
+  "D:/prog/UPPRPO-Project-NSU/videoeditor.cpp" "CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.obj.d"
+  "D:/prog/UPPRPO-Project-NSU/videooperations.cpp" "CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.obj" "gcc" "CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.obj.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

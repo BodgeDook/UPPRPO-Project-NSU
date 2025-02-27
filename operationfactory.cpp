@@ -9,11 +9,16 @@
 */
 
 // Constructor, gets path to JSON configuration file
-OperationFactory::OperationFactory(const char* jsonFilePath): jsonFilePath(jsonFilePath){};
+OperationFactory::OperationFactory(std::string_view jsonFilePath): jsonFilePath(std::string(jsonFilePath)){};
 
 // createOperationList method that creates std::vector<VideoOperation*> of the operations
-std::vector<VideoOperation*> OperationFactory::createOperationsList(){
-    FILE* fp = fopen(this->jsonFilePath, "rb");
+void OperationFactory::createOperationsList(){
+
+    #ifdef DEBUG
+        std::cout << "Opening " << this->jsonFilePath.c_str() << std::endl;
+    #endif
+
+    FILE* fp = fopen(this->jsonFilePath.c_str(), "rb");
 
     if(!fp){
         std::cerr << "Error: unable to open operation_queue.json" << std::endl;
@@ -36,11 +41,34 @@ std::vector<VideoOperation*> OperationFactory::createOperationsList(){
 
     if(doc.HasMember("Operations") && doc["Operations"].IsArray()){
         auto operations = doc["Operations"].GetArray();
-        // for(auto operation: operations){
-        //     operation
-        // }
-        #ifdef DEBUG
-            std::cout << operations;
-        #endif
+        for(auto& operation: operations){
+            std::string operationName = operation["type"].GetString();
+            if(operationName == "resize"){
+                int width = operation["width"].GetInt();
+                int height = operation["height"].GetInt();
+
+                ResizeOperation resizeOp(width, height);
+
+                this->videoOperations.push_back(&resizeOp);
+            }
+            else if(operationName == "crop"){
+                int left_border = operation["left"].GetInt();
+                int right_border = operation["right"].GetInt();
+                int top_border = operation["top"].GetInt();
+                int bottom_border = operation["bottom"].GetInt();
+
+                CropOperation cropOp(left_border, right_border, top_border, bottom_border);
+
+                this->videoOperations.push_back(&cropOp);
+
+            }
+        }
     }
+    #ifdef DEBUG
+        std::cout << "Operations loaded" << std::endl;
+    #endif
+}
+
+std::vector<VideoOperation*> OperationFactory::getOperationList(){
+    return this->videoOperations;
 }

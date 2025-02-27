@@ -176,6 +176,78 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+operationfactory.obj: operationfactory.cpp.obj
+.PHONY : operationfactory.obj
+
+# target to build an object file
+operationfactory.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.obj
+.PHONY : operationfactory.cpp.obj
+
+operationfactory.i: operationfactory.cpp.i
+.PHONY : operationfactory.i
+
+# target to preprocess a source file
+operationfactory.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.i
+.PHONY : operationfactory.cpp.i
+
+operationfactory.s: operationfactory.cpp.s
+.PHONY : operationfactory.s
+
+# target to generate assembly for a file
+operationfactory.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.s
+.PHONY : operationfactory.cpp.s
+
+videoeditor.obj: videoeditor.cpp.obj
+.PHONY : videoeditor.obj
+
+# target to build an object file
+videoeditor.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.obj
+.PHONY : videoeditor.cpp.obj
+
+videoeditor.i: videoeditor.cpp.i
+.PHONY : videoeditor.i
+
+# target to preprocess a source file
+videoeditor.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.i
+.PHONY : videoeditor.cpp.i
+
+videoeditor.s: videoeditor.cpp.s
+.PHONY : videoeditor.s
+
+# target to generate assembly for a file
+videoeditor.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.s
+.PHONY : videoeditor.cpp.s
+
+videooperations.obj: videooperations.cpp.obj
+.PHONY : videooperations.obj
+
+# target to build an object file
+videooperations.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.obj
+.PHONY : videooperations.cpp.obj
+
+videooperations.i: videooperations.cpp.i
+.PHONY : videooperations.i
+
+# target to preprocess a source file
+videooperations.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.i
+.PHONY : videooperations.cpp.i
+
+videooperations.s: videooperations.cpp.s
+.PHONY : videooperations.s
+
+# target to generate assembly for a file
+videooperations.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.s
+.PHONY : videooperations.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -191,6 +263,15 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... operationfactory.obj
+	@echo ... operationfactory.i
+	@echo ... operationfactory.s
+	@echo ... videoeditor.obj
+	@echo ... videoeditor.i
+	@echo ... videoeditor.s
+	@echo ... videooperations.obj
+	@echo ... videooperations.i
+	@echo ... videooperations.s
 .PHONY : help
 
 

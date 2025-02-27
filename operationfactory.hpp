@@ -5,11 +5,12 @@
 
 class OperationFactory{
 public:
-OperationFactory(const char* jsonFilePath);
-std::vector<VideoOperation*> createOperationsList();
+    OperationFactory(std::string_view jsonFilePath);
+    void createOperationsList();
+    std::vector<VideoOperation*> getOperationList();
 
 private:
-    const char* jsonFilePath;
-    std::vector<VideoOperation*> video_operations;
+    std::string jsonFilePath;
+    std::vector<VideoOperation*> videoOperations;
 
 };

@@ -1,6 +1,12 @@
 #include "videooperations.hpp"
 
 
+VideoOperation::~VideoOperation() = default;
+std::string VideoOperation::getFilterString() const {
+    return "";
+}
+
+
 /*
     ResizeOperation class, child of abstarct VideoOperation class
     Has methods:
