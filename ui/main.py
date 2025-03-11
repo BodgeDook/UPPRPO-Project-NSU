@@ -1,4 +1,5 @@
 import sys
+
 from PyQt5.QtCore import Qt, QTimer, QSize
 from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
@@ -6,6 +7,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
                              QUndoStack, QGroupBox, QPushButton, QSpinBox)
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+
 
 class VideoEditor(QMainWindow):
     def __init__(self):
