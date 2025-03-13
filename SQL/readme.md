@@ -8,4 +8,4 @@ SHOW ALL DB:
   $curl "http://127.0.0.1:8000/get_data"
 
 ADD SOME MONEY TO CERTAIN USER:
-  $curl "http://127.0.0.1:8000/update_balance?email=<user_email>&amount=<float>"
+  $curl "http://127.0.0.1:8000/update_balance?email=<user_email>&amount=<some_float_val>"
