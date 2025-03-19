@@ -5,8 +5,6 @@ from fastapi import FastAPI, Query
 import uvicorn
 import psycopg2
 
-# app = FastAPI()
-
 
 DB_PARAMS = {
     "dbname": "",
@@ -25,6 +23,7 @@ def connect_to_db():
     except Exception as e:
         print(f"Error with connection to db: {e}")
         return None, None
+
 
 def check_email_exists(email):
     try:
@@ -85,7 +84,7 @@ def get_data_from_db():
         
         conn.close()
         
-        data = [{"email": row[0], "password": row[1], "balance": float(row[2])} for row in rows]
+        data = [{"email": row[0], "password": row[1], "balance": float(row[2]), "is log": row[3]} for row in rows]
 
         with open("account.json", "w", encoding="utf-8") as file:
             json.dump(data, file, ensure_ascii=False, indent=2)
@@ -131,51 +130,106 @@ def update_balance(email: str, amount: float):
         print(f"Exception with updating balance: {e}")
         return {"error": str(e)}
 
-def check_login_credentials(email: str, password: str):
-    if True:
-        return 0 # email/password matched
-    if False:
-        return 1 # email and/or password did not match or do not exist
-    return 420
+
+def login(email: str, password: str):
+    try:
+        conn, cur = connect_to_db()
+        if conn is None or cur is None:
+            return {"error": "DB didn't connect"}
+
+        cur.execute("SELECT email, balance FROM users WHERE email = %s AND password =%s;", (email,password))
+        result = cur.fetchone()
+
+        if result is None:
+            return {"error": "Invalid email or password!"}
+
+        user_email, user_balance = result
+        cur.execute(
+                    """
+                    UPDATE users
+                    SET is_logged_in = TRUE
+                    WHERE email = %s;
+                    """,
+                    (email,)
+                )
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"email": user_email, "balance": user_balance}
+
+    except Exception as e:
+        print(f"Exception with updating balance: {e}")
+        return {"error": str(e)}
 
 
+def logaut(email:str):
+    try:
+        conn, cur = connect_to_db()
+        if conn is None or cur is None:
+            return {"error": "DB didn't connect"}
+        
+        
+        cur.execute("SELECT 1 FROM users WHERE email = %s;", (email,))
+        result = cur.fetchone()
+
+        if result is None:
+            return {"error": "Invalid email or password!"}
+
+        cur.execute(
+                    """
+                    UPDATE users
+                    SET is_logged_in = FALSE
+                    WHERE email = %s;
+                    """,
+                    (email,)
+                )
+
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"user:", email, "was disconnected!"}
+
+
+    except Exception as e:
+        print(f"Exception with updating balance: {e}")
+        return {"error": str(e)}
+        
+        
+        
+
+    except Exception as e:
+        print(f"Exception with updating balance: {e}")
+        return {"error": str(e)}
 app = FastAPI()
 
-@app.post("/login")
-def login(email: str, password: str):
 
-    message = check_login_credentials(email, password)
-    if message: # so the password/email matched
-        return 0
-    else:
-        return 1 # code for email/password incorect or does not exist
+# curl -X 'POST' 'http://127.0.0.1:8000/user_registration?email=<email>&password=<password>' -H 'accept: application/json'
+@app.post("/user_registration")
+def save_data(email: str, password: str):
+    return save_to_db(email, password)
 
-@app.post("/Register")
-def register(email: str, password: str):
-    if check_email_exists(email):
-        return 2 # "this email exists" error
-    else:
-        status = save_to_db(email, password)
-        if status == 0: # user registered
-            return 0
-        elif status == 1:   # user not registered
-            #sql.delete(email/password)
-            return 1
-        else:
-            #sql.delete(email/password)
-            return 420  # "i dunno" error
+# curl -X 'POST' 'http://127.0.0.1:8000/user_login?email=<email>&password=<password>' -H 'accept: application/json'
+@app.post("/user_login")
+def post_login(email: str, password: str):
+    return login(email, password)
 
+# curl "http://127.0.0.1:8000/user_logout?email=<email>" 
+@app.get("/user_logout")
+def post_logaut(email: str):
+    return logaut(email)
 
+# curl "http://127.0.0.1:8000/get_all_db" 
+@app.get("/get_all_db")
+def get_data():
+    return get_data_from_db()
 
-# @app.get("/get_data")
-# def get_data():
-#     return get_data_from_db()
+# curl "http://127.0.0.1:8000/update_balance?email=<user_email>&amount=<some_float_val>"
+@app.get("/update_balance")
+def update_balance_endpoint(email: str, amount: float):
+    response = update_balance(email, amount)
+    return response
 
-# @app.get("/update_balance")
-# def update_balance_endpoint(email: str, amount: float):
-#     response = update_balance(email, amount)
-#     return response
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
-
