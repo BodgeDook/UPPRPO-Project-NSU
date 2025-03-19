@@ -130,6 +130,7 @@ def update_balance(email: str, amount: float):
         print(f"Exception with updating balance: {e}")
         return {"error": str(e)}
 
+
 def login(email: str, password: str):
     try:
         conn, cur = connect_to_db()
