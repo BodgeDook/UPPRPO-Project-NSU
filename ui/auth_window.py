@@ -11,12 +11,23 @@ from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
 class AuthModel(QObject):
     # def login(self, email, password)
     # def register(self, email, password)
-    def check_email(self, email):
+    def register(self, email, password):
         """Sends email to FastAPI backend and returns the response."""
         try:
-            response = requests.get(f"http://127.0.0.1:8000/check_email/{email}")
+            response = requests.post(f"http://127.0.0.1:8000/user_registration?email={email}&password={password}")
+
             if response.status_code == 200:
                 return response.json()["message"]  # Expected: "Email exists" or "Email does not exist"
+            else:
+                return "Server error"
+        except requests.RequestException:
+            return "Network error"
+    
+    def login(self, email, password):
+        try:
+            response = requests.post(f"http://127.0.0.1:8000/user_login?email={email}&password={password}")
+            if response.status_code == 200:
+                return response.json()["message"]
             else:
                 return "Server error"
         except requests.RequestException:
@@ -45,33 +56,92 @@ class AuthViewModel(QObject):
         self.current_state = self.REGISTER
         self.state_changed.emit()
 
-    def validate_email(self, email):
-        """Validates the email and calls the model."""
-        if not self.is_valid_email(email):
-            self.result_signal.emit("Invalid email format")
-            return
+
+    # def validate_email(self, email):
+    #     """Validates the email and calls the model."""
+    #     if not self.is_valid_email(email):
+    #         self.result_signal.emit("Invalid email format")
+    #         return
         
-        # Call API in a separate thread to prevent UI freezing
-        self.worker = EmailCheckerWorker(self.model, email)
+    #     # Call API in a separate thread to prevent UI freezing
+    #     self.worker = EmailCheckerWorker(self.model, email)
+    #     self.worker.result_signal.connect(self.result_signal.emit)
+    #     self.worker.start()
+
+
+    def login_user(self, email, password):
+        if not self.validate_email(email):
+            self.result_signal.emit("Invalid email format")
+            return False
+        
+        self.worker = LoginWorker(self.model, email, password)
         self.worker.result_signal.connect(self.result_signal.emit)
         self.worker.start()
 
-    def is_valid_email(self, email):
+    def register_user(self, email, password1, password2):
+        if not self.validate_email(email):
+            self.result_signal.emit("Invalid email format")
+            return False
+
+        if not self.validate_passwords(password1, password2):
+            return False
+
+        self.worker = RegisterWorker(self.model, email, password1)
+        self.worker.result_signal.connect(self.result_signal.emit)
+        self.worker.start()
+
+
+    def validate_email(self, email):
         return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None # regex validation
+    
+    def validate_passwords(self, password1, password2):
+        if password1 != password2:
+            self.result_signal.emit("Passwords do not match")
+            return False
+
+        if not self.is_valid_password(password1):
+            self.result_signal.emit("Not a strong password")
+            return False
+        
+        return True
+    
+    def is_valid_password(self, password):
+        """
+        if password is
+            >7 char
+            has at least one {A, a, 1, !}
+            no repeating char
+            etc
+        """
+        return 1
+    
 
 # 🏃‍♂️ Worker Thread for API Call (Prevents UI Freezing)
-class EmailCheckerWorker(QThread):
+class RegisterWorker(QThread):
     result_signal = pyqtSignal(str)
 
-    def __init__(self, model, email):
+    def __init__(self, model, email, password):
         super().__init__()
         self.model = model
         self.email = email
+        self.password = password
 
     def run(self):
-        result = self.model.check_email(self.email)
+        result = self.model.register(self.email, self.password)
         self.result_signal.emit(result)
+
+class LoginWorker(QThread):
+    result_signal = pyqtSignal(str)
+
+    def __init__(self, model, email, password):
+        super().__init__()
+        self.model = model
+        self.email = email
+        self.password = password
     
+    def run(self):
+        result = self.model.login(self.email, self.password)
+        self.result_signal.emit(result)
 
 # VIEW: Handles UI interaction
 class RegisterView(QWidget):
@@ -108,12 +178,14 @@ class RegisterView(QWidget):
         layout.addWidget(self.switch_button)
 
         # 🎯 Connect UI to ViewModel
-        self.reg_button.clicked.connect(self.check_email)
+        self.reg_button.clicked.connect(self.register_helper)
         self.view_model.result_signal.connect(self.update_result)
 
-    def check_email(self):
+    def register_helper(self):
         email = self.email_input.text()
-        self.view_model.validate_email(email)
+        password1 = self.password_input.text()
+        password2 = self.repeat_password_input.text()
+        self.view_model.register_user(email, password1, password2)
 
     def update_result(self, result):
         self.result_label.setText(result)  # Update UI with backend response
@@ -131,9 +203,9 @@ class LoginView(QWidget):
         self.label = QLabel("Enter your email:", self)
         self.email_input = QLineEdit(self)
         self.password_input = QLineEdit(self)
-        self.check_button = QPushButton("Login", self)
-        self.check_button.setDefault(True)      # Makes it the default button
-        self.check_button.setAutoDefault(True)  # Allows Enter key activation
+        self.login_button = QPushButton("Login", self)
+        self.login_button.setDefault(True)      # Makes it the default button
+        self.login_button.setAutoDefault(True)  # Allows Enter key activation
         # self.email_input.setFocus()            # Ensure it gets keyboard focus on launch
 
         self.result_label = QLabel("", self)
@@ -146,19 +218,20 @@ class LoginView(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.email_input)
         layout.addWidget(self.password_input)
-        layout.addWidget(self.check_button)
+        layout.addWidget(self.login_button)
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
         self.setLayout(layout)  # Directly set the layout
 
         # 🎯 Connect UI to ViewModel
-        self.check_button.clicked.connect(self.check_email)
+        self.login_button.clicked.connect(self.login_helper)
         self.view_model.result_signal.connect(self.update_result)
 
-    def check_email(self):
+    def login_helper(self):
         email = self.email_input.text()
-        self.view_model.validate_email(email)
+        password = self.password_input.text()
+        self.view_model.login_user(email, password)
 
     def update_result(self, result):
         self.result_label.setText(result)  # Update UI with backend response
