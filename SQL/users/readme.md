@@ -30,3 +30,23 @@ table structure:
  is_logged_in | boolean                |           |          | false
 Indexes:
     "users_pkey" PRIMARY KEY, btree (email)
+
+
+#### Status CODES
+POST user_registration
+
+Code | Meaning
+-----+--------
+500  | DB connection failed
+409  | Email already exists
+500  | Unexpecred error {error message}
+
+
+
+POST user_login
+
+Code | Meaning
+-----+--------
+500  | DB connection failed
+401  | Invalid email or password
+500  | Unexpecred error {error message}
