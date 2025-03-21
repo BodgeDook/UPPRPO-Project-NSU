@@ -52,3 +52,19 @@ Code  | Meaning                         | Implemented
 401   | Invalid email or password       | Yes
 500   | Unexpecred error {error message}| Yes
 200   | Successful login                | No
+
+
+#### Environment variables
+DEVELOP_MACHINE — indicates if the code is being run on developer's machine, duh.
+Used in post_login() and save_data() to imitate loading times.
+
+```sh
+export DEVELOP_MACHINE=1
+```
++reload your terminal
+
+_On macOS:_
+```sh
+echo 'export DEVELOP_MACHINE=1' >> ~/.zshrc
+source ~/.zshrc
+```

@@ -1,10 +1,15 @@
 import json
+import time
+import os
 
 from decimal import Decimal 
 from fastapi import FastAPI, Query
 from fastapi import HTTPException
 import uvicorn
 import psycopg2
+
+if os.getenv("DEVELOP_MACHINE"):
+    print("Running on the development machine.")
 
 
 DB_PARAMS = {
@@ -184,11 +189,17 @@ app = FastAPI()
 # curl -X 'POST' 'http://127.0.0.1:8000/user_registration?email=<email>&password=<password>' -H 'accept: application/json'
 @app.post("/user_registration")
 def save_data(email: str, password: str):
+    if os.getenv("DEVELOP_MACHINE"):
+        time.sleep(5)
+    
     return save_to_db(email, password)
 
 # curl -X 'POST' 'http://127.0.0.1:8000/user_login?email=<email>&password=<password>' -H 'accept: application/json'
 @app.post("/user_login")
 def post_login(email: str, password: str):
+    if os.getenv("DEVELOP_MACHINE"):
+        time.sleep(5)
+
     return login(email, password)
 
 # curl "http://127.0.0.1:8000/user_logout?email=<email>" 
