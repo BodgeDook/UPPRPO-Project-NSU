@@ -30,3 +30,41 @@ table structure:
  is_logged_in | boolean                |           |          | false
 Indexes:
     "users_pkey" PRIMARY KEY, btree (email)
+
+
+#### Status CODES
+*POST user_registration*
+
+Code | Meaning                         | Implemented
+-----+---------------------------------+------------
+500  | DB connection failed            | Yes
+409  | Email already exists            | Yes
+500  | Unexpecred error {error message}| Yes
+200  | Successful registration         | No
+
+
+
+*POST user_login*
+
+Code  | Meaning                         | Implemented
+------+---------------------------------+------------
+500   | DB connection failed            | Yes
+401   | Invalid email or password       | Yes
+500   | Unexpecred error {error message}| Yes
+200   | Successful login                | No
+
+
+#### Environment variables
+DEVELOP_MACHINE — indicates if the code is being run on developer's machine, duh.
+Used in post_login() and save_data() to imitate loading times.
+
+```sh
+export DEVELOP_MACHINE=1
+```
++reload your terminal
+
+_On macOS:_
+```sh
+echo 'export DEVELOP_MACHINE=1' >> ~/.zshrc
+source ~/.zshrc
+```
