@@ -33,20 +33,22 @@ Indexes:
 
 
 #### Status CODES
-POST user_registration
+*POST user_registration*
 
-Code | Meaning
------+--------
-500  | DB connection failed
-409  | Email already exists
-500  | Unexpecred error {error message}
+Code | Meaning                         | Implemented
+-----+---------------------------------+------------
+500  | DB connection failed            | Yes
+409  | Email already exists            | Yes
+500  | Unexpecred error {error message}| Yes
+200  | Successful registration         | No
 
 
 
-POST user_login
+*POST user_login*
 
-Code | Meaning
------+--------
-500  | DB connection failed
-401  | Invalid email or password
-500  | Unexpecred error {error message}
+Code  | Meaning                         | Implemented
+------+---------------------------------+------------
+500   | DB connection failed            | Yes
+401   | Invalid email or password       | Yes
+500   | Unexpecred error {error message}| Yes
+200   | Successful login                | No
