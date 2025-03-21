@@ -110,6 +110,7 @@ def update_balance(email: str, amount: float):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+
 def login(email: str, password: str):
     try:
         conn, cur = connect_to_db()
