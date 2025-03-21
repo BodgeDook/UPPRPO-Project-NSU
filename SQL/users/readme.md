@@ -20,38 +20,39 @@ ADD SOME MONEY TO CERTAIN USER:
 
 
 table structure:
-\d users
-                          Table "public.users"
-    Column    |          Type          | Collation | Nullable | Default 
---------------+------------------------+-----------+----------+---------
- email        | character varying(255) |           | not null | 
- password     | character varying(255) |           | not null | 
- balance      | numeric(10,2)          |           | not null | 0.00
- is_logged_in | boolean                |           |          | false
-Indexes:
-    "users_pkey" PRIMARY KEY, btree (email)
+### Users Table
+
+| Column      | Type                    | Nullable | Default |
+|------------|-------------------------|----------|---------|
+| email      | character varying(255)  | NOT NULL |         |
+| password   | character varying(255)  | NOT NULL |         |
+| balance    | numeric(10,2)           | NOT NULL | 0.00    |
+| is_logged_in | boolean               |          | false   |
+
+**Indexes:**
+- `users_pkey` PRIMARY KEY, btree (email)
 
 
 #### Status CODES
-*POST user_registration*
+### POST /`user_registration`
 
-Code | Meaning                         | Implemented
------+---------------------------------+------------
-500  | DB connection failed            | Yes
-409  | Email already exists            | Yes
-500  | Unexpecred error {error message}| Yes
-200  | Successful registration         | No
+| Code | Meaning                          | Implemented |
+|------|----------------------------------|-------------|
+| 500  | DB connection failed            | Yes         |
+| 409  | Email already exists            | Yes         |
+| 500  | Unexpected error {error message} | Yes         |
+| 200  | Successful registration         | No          |
 
 
 
-*POST user_login*
+### POST /`user_login`
 
-Code  | Meaning                         | Implemented
-------+---------------------------------+------------
-500   | DB connection failed            | Yes
-401   | Invalid email or password       | Yes
-500   | Unexpecred error {error message}| Yes
-200   | Successful login                | No
+| Code  | Meaning                          | Implemented |
+|-------|----------------------------------|-------------|
+| 500   | DB connection failed            | Yes         |
+| 401   | Invalid email or password       | Yes         |
+| 500   | Unexpected error {error message} | Yes         |
+| 200   | Successful login                | No          |
 
 
 #### Environment variables

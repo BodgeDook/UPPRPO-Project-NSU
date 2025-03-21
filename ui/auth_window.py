@@ -1,11 +1,12 @@
 import sys
 import os
+import time
 
 import re
 import requests  # Used to communicate with FastAPI backend
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget, QStackedWidget
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QTimer
 
 
 # 📌 MODEL: Handles API communication
@@ -110,6 +111,8 @@ class AuthViewModel(QObject):
         
         if status_code == 200:
             self.auth_successful.emit()
+        elif status_code == 500:
+            self.result_signal_to_ui.emit(str(response))
         else:
             """
             add response filters (instead of outputting the raw responce from the server, output a "filtered" responce)
@@ -260,11 +263,17 @@ class AuthView(QWidget):
         # Add spinner_label to your layout as needed
 
     def update_view(self):
-        view_model.result_signal_to_ui.emit("")
+        view_model.result_signal_to_ui.emit("")     # clear the "message" box
         self.stacked_widget.setCurrentIndex(self.view_model.current_state)
     
     def handle_success(self):
-        self.close()  # Closes the window on successful login
+        if os.getenv("DEVELOP_MACHINE"):
+            print("Successfully logged/registered!")
+        
+        view_model.result_signal_to_ui.emit("Success!")
+        
+        QTimer.singleShot(2000, self.close)
+        # self.close()  # Closes the window on successful login
 
     def set_processing_state(self, state):
         self.is_processing = state
