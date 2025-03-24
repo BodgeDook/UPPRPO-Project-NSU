@@ -1,23 +1,19 @@
 import sys
-
-from PyQt5.QtCore import Qt, QTimer, QSize
+from PyQt5.QtCore import Qt, QTimer, QSize, QUrl
 from PyQt5.QtGui import QKeySequence, QIcon
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QToolBar, QAction, QProgressBar, QLabel, QSlider, QComboBox,
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
-                             QUndoStack, QGroupBox, QPushButton, QSpinBox)
+                             QUndoStack, QGroupBox, QPushButton, QSpinBox, QFileDialog, QTableWidget,
+                             QTableWidgetItem)
 from PyQt5.QtMultimediaWidgets import QVideoWidget
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtGui import QDesktopServices
 
-'''
-video_editor/
-│── main.py               # Entry point
-│── main_window.py        # Main UI
-│── video_player.py       # Video playback logic
-│── timeline.py           # Timeline & clip management
-│── toolbar.py            # Tools & actions
-│── settings_window.py    # Separate window for settings
-│── resources/            # Icons, UI assets, etc.
-'''
+# importing styles:
+from styles import (apply_button_style, apply_disabled_button_style, apply_label_style,
+                    apply_title_style, apply_link_style, apply_window_style)
+from auth_window import AuthView  # for Login/Register
 
 class VideoEditor(QMainWindow):
     def __init__(self):
@@ -28,56 +24,45 @@ class VideoEditor(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('PyVideo Editor')
-        self.setGeometry(0, 0, 1920, 1080)  # Окно на весь экран
+        self.setGeometry(0, 0, 1920, 1080)
         
-        # Главный центральный виджет
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Верхняя часть с инструментами и видео
         top_splitter = QSplitter(Qt.Horizontal)
         
-        # Левая панель инструментов
         tools_panel = QWidget()
         tools_layout = QHBoxLayout(tools_panel)
         
-        # Создаем две колонки
         self.create_video_tools(tools_layout)
         self.create_audio_tools(tools_layout)
 
-        # Правая панель превью
         self.preview_widget = QGraphicsView()
         self.preview_scene = QGraphicsScene()
         self.preview_widget.setScene(self.preview_scene)
         self.video_widget = QVideoWidget()
         self.preview_scene.addWidget(self.video_widget)
 
-        # Добавляем панели в сплиттер
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
         top_splitter.setSizes([400, 900])
 
-        # Таймлайн внизу
         timeline_widget = QGraphicsView()
         timeline_widget.setMinimumHeight(150)
         self.timeline_scene = QGraphicsScene()
         timeline_widget.setScene(self.timeline_scene)
 
-        # Собираем главный лэйаут
         main_layout.addWidget(top_splitter)
         main_layout.addWidget(timeline_widget)
 
-        # Создаем верхние тулбары
         self.createTopToolbars()
 
     def create_video_tools(self, parent_layout):
-        # Видео инструменты
         video_group = QGroupBox("Video Tools")
         layout = QVBoxLayout()
 
-        # Размер и пропорции
         size_group = QGroupBox("Size & Orientation")
         size_layout = QVBoxLayout()
         
@@ -95,7 +80,6 @@ class VideoEditor(QMainWindow):
         size_group.setLayout(size_layout)
         layout.addWidget(size_group)
 
-        # Цветокоррекция
         color_group = QGroupBox("Color Adjustment")
         color_layout = QVBoxLayout()
         
@@ -109,7 +93,6 @@ class VideoEditor(QMainWindow):
         color_group.setLayout(color_layout)
         layout.addWidget(color_group)
 
-        # Фильтры и фон
         effects_group = QGroupBox("Effects")
         effects_layout = QVBoxLayout()
         
@@ -127,11 +110,9 @@ class VideoEditor(QMainWindow):
         parent_layout.addWidget(video_group)
 
     def create_audio_tools(self, parent_layout):
-        # Аудио инструменты
         audio_group = QGroupBox("Audio Tools")
         layout = QVBoxLayout()
 
-        # Громкость
         volume_group = QGroupBox("Volume Control")
         volume_layout = QVBoxLayout()
         
@@ -140,7 +121,6 @@ class VideoEditor(QMainWindow):
         volume_group.setLayout(volume_layout)
         layout.addWidget(volume_group)
 
-        # Эквалайзер
         eq_group = QGroupBox("Equalizer")
         eq_layout = QVBoxLayout()
         
@@ -154,7 +134,6 @@ class VideoEditor(QMainWindow):
         eq_group.setLayout(eq_layout)
         layout.addWidget(eq_group)
 
-        # Шумоподавление
         noise_group = QGroupBox("Noise Reduction")
         noise_layout = QVBoxLayout()
         
@@ -183,12 +162,10 @@ class VideoEditor(QMainWindow):
         return container
 
     def createTopToolbars(self):
-        # Первый тулбар (File operations)
         file_toolbar = QToolBar('File Toolbar')
         file_toolbar.setIconSize(QSize(24, 24))
         self.addToolBar(Qt.TopToolBarArea, file_toolbar)
 
-        # Правильные иконки из QStyle
         action_icons = {
             'New': QStyle.SP_FileIcon,
             'Open': QStyle.SP_DialogOpenButton,
@@ -197,12 +174,11 @@ class VideoEditor(QMainWindow):
         }
 
         for text, icon in action_icons.items():
-            action = QAction(QIcon(''), text, self)  # Пустая иконка как заглушка
+            action = QAction(QIcon(''), text, self)
             if icon:
                 action.setIcon(self.style().standardIcon(icon))
             file_toolbar.addAction(action)
 
-        # Второй тулбар (Progress)
         progress_toolbar = QToolBar('Progress Toolbar')
         self.addToolBar(Qt.TopToolBarArea, progress_toolbar)
         
@@ -226,13 +202,191 @@ class VideoEditor(QMainWindow):
     def setupAutosave(self):
         self.autosave_timer = QTimer()
         self.autosave_timer.timeout.connect(self.autosave)
-        self.autosave_timer.start(300000)  # 5 минут
+        self.autosave_timer.start(300000)
 
     def autosave(self):
         print("Autosaving project...")
 
+class WelcomeWindowUnsigned(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('uMovie - Welcome')
+        self.setGeometry(300, 300, 800, 600)
+        apply_window_style(self)
+
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignCenter)
+
+        # Заголовок
+        title_label = QLabel("uMovie")
+        apply_title_style(title_label)
+        main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
+
+        # Кнопки
+        buttons_layout = QVBoxLayout()
+        buttons_layout.setSpacing(20)
+
+        new_project_btn = QPushButton("New Project")
+        apply_button_style(new_project_btn)
+        new_project_btn.clicked.connect(self.open_new_project)
+        buttons_layout.addWidget(new_project_btn)
+
+        open_project_btn = QPushButton("Open Project")
+        apply_button_style(open_project_btn)
+        open_project_btn.clicked.connect(self.open_project)
+        buttons_layout.addWidget(open_project_btn)
+
+        login_register_btn = QPushButton("Login/Register")
+        apply_disabled_button_style(login_register_btn)
+        login_register_btn.clicked.connect(self.open_login_register)
+        buttons_layout.addWidget(login_register_btn)
+
+        main_layout.addLayout(buttons_layout)
+
+        # Ссылка "Why register?"
+        why_register_btn = QPushButton("Why register?")
+        apply_link_style(why_register_btn)
+        why_register_btn.clicked.connect(self.open_why_register)
+        main_layout.addWidget(why_register_btn, alignment=Qt.AlignCenter)
+
+        # Таблица Recent
+        recent_label = QLabel("Recent")
+        apply_label_style(recent_label)
+        main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
+
+        recent_table = QTableWidget(4, 3)
+        recent_table.setHorizontalHeaderLabels(["Project", "Time", "Date"])
+        recent_table.setFixedSize(300, 150)
+        recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
+
+        # Захардкодим данные
+        recent_data = [
+            ("project 4", "12:34", "Yesterday"),
+            ("project 3", "23:32", "Monday"),
+            ("project 2", "02:02", "16.03"),
+            ("project 1", "13:57", "16.12.2024")
+        ]
+
+        for row, (project, time, date) in enumerate(recent_data):
+            recent_table.setItem(row, 0, QTableWidgetItem(project))
+            recent_table.setItem(row, 1, QTableWidgetItem(time))
+            recent_table.setItem(row, 2, QTableWidgetItem(date))
+
+        recent_table.resizeColumnsToContents()
+        main_layout.addWidget(recent_table, alignment=Qt.AlignRight)
+
+        self.setLayout(main_layout)
+
+    def open_new_project(self):
+        self.editor = VideoEditor()
+        self.editor.show()
+        self.close()
+
+    def open_project(self):
+        folder_path = QFileDialog.getExistingDirectory(self, "Select Project Folder")
+        if folder_path:
+            print(f"Selected folder: {folder_path}")
+
+    def open_login_register(self):
+        self.auth_window = AuthView()
+        self.auth_window.show()
+
+    def open_why_register(self):
+        QDesktopServices.openUrl(QUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
+
+class WelcomeWindowSigned(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('uMovie - Welcome')
+        self.setGeometry(300, 300, 800, 600)
+        apply_window_style(self)
+
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignCenter)
+
+        # Заголовок
+        title_label = QLabel("uMovie")
+        apply_title_style(title_label)
+        main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
+
+        # Кнопки
+        buttons_layout = QVBoxLayout()
+        buttons_layout.setSpacing(20)
+
+        new_project_btn = QPushButton("New Project")
+        apply_button_style(new_project_btn)
+        new_project_btn.clicked.connect(self.open_new_project)
+        buttons_layout.addWidget(new_project_btn)
+
+        open_project_btn = QPushButton("Open Project")
+        apply_button_style(open_project_btn)
+        open_project_btn.clicked.connect(self.open_project)
+        buttons_layout.addWidget(open_project_btn)
+
+        account_management_btn = QPushButton("Account Management")
+        apply_disabled_button_style(account_management_btn)
+        account_management_btn.clicked.connect(self.open_account_management)
+        buttons_layout.addWidget(account_management_btn)
+
+        main_layout.addLayout(buttons_layout)
+
+        # Recent Table
+        recent_label = QLabel("Recent")
+        apply_label_style(recent_label)
+        main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
+
+        recent_table = QTableWidget(4, 3)
+        recent_table.setHorizontalHeaderLabels(["Project", "Time", "Date"])
+        recent_table.setFixedSize(300, 150)
+        recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
+
+        # For example:
+        recent_data = [
+            ("project 4", "12:34", "Yesterday"),
+            ("project 3", "23:32", "Monday"),
+            ("project 2", "02:02", "16.03"),
+            ("project 1", "13:57", "16.12.2024")
+        ]
+
+        for row, (project, time, date) in enumerate(recent_data):
+            recent_table.setItem(row, 0, QTableWidgetItem(project))
+            recent_table.setItem(row, 1, QTableWidgetItem(time))
+            recent_table.setItem(row, 2, QTableWidgetItem(date))
+
+        recent_table.resizeColumnsToContents()
+        main_layout.addWidget(recent_table, alignment=Qt.AlignRight)
+
+        self.setLayout(main_layout)
+
+    def open_new_project(self):
+        self.editor = VideoEditor()
+        self.editor.show()
+        self.close()
+
+    def open_project(self):
+        folder_path = QFileDialog.getExistingDirectory(self, "Select Project Folder")
+        if folder_path:
+            print(f"Selected folder: {folder_path}")
+
+    def open_account_management(self):
+        print("Opening Account Management (ui/settings_window.py would be called here)")
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    editor = VideoEditor()
-    editor.show()
+
+    # for a test: change is_signed_in on True/False to switch between two windows
+    is_signed_in = False
+
+    if is_signed_in:
+        welcome_window = WelcomeWindowSigned()
+    else:
+        welcome_window = WelcomeWindowUnsigned()
+
+    welcome_window.show()
     sys.exit(app.exec_())
