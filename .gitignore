@@ -2,3 +2,4 @@
 video_venv
 myTests
 *.code-workspace
+/ui/__pycache__
