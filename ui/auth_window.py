@@ -1,6 +1,7 @@
 import sys
 import os
 import time
+from enum import Enum # new
 
 import re
 import requests  # Used to communicate with FastAPI backend
@@ -8,6 +9,11 @@ import requests  # Used to communicate with FastAPI backend
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget, QStackedWidget
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QTimer
 
+# Password Constant Levels:
+class PasswordLevel(Enum): # new
+    EASY = 1
+    MEDIUM = 2
+    HARD = 3
 
 # 📌 MODEL: Handles API communication
 class AuthModel(QObject):
@@ -93,15 +99,65 @@ class AuthViewModel(QObject):
         
         return True
     
-    def is_valid_password(self, password):
+    def is_valid_password(self, password): # updated
+
         """
-        if password is
-            >7 char
-            has at least one {A, a, 1, !}
-            no repeating char
-            etc
+        To check:
+        
+        Args:
+            password (str): your_password
+            level (PasswordLevel): Levels of difficulty (EASY, MEDIUM, HARD).
+        
+        Returns:
+            bool: True, if valid else False
         """
-        return 1
+
+        # Easy: >= 8 symbols
+        if len(password) < 8:
+            return False
+
+        # Easy: if at least one letter is in lower case (a-z)
+        if not re.search(r"[a-z]", password):
+            return False
+
+        # Easy: if at least one letter is in upper case (A-Z)
+        if not re.search(r"[A-Z]", password):
+            return False
+
+        # Easy: if at least there's one letter (0-9)
+        if not re.search(r"[0-9]", password):
+            return False
+
+        # Easy: if at least one special symbol (for instance, !@#$%^&*()_+-=[]{}|;:,.<>?)
+        if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]", password):
+            return False
+
+        # Medium: no repeatable symbols
+        if level.value >= PasswordLevel.MEDIUM.value:
+            # if two similiar letters are next to each other:
+            for i in range(len(password) - 1):
+                if password[i] == password[i + 1]:
+                    return False
+
+        # Hard: dop. checks:
+        if level.value >= PasswordLevel.HARD.value:
+            # Проверка на наличие "abc123"
+            if "abc123" in password.lower():
+                return False
+
+            # check for the common frases being:
+            common_phrases = [
+                "password", "qwerty", "123456", "admin", "letmein",
+                "welcome", "monkey", "dragon", "sunshine", "princess"
+            ]
+            
+            password_lower = password.lower()
+            for phrase in common_phrases:
+                if phrase in password_lower:
+                    return False
+
+        # Еif all the checks are ok:
+        return True
     
     def proceess_response(self, status_code, response):
         self.processing.emit(False)
