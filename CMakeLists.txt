@@ -17,6 +17,7 @@ set(FFMPEG_INCLUDE_DIRS "${FFMPEG_DIR}/include")
 set(FFMPEG_LIBRARIES "${FFMPEG_DIR}/lib/avcodec.lib" "${FFMPEG_DIR}/lib/avformat.lib" "${FFMPEG_DIR}/lib/avutil.lib" "${FFMPEG_DIR}/lib/swscale.lib")
 
 add_executable(Test_FFmpeg main.cpp ffmpegwrapper.cpp operationfactory.cpp videoeditor.cpp videooperations.cpp)
+# add_executable(Test_FFmpeg test_ffmpeg.cpp)
 
 target_include_directories(Test_FFmpeg PRIVATE ${FFMPEG_INCLUDE_DIRS})
 

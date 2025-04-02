@@ -152,4 +152,51 @@ CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/stl_vector.h \
  C:/mingw64/include/c++/13.1.0/bits/stl_bvector.h \
  C:/mingw64/include/c++/13.1.0/bits/vector.tcc \
- D:\prog\UPPRPO-Project-NSU\videooperations.hpp
+ D:\prog\UPPRPO-Project-NSU\videooperations.hpp \
+ C:/mingw64/include/c++/13.1.0/cstring \
+ C:/mingw64/x86_64-w64-mingw32/include/string.h \
+ C:/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h \
+ C:/mingw64/include/c++/13.1.0/algorithm \
+ C:/mingw64/include/c++/13.1.0/bits/stl_algo.h \
+ C:/mingw64/include/c++/13.1.0/bits/algorithmfwd.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_heap.h \
+ C:/mingw64/include/c++/13.1.0/bits/uniform_int_dist.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tempbuf.h \
+ C:/mingw64/include/c++/13.1.0/pstl/glue_algorithm_defs.h \
+ C:/mingw64/include/c++/13.1.0/pstl/execution_defs.h \
+ C:/mingw64/include/c++/13.1.0/regex C:/mingw64/include/c++/13.1.0/bitset \
+ C:/mingw64/include/c++/13.1.0/locale \
+ C:/mingw64/include/c++/13.1.0/bits/locale_facets_nonio.h \
+ C:/mingw64/include/c++/13.1.0/ctime \
+ C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/time_members.h \
+ C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/messages_members.h \
+ C:/mingw64/include/c++/13.1.0/bits/locale_facets_nonio.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/locale_conv.h \
+ C:/mingw64/include/c++/13.1.0/sstream \
+ C:/mingw64/include/c++/13.1.0/bits/sstream.tcc \
+ C:/mingw64/include/c++/13.1.0/stack C:/mingw64/include/c++/13.1.0/deque \
+ C:/mingw64/include/c++/13.1.0/bits/stl_deque.h \
+ C:/mingw64/include/c++/13.1.0/bits/deque.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/stl_stack.h \
+ C:/mingw64/include/c++/13.1.0/ext/aligned_buffer.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr_base.h \
+ C:/mingw64/include/c++/13.1.0/bits/allocated_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/unique_ptr.h \
+ C:/mingw64/include/c++/13.1.0/ext/concurrence.h \
+ C:/mingw64/include/c++/13.1.0/bits/std_function.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
+ C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_constants.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_error.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_automaton.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_automaton.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/regex_scanner.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_scanner.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/regex_compiler.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_compiler.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/regex.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex.tcc \
+ C:/mingw64/include/c++/13.1.0/bits/regex_executor.h \
+ C:/mingw64/include/c++/13.1.0/bits/regex_executor.tcc

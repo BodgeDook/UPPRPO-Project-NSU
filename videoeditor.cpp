@@ -2,7 +2,7 @@
 #include "operationfactory.hpp"
 #include "ffmpegwrapper.hpp"
 
-VideoEditor::VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath): inputFilePath(inputFilePath), outputFilePath(outputFilePath){}
+VideoEditor::VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath, std::string_view outputCodec, int dst_width, int dst_height): inputFilePath(inputFilePath), outputFilePath(outputFilePath), outputCodec(outputCodec), dst_width(dst_width), dst_height(dst_height){}
 
 
 int VideoEditor::loadOperations(const std::string_view jsonFilePath){
@@ -28,7 +28,7 @@ int VideoEditor::render(){
     #ifdef DEBUG
         std::cout << "Rendering..." << std::endl;
     #endif
-    FFmpegWrapper wrapper(this->inputFilePath, this->outputFilePath);
+    FFmpegWrapper wrapper(this->inputFilePath, this->outputFilePath, this->outputCodec, this->dst_width, this->dst_height);
     for(VideoOperation* filter: this->videoOperations)
         wrapper.addFilter(filter->getFilterString());
 

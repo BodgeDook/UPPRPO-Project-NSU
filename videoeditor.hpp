@@ -10,7 +10,7 @@
 
 class VideoEditor{
 public:
-    VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath);
+    VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath, std::string_view outputCodec, int dst_width, int dst_height);
 
     int loadOperations(const std::string_view jsonFilePath);
 
@@ -19,5 +19,7 @@ public:
 private:
     std::string inputFilePath;
     std::string outputFilePath;
+    std::string outputCodec;
+    int dst_width, dst_height;
     std::vector<VideoOperation*> videoOperations;
 };
