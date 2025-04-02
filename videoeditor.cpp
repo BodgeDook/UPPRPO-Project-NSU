@@ -32,8 +32,8 @@ int VideoEditor::render(){
     for(VideoOperation* filter: this->videoOperations)
         wrapper.addFilter(filter->getFilterString());
 
-    wrapper.openInput();
-    wrapper.openOutput();
+    // wrapper.openInput();
+    // wrapper.openOutput();
     wrapper.process();
 
     return 0;

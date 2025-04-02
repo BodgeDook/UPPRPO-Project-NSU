@@ -1,4 +1,4 @@
-CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj: \
+CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: \
  D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.cpp \
  D:\prog\UPPRPO-Project-NSU\ffmpegwrapper.hpp \
  C:/mingw64/include/c++/13.1.0/fstream \

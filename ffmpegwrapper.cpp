@@ -68,6 +68,22 @@ int FFmpegWrapper::openInput(){
         avformat_close_input(&this->fmt_ctx);
         return -1;
     }
+
+    AVRational stream_time_base = this->fmt_ctx->streams[this->video_stream_index]->time_base;
+    if (stream_time_base.num > 0 && stream_time_base.den > 0) {
+        this->codec_ctx->time_base = stream_time_base;
+    } else if (this->codec_ctx->framerate.num > 0 && this->codec_ctx->framerate.den > 0) {
+        this->codec_ctx->time_base = AVRational{this->codec_ctx->framerate.den, this->codec_ctx->framerate.num};
+    } else {
+        this->codec_ctx->time_base = AVRational{1, 60}; // Запасное значение для 60 FPS
+    }
+
+    this->src_pix_fmt = this->codec_ctx->pix_fmt;
+
+    #ifdef DEBUG
+    std::cout << "Input time_base: " << this->codec_ctx->time_base.num << "/" << this->codec_ctx->time_base.den << "\n";
+    std::cout << "Input framerate: " << this->codec_ctx->framerate.num << "/" << this->codec_ctx->framerate.den << "\n";
+    #endif
     return 0;
 }
 
@@ -90,26 +106,44 @@ int FFmpegWrapper::openOutput(){
         return -1;
     }
 
-    this->out_codec_ctx = avcodec_alloc_context3(this->codec);
+    this->output_codec = avcodec_find_encoder_by_name(this->outputCodecStr.c_str());
+    if (!this->output_codec) {
+        std::cerr << "Encoder not found for " << this->outputCodecStr << "!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+
+    this->out_codec_ctx = avcodec_alloc_context3(this->output_codec);
     if(!this->out_codec_ctx){
         std::cerr << "Cannot create output codec context!\n";
         avcodec_free_context(&this->codec_ctx);
         avformat_close_input(&this->fmt_ctx);
         return -1;
     }
-
     this->out_codec_ctx->width = this->dst_width;
     this->out_codec_ctx->height = this->dst_height;
-    this->out_codec_ctx->pix_fmt = this->codec_ctx->pix_fmt;
-    this->out_codec_ctx->time_base = this->codec_ctx->time_base;
+    this->out_codec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
     this->out_codec_ctx->framerate = this->codec_ctx->framerate;
-    this->out_codec_ctx->bit_rate = this->codec_ctx->bit_rate;
+    this->out_codec_ctx->time_base = this->codec_ctx->time_base;
+    // this->out_codec_ctx->bit_rate = this->codec_ctx->bit_rate;
 
-    if(avcodec_open2(this->out_codec_ctx, this->codec, NULL)){
+    this->out_stream->time_base = this->out_codec_ctx->time_base;
+    #ifdef DEBUG
+    std::cout << "dst_width = " << this->out_codec_ctx->width << ", dst_height = " << this->out_codec_ctx->height << ", timebase = " << 
+    this->out_codec_ctx->time_base.num << " / " << this->out_codec_ctx->time_base.den << ", pix_fmt = " << this->out_codec_ctx->pix_fmt << ", framerate = " << 
+    this->out_codec_ctx->framerate.num << " / " << this->out_codec_ctx->framerate.den << ", bit_rate = " << this->out_codec_ctx->bit_rate << "\n";
+    #endif
+
+    AVDictionary* opts = NULL;
+    av_dict_set(&opts, "crf", "23", 0); // Quality
+    av_dict_set(&opts, "preset", "medium", 0); // Preset
+    if(avcodec_open2(this->out_codec_ctx, this->output_codec, &opts)){
         std::cerr << "Cannot open codec for output!\n";
         avcodec_free_context(&this->codec_ctx);
         avcodec_free_context(&this->out_codec_ctx);
         avformat_close_input(&this->fmt_ctx);
+        av_dict_free(&opts);
         return -1;
     }
 
@@ -139,6 +173,11 @@ int FFmpegWrapper::openOutput(){
         return -1;
     }
 
+    this->dst_pix_fmt = this->out_codec_ctx->pix_fmt;
+    
+    #ifdef DEBUG
+    std::cout << "Dst pix fmt = " << this->dst_pix_fmt << "\n";
+    #endif
     return 0;
 }
 
@@ -150,30 +189,50 @@ void FFmpegWrapper::addFilter(const std::string_view filter){
 
 // process, applies all filters
 int FFmpegWrapper::process(){
+    #ifdef DEBUG
+    std::cout << "called process method\n";
+    #endif
+    this->openInput();
+    this->openOutput();
+
+    #ifdef DEBUG
+    std::cout << "Input duration: " << this->fmt_ctx->duration / AV_TIME_BASE << " seconds\n";
+    std::cout << "Input framerate: " << this->codec_ctx->framerate.num << "/" << this->codec_ctx->framerate.den << "\n";
+    std::cout << "Input time_base: " << this->codec_ctx->time_base.num << "/" << this->codec_ctx->time_base.den << "\n";
+    // std::cout << "Input PTS: " << frame->pts << ", Output PTS: " << frame_rgb->pts << "\n";
+    //         << ", Output time_base: " << this->out_codec_ctx->time_base.num << "/" << this->out_codec_ctx->time_base.den << "\n";
+    #endif
+
     AVPacket* packet = av_packet_alloc();
     AVFrame* frame = av_frame_alloc();
     AVFrame* frame_rgb = av_frame_alloc();
     
-    int num_bytes = av_image_get_buffer_size(this->out_codec_ctx->pix_fmt, this->dst_width, this->dst_height, 1);
+    int num_bytes = av_image_get_buffer_size(this->dst_pix_fmt, this->dst_width, this->dst_height, 1);
     uint8_t* buffer = (uint8_t*)av_malloc(num_bytes * sizeof(uint8_t));
     if (!buffer) {
         std::cerr << "Cannot allocate buffer for frame_rgb.\n";
         return -1;
     }
-
-    av_image_fill_arrays(frame_rgb->data, frame_rgb->linesize, buffer, this->out_codec_ctx->pix_fmt, this->dst_width, this->dst_height, 1);
+    #ifdef DEBUG
+    std::cout << "alloceted data\n";
+    #endif
+    av_image_fill_arrays(frame_rgb->data, frame_rgb->linesize, buffer, this->dst_pix_fmt, this->dst_width, this->dst_height, 1);
     frame_rgb->width  = this->dst_width;
     frame_rgb->height = this->dst_height;
     frame_rgb->format = this->dst_pix_fmt;
-
-    this->openInput();
-    this->openOutput();
+    #ifdef DEBUG
+    std::cout << "av_image_fill_arrays done\n";
+    #endif
+    #ifdef DEBUG
+    std::cout << "opened input and output\n";
+    #endif
 
     int src_width = this->codecpar->width;
     int src_height = this->codecpar->height;
-    this->src_pix_fmt = this->codec_ctx->pix_fmt;
-    this->dst_pix_fmt = this->out_codec_ctx->pix_fmt;
-
+    
+    #ifdef DEBUG
+    std::cout << "params set\n";
+    #endif
     #ifdef DEBUG
     std::cout << src_width << "\n" << src_height << "\n" << this->src_pix_fmt << "\n"
     << this->dst_width << "\n" << this->dst_height << "\n" << this->dst_pix_fmt << "\n";
@@ -194,7 +253,7 @@ int FFmpegWrapper::process(){
                     // Frame transforms
                     sws_scale(sws_ctx, frame->data, frame->linesize, 0, src_height,
                         frame_rgb->data, frame_rgb->linesize);
-                    frame_rgb->pts = frame->pts;
+                        frame_rgb->pts = av_rescale_q(frame->pts, this->codec_ctx->time_base, this->out_codec_ctx->time_base);
                     // Sending frame
                     if(avcodec_send_frame(this->out_codec_ctx, frame_rgb) < 0){
                         std::cerr << "Cannot send frame from codec in output!\n";
@@ -206,6 +265,8 @@ int FFmpegWrapper::process(){
                         av_packet_free(&packet);
                         return -1;
                     }
+                    // else
+                    //     std::cout << "Frame sent\n";
 
                     AVPacket* pkt = av_packet_alloc();
                     while(avcodec_receive_packet(this->out_codec_ctx, pkt) == 0){
@@ -231,12 +292,30 @@ int FFmpegWrapper::process(){
         av_packet_unref(packet);
     }
 
+    avcodec_send_frame(this->out_codec_ctx, NULL);
+    AVPacket* pkt = av_packet_alloc();
+    while (avcodec_receive_packet(this->out_codec_ctx, pkt) == 0) {
+        pkt->stream_index = this->out_stream->index;
+        av_packet_rescale_ts(pkt, this->out_codec_ctx->time_base, this->out_stream->time_base);
+        av_interleaved_write_frame(this->out_fmt_ctx, pkt);
+        av_packet_unref(pkt);
+    }
+    av_packet_free(&pkt);
+
+    av_write_trailer(this->out_fmt_ctx);
+
     av_frame_free(&frame);
     av_frame_free(&frame_rgb);
     av_packet_free(&packet);
     avcodec_free_context(&this->codec_ctx);
     avcodec_free_context(&this->out_codec_ctx);
     avformat_close_input(&this->fmt_ctx);
+    av_free(buffer);
+    sws_freeContext(sws_ctx);
+    if (!(this->out_fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+        avio_closep(&this->out_fmt_ctx->pb);
+    }
+    avformat_free_context(this->out_fmt_ctx);
 
     // std::stringstream parseFilterSS;
     // std::string parameter;

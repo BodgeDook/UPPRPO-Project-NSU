@@ -1,4 +1,4 @@
-CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.obj: \
+CMakeFiles/render.dir/operationfactory.cpp.obj: \
  D:\prog\UPPRPO-Project-NSU\operationfactory.cpp \
  D:\prog\UPPRPO-Project-NSU\operationfactory.hpp \
  C:/mingw64/include/c++/13.1.0/string_view \

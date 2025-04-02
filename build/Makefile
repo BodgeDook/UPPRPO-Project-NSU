@@ -116,24 +116,24 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named Test_FFmpeg
+# Target rules for targets named render
 
 # Build rule for target.
-Test_FFmpeg: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 Test_FFmpeg
-.PHONY : Test_FFmpeg
+render: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 render
+.PHONY : render
 
 # fast build rule for target.
-Test_FFmpeg/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/build
-.PHONY : Test_FFmpeg/fast
+render/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/build
+.PHONY : render/fast
 
 ffmpegwrapper.obj: ffmpegwrapper.cpp.obj
 .PHONY : ffmpegwrapper.obj
 
 # target to build an object file
 ffmpegwrapper.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/ffmpegwrapper.cpp.obj
 .PHONY : ffmpegwrapper.cpp.obj
 
 ffmpegwrapper.i: ffmpegwrapper.cpp.i
@@ -141,7 +141,7 @@ ffmpegwrapper.i: ffmpegwrapper.cpp.i
 
 # target to preprocess a source file
 ffmpegwrapper.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/ffmpegwrapper.cpp.i
 .PHONY : ffmpegwrapper.cpp.i
 
 ffmpegwrapper.s: ffmpegwrapper.cpp.s
@@ -149,7 +149,7 @@ ffmpegwrapper.s: ffmpegwrapper.cpp.s
 
 # target to generate assembly for a file
 ffmpegwrapper.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/ffmpegwrapper.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/ffmpegwrapper.cpp.s
 .PHONY : ffmpegwrapper.cpp.s
 
 main.obj: main.cpp.obj
@@ -157,7 +157,7 @@ main.obj: main.cpp.obj
 
 # target to build an object file
 main.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/main.cpp.obj
 .PHONY : main.cpp.obj
 
 main.i: main.cpp.i
@@ -165,7 +165,7 @@ main.i: main.cpp.i
 
 # target to preprocess a source file
 main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/main.cpp.i
 .PHONY : main.cpp.i
 
 main.s: main.cpp.s
@@ -173,7 +173,7 @@ main.s: main.cpp.s
 
 # target to generate assembly for a file
 main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/main.cpp.s
 .PHONY : main.cpp.s
 
 operationfactory.obj: operationfactory.cpp.obj
@@ -181,7 +181,7 @@ operationfactory.obj: operationfactory.cpp.obj
 
 # target to build an object file
 operationfactory.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/operationfactory.cpp.obj
 .PHONY : operationfactory.cpp.obj
 
 operationfactory.i: operationfactory.cpp.i
@@ -189,7 +189,7 @@ operationfactory.i: operationfactory.cpp.i
 
 # target to preprocess a source file
 operationfactory.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/operationfactory.cpp.i
 .PHONY : operationfactory.cpp.i
 
 operationfactory.s: operationfactory.cpp.s
@@ -197,7 +197,7 @@ operationfactory.s: operationfactory.cpp.s
 
 # target to generate assembly for a file
 operationfactory.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/operationfactory.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/operationfactory.cpp.s
 .PHONY : operationfactory.cpp.s
 
 videoeditor.obj: videoeditor.cpp.obj
@@ -205,7 +205,7 @@ videoeditor.obj: videoeditor.cpp.obj
 
 # target to build an object file
 videoeditor.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videoeditor.cpp.obj
 .PHONY : videoeditor.cpp.obj
 
 videoeditor.i: videoeditor.cpp.i
@@ -213,7 +213,7 @@ videoeditor.i: videoeditor.cpp.i
 
 # target to preprocess a source file
 videoeditor.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videoeditor.cpp.i
 .PHONY : videoeditor.cpp.i
 
 videoeditor.s: videoeditor.cpp.s
@@ -221,7 +221,7 @@ videoeditor.s: videoeditor.cpp.s
 
 # target to generate assembly for a file
 videoeditor.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videoeditor.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videoeditor.cpp.s
 .PHONY : videoeditor.cpp.s
 
 videooperations.obj: videooperations.cpp.obj
@@ -229,7 +229,7 @@ videooperations.obj: videooperations.cpp.obj
 
 # target to build an object file
 videooperations.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.obj
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.obj
 .PHONY : videooperations.cpp.obj
 
 videooperations.i: videooperations.cpp.i
@@ -237,7 +237,7 @@ videooperations.i: videooperations.cpp.i
 
 # target to preprocess a source file
 videooperations.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.i
 .PHONY : videooperations.cpp.i
 
 videooperations.s: videooperations.cpp.s
@@ -245,7 +245,7 @@ videooperations.s: videooperations.cpp.s
 
 # target to generate assembly for a file
 videooperations.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\Test_FFmpeg.dir\build.make CMakeFiles/Test_FFmpeg.dir/videooperations.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.s
 .PHONY : videooperations.cpp.s
 
 # Help Target
@@ -256,7 +256,7 @@ help:
 	@echo ... depend
 	@echo ... edit_cache
 	@echo ... rebuild_cache
-	@echo ... Test_FFmpeg
+	@echo ... render
 	@echo ... ffmpegwrapper.obj
 	@echo ... ffmpegwrapper.i
 	@echo ... ffmpegwrapper.s

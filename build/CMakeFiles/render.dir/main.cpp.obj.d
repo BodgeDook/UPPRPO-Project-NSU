@@ -1,5 +1,4 @@
-CMakeFiles/Test_FFmpeg.dir/main.cpp.obj: \
- D:\prog\UPPRPO-Project-NSU\main.cpp \
+CMakeFiles/render.dir/main.cpp.obj: D:\prog\UPPRPO-Project-NSU\main.cpp \
  D:\prog\UPPRPO-Project-NSU\videoeditor.hpp \
  C:/mingw64/include/c++/13.1.0/iostream \
  C:/mingw64/include/c++/13.1.0/bits/requires_hosted.h \
