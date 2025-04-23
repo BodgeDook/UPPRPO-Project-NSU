@@ -1,6 +1,7 @@
 render/*.mp4
 .vscode
 render/test_ffmpeg.cpp
+render/build
 .DS_Store
 video_venv
 myTests
