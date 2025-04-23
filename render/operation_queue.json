@@ -1,0 +1,16 @@
+{
+    "Operations": [
+        {  
+        "type": "resize",
+        "width": 1920,
+        "height": 1980
+        },
+        {
+            "type": "crop",
+            "left": 100,
+            "right": 200,
+            "top": 300,
+            "bottom": 400
+        }
+    ]
+}
