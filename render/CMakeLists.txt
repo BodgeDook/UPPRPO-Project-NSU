@@ -27,3 +27,4 @@ target_include_directories(render PRIVATE ${CMAKE_SOURCE_DIR}/rapidjson/include)
 add_custom_command(TARGET render POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/ffmpeg/bin" "${CMAKE_BINARY_DIR}")
+    

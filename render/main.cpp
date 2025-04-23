@@ -29,8 +29,7 @@ int main(int argc, char** argv){
         std::cerr << "No parameters specified";
 
     else if(cmdOptionExists(argv, argv + argc, "-help")){
-        std::cout << "Usage: -input <input filename> -output <output filename> -codec <Codec to encode>\
-            -res <output resolution>\n";
+        std::cout << "Usage: -input <input filename> -output <output filename> -codec <Codec to encode> -res <output resolution>\n";
         std::cout << "<input filename>, <output filename>:\n\tSupported formats:\n\t\t.mp4\n";
         std::cout << "<Codec to encode>:\n\tSupported codecs:\n\t\tH.264\n";
         std::cout << "<output resolution>, e.g. 1920x1080\n";
