@@ -8,6 +8,9 @@ extern "C" {
     #include <libswscale/swscale.h>
     #include <libavcodec/avcodec.h>
     #include <libavutil/imgutils.h>
+    #include <libavfilter/avfilter.h>
+    #include <libavfilter/buffersrc.h>
+    #include <libavfilter/buffersink.h>
 }
 
 class FFmpegWrapper{
@@ -18,6 +21,7 @@ public:
     int openOutput();
     void addFilter(const std::string_view filter);
     int process();
+    int initFilters();
 
 private:
     std::ifstream inputFile;
@@ -25,8 +29,12 @@ private:
     std::string inputFilename;
     std::string outputFilename;
     std::vector<std::string> filters;
+    std::string allFiltersStr;
     std::string outputCodecStr;
     int dst_width, dst_height;
+    AVFilterGraph* filter_graph;           // Граф фильтров
+    AVFilterContext* buffer_src_ctx;       // Источник фильтров (buffersrc)
+    AVFilterContext* buffer_sink_ctx;      // Приемник фильтров (buffersink)
 
     // FFmpeg classfields
     AVFormatContext* fmt_ctx;

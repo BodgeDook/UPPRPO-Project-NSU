@@ -1,16 +1,38 @@
 {
     "Operations": [
-        {  
-        "type": "resize",
-        "width": 1920,
-        "height": 1980
-        },
         {
             "type": "crop",
-            "left": 100,
-            "right": 200,
-            "top": 300,
-            "bottom": 400
+            "x": 320,
+            "y": 240,
+            "w": 100,
+            "h": 100
+        },
+        {
+            "type": "rotate",
+            "angle": 1.5708
+        },
+        {
+            "type": "boxblur",
+            "x": 5,
+            "y": 5
+        },
+        {
+            "type": "hflip"
+        },
+        {
+            "type": "vflip"
+        },
+        {
+            "type": "drawtext",
+            "text": "Sample Text",
+            "x": 10,
+            "y": 50,
+            "fontsize": 12,
+            "fontcolor": "white"
+        },
+        {
+            "type": "setpts",
+            "speed": "0.5*PTS"
         }
     ]
 }

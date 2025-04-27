@@ -3,22 +3,22 @@
 
 VideoOperation::~VideoOperation() = default;
 std::string VideoOperation::getFilterString() const {
-    return "";
+    return "test123";
 }
 
 
 /*
-    ResizeOperation class, child of abstarct VideoOperation class
+    ScaleOperation class, child of abstarct VideoOperation class
     Has methods:
     1. getFilterString method that returns string representation of the operation
 */
 
 // Consturtor, gets new width and height of the video
-ResizeOperation::ResizeOperation(const int width, const int height): width(width), height(height){};
+ScaleOperation::ScaleOperation(int width, int height): width(width), height(height){};
 
 // getFilterString method that returns string representation of the operation
-std::string ResizeOperation::getFilterString() const{
-    return "resize " + std::to_string(width) + " " + std::to_string(height);
+std::string ScaleOperation::getFilterString() const{
+    return "scale=" + std::to_string(width) + ":" + std::to_string(height);
 }
 
 
@@ -29,10 +29,10 @@ std::string ResizeOperation::getFilterString() const{
 */
 
 // Consturtor, gets 4 borders of the cropped video
-CropOperation::CropOperation(const int width_left, const int width_right, const int height_top, const int height_bottom): 
-    width_left(width_left), width_right(width_right), height_top(height_top), height_bottom(height_bottom){};
+CropOperation::CropOperation(int x, int y, int w, int h): 
+    x(x), y(y), w(w), h(h){};
 
 // getFilterString method that returns string representation of the operation
 std::string CropOperation::getFilterString() const{
-    return "crop " + std::to_string(width_left) + " " + std::to_string(width_right) + " " + std::to_string(height_top) + " " + std::to_string(height_bottom);
+    return "crop=" + std::to_string(this->x) + ":" + std::to_string(this->y) + ":" + std::to_string(this->w) + ":" + std::to_string(this->h);
 }

@@ -10,9 +10,9 @@ public:
 };
 
 
-class ResizeOperation: public VideoOperation{
+class ScaleOperation: public VideoOperation{
 public:
-    ResizeOperation(const int width, const int height);
+    ScaleOperation(const int width, const int height);
     std::string getFilterString() const override;
 
 private:
@@ -22,9 +22,9 @@ private:
 
 class CropOperation: public VideoOperation{
 public:
-    CropOperation(const int width_left, const int width_right, const int height_top, const int height_bottom);
+    CropOperation(const int x, const int y, const int w, const int h);
     std::string getFilterString() const override;
 
 private:
-    int width_left, width_right, height_top, height_bottom;
+    int x, y, w, h;
 };

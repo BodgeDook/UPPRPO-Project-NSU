@@ -14,7 +14,23 @@ add_compile_definitions(DEBUG)
 
 set(FFMPEG_DIR "${CMAKE_SOURCE_DIR}/ffmpeg")
 set(FFMPEG_INCLUDE_DIRS "${FFMPEG_DIR}/include")
-set(FFMPEG_LIBRARIES "${FFMPEG_DIR}/lib/avcodec.lib" "${FFMPEG_DIR}/lib/avformat.lib" "${FFMPEG_DIR}/lib/avutil.lib" "${FFMPEG_DIR}/lib/swscale.lib")
+set(FFMPEG_LIBRARIES 
+    "${FFMPEG_DIR}/lib/avfilter.lib"
+    "${FFMPEG_DIR}/lib/avformat.lib"
+    "${FFMPEG_DIR}/lib/avcodec.lib"
+    "${FFMPEG_DIR}/lib/swscale.lib"
+    "${FFMPEG_DIR}/lib/avutil.lib"
+)
+
+# Проверка существования библиотек и заголовков
+foreach(lib ${FFMPEG_LIBRARIES})
+    if(NOT EXISTS ${lib})
+        message(FATAL_ERROR "Library not found: ${lib}")
+    endif()
+endforeach()
+if(NOT EXISTS "${FFMPEG_INCLUDE_DIRS}/libavfilter/buffersrc.h")
+    message(FATAL_ERROR "Header file libavfilter/buffersrc.h not found")
+endif()
 
 add_executable(render main.cpp ffmpegwrapper.cpp operationfactory.cpp videoeditor.cpp videooperations.cpp)
 
@@ -27,4 +43,3 @@ target_include_directories(render PRIVATE ${CMAKE_SOURCE_DIR}/rapidjson/include)
 add_custom_command(TARGET render POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     "${CMAKE_SOURCE_DIR}/ffmpeg/bin" "${CMAKE_BINARY_DIR}")
-    

@@ -75,15 +75,7 @@ CMakeFiles/render.dir/operationfactory.cpp.obj: \
  C:/mingw64/x86_64-w64-mingw32/include/crtdefs.h \
  C:/mingw64/include/c++/13.1.0/bits/uses_allocator.h \
  C:/mingw64/include/c++/13.1.0/bits/uses_allocator_args.h \
- C:/mingw64/include/c++/13.1.0/tuple \
- D:\prog\UPPRPO-Project-NSU\render\videooperations.hpp \
- C:/mingw64/include/c++/13.1.0/iostream \
- C:/mingw64/include/c++/13.1.0/ostream C:/mingw64/include/c++/13.1.0/ios \
- C:/mingw64/include/c++/13.1.0/exception \
- C:/mingw64/include/c++/13.1.0/bits/exception_ptr.h \
- C:/mingw64/include/c++/13.1.0/bits/cxxabi_init_exception.h \
- C:/mingw64/include/c++/13.1.0/typeinfo \
- C:/mingw64/include/c++/13.1.0/bits/nested_exception.h \
+ C:/mingw64/include/c++/13.1.0/tuple C:/mingw64/include/c++/13.1.0/string \
  C:/mingw64/include/c++/13.1.0/bits/localefwd.h \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/c++locale.h \
  C:/mingw64/include/c++/13.1.0/clocale \
@@ -92,18 +84,39 @@ CMakeFiles/render.dir/operationfactory.cpp.obj: \
  C:/mingw64/x86_64-w64-mingw32/include/sec_api/stdio_s.h \
  C:/mingw64/include/c++/13.1.0/cctype \
  C:/mingw64/x86_64-w64-mingw32/include/ctype.h \
+ C:/mingw64/include/c++/13.1.0/bits/basic_string.h \
+ C:/mingw64/include/c++/13.1.0/ext/string_conversions.h \
+ C:/mingw64/include/c++/13.1.0/cstdlib \
+ C:/mingw64/x86_64-w64-mingw32/include/stdlib.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/limits.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/syslimits.h \
+ C:/mingw64/x86_64-w64-mingw32/include/limits.h \
+ C:/mingw64/x86_64-w64-mingw32/include/sec_api/stdlib_s.h \
+ C:/mingw64/include/c++/13.1.0/stdlib.h \
+ C:/mingw64/x86_64-w64-mingw32/include/malloc.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/mm_malloc.h \
+ C:/mingw64/x86_64-w64-mingw32/include/errno.h \
+ C:/mingw64/include/c++/13.1.0/bits/std_abs.h \
+ C:/mingw64/include/c++/13.1.0/cstdio \
+ C:/mingw64/include/c++/13.1.0/cerrno \
+ C:/mingw64/include/c++/13.1.0/bits/charconv.h \
+ C:/mingw64/include/c++/13.1.0/bits/basic_string.tcc \
+ D:\prog\UPPRPO-Project-NSU\render\videooperations.hpp \
+ C:/mingw64/include/c++/13.1.0/iostream \
+ C:/mingw64/include/c++/13.1.0/ostream C:/mingw64/include/c++/13.1.0/ios \
+ C:/mingw64/include/c++/13.1.0/exception \
+ C:/mingw64/include/c++/13.1.0/bits/exception_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/cxxabi_init_exception.h \
+ C:/mingw64/include/c++/13.1.0/typeinfo \
+ C:/mingw64/include/c++/13.1.0/bits/nested_exception.h \
  C:/mingw64/include/c++/13.1.0/bits/ios_base.h \
  C:/mingw64/include/c++/13.1.0/ext/atomicity.h \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/gthr.h \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/gthr-default.h \
  C:/mingw64/x86_64-w64-mingw32/include/pthread.h \
- C:/mingw64/x86_64-w64-mingw32/include/errno.h \
  C:/mingw64/x86_64-w64-mingw32/include/sys/types.h \
  C:/mingw64/x86_64-w64-mingw32/include/process.h \
  C:/mingw64/x86_64-w64-mingw32/include/corecrt_startup.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/limits.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/syslimits.h \
- C:/mingw64/x86_64-w64-mingw32/include/limits.h \
  C:/mingw64/x86_64-w64-mingw32/include/signal.h \
  C:/mingw64/x86_64-w64-mingw32/include/pthread_signal.h \
  C:/mingw64/x86_64-w64-mingw32/include/time.h \
@@ -115,20 +128,6 @@ CMakeFiles/render.dir/operationfactory.cpp.obj: \
  C:/mingw64/x86_64-w64-mingw32/include/pthread_unistd.h \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/atomic_word.h \
  C:/mingw64/include/c++/13.1.0/bits/locale_classes.h \
- C:/mingw64/include/c++/13.1.0/string \
- C:/mingw64/include/c++/13.1.0/bits/basic_string.h \
- C:/mingw64/include/c++/13.1.0/ext/string_conversions.h \
- C:/mingw64/include/c++/13.1.0/cstdlib \
- C:/mingw64/x86_64-w64-mingw32/include/stdlib.h \
- C:/mingw64/x86_64-w64-mingw32/include/sec_api/stdlib_s.h \
- C:/mingw64/include/c++/13.1.0/stdlib.h \
- C:/mingw64/x86_64-w64-mingw32/include/malloc.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/mm_malloc.h \
- C:/mingw64/include/c++/13.1.0/bits/std_abs.h \
- C:/mingw64/include/c++/13.1.0/cstdio \
- C:/mingw64/include/c++/13.1.0/cerrno \
- C:/mingw64/include/c++/13.1.0/bits/charconv.h \
- C:/mingw64/include/c++/13.1.0/bits/basic_string.tcc \
  C:/mingw64/include/c++/13.1.0/bits/locale_classes.tcc \
  C:/mingw64/include/c++/13.1.0/system_error \
  C:/mingw64/include/c++/13.1.0/x86_64-w64-mingw32/bits/error_constants.h \

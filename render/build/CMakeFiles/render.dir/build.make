@@ -160,10 +160,11 @@ render.exe: CMakeFiles/render.dir/operationfactory.cpp.obj
 render.exe: CMakeFiles/render.dir/videoeditor.cpp.obj
 render.exe: CMakeFiles/render.dir/videooperations.cpp.obj
 render.exe: CMakeFiles/render.dir/build.make
-render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avcodec.lib
+render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avfilter.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avformat.lib
-render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avutil.lib
+render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avcodec.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/swscale.lib
+render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avutil.lib
 render.exe: CMakeFiles/render.dir/linkLibs.rsp
 render.exe: CMakeFiles/render.dir/objects1.rsp
 render.exe: CMakeFiles/render.dir/link.txt

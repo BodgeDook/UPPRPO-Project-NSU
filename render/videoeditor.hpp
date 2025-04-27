@@ -21,5 +21,5 @@ private:
     std::string outputFilePath;
     std::string outputCodec;
     int dst_width, dst_height;
-    std::vector<VideoOperation*> videoOperations;
+    std::vector<std::string> videoOperations;
 };

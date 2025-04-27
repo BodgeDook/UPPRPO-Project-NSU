@@ -15,6 +15,7 @@ int VideoEditor::loadOperations(const std::string_view jsonFilePath){
 
     OperationFactory factory(jsonFilePath_str.c_str());
     factory.createOperationsList();
+
     this->videoOperations = factory.getOperationList();
 
     #ifdef DEBUG
@@ -29,8 +30,11 @@ int VideoEditor::render(){
         std::cout << "Rendering..." << std::endl;
     #endif
     FFmpegWrapper wrapper(this->inputFilePath, this->outputFilePath, this->outputCodec, this->dst_width, this->dst_height);
-    for(VideoOperation* filter: this->videoOperations)
-        wrapper.addFilter(filter->getFilterString());
+    this->videoOperations.emplace_back("scale=" + std::to_string(this->dst_width) + ":" + std::to_string(this->dst_height));
+    for(std::string filter: this->videoOperations){
+        wrapper.addFilter(filter);
+        std::cout << "Adding filter " << filter << std::endl;
+    }
 
     // wrapper.openInput();
     // wrapper.openOutput();

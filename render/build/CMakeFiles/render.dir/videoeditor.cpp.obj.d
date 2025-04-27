@@ -233,4 +233,11 @@ CMakeFiles/render.dir/videoeditor.cpp.obj: \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavcodec/codec_desc.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavcodec/codec_par.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/imgutils.h \
- D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/pixdesc.h
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/pixdesc.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/avfilter.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/version_major.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/version.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/version_major.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersrc.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/avfilter.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersink.h

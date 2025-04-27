@@ -15,7 +15,7 @@
 
 //  Constructor, gets inputFilename and outputFilename.
 FFmpegWrapper::FFmpegWrapper(std::string_view inputFilename, std::string_view outputFilename, std::string_view outputCodec, int dst_width, int dst_height): 
-    inputFilename(inputFilename), outputFilename(outputFilename), outputCodecStr(outputCodec), dst_width(dst_width), dst_height(dst_height){};
+    inputFilename(inputFilename), outputFilename(outputFilename), outputCodecStr(outputCodec), dst_width(dst_width), dst_height(dst_height), allFiltersStr(""){};
 
 // openInput, opens input file
 int FFmpegWrapper::openInput(){
@@ -184,15 +184,90 @@ int FFmpegWrapper::openOutput(){
 // addFilter, adds string representation of filter into std::vector<std::string> filters
 void FFmpegWrapper::addFilter(const std::string_view filter){
     this->filters.push_back(std::string(filter));
+    this->allFiltersStr += std::string(filter);
+
 }
 
+int FFmpegWrapper::initFilters(){
+    this->filter_graph = avfilter_graph_alloc();
+    if(!this->filter_graph){
+        std::cerr << "Cannot create filter graph!\n";
+        return -1;
+    }
+
+    const AVFilter* buffersrc = avfilter_get_by_name("buffer");
+    std::ostringstream src_args;
+    src_args << "video_size=" << this->codec_ctx->width << "x" << this->codec_ctx->height
+             << ":pix_fmt=" << this->src_pix_fmt
+             << ":time_base=" << this->fmt_ctx->streams[this->video_stream_index]->time_base.num << "/"
+             << this->fmt_ctx->streams[this->video_stream_index]->time_base.den;
+    
+    if(avfilter_graph_create_filter(&this->buffer_src_ctx, buffersrc, "in", src_args.str().c_str(), NULL, this->filter_graph) < 0){
+        std::cerr << "Cannot create buffer source!\n";
+        avfilter_graph_free(&this->filter_graph);
+        return -1;
+    }
+
+    const AVFilter* buffersink = avfilter_get_by_name("buffersink");
+    if(avfilter_graph_create_filter(&this->buffer_sink_ctx, buffersink, "out", NULL, NULL, this->filter_graph) < 0){
+        std::cerr << "Cannot create buffer sink!\n";
+        avfilter_graph_free(&this->filter_graph);
+        return -1;
+    }
+
+    std::string filter_desc;
+    for(const auto& filter: this->filters){
+        if(!filter_desc.empty())
+            filter_desc += ",";
+        filter_desc += filter;
+        #ifdef DEBUG
+        std::cout << "Filter: " << filter << "\n";
+        #endif
+    }
+    if(filter_desc.empty())
+        filter_desc = "null";
+
+    AVFilterInOut* outputs = avfilter_inout_alloc();
+    AVFilterInOut* inputs = avfilter_inout_alloc();
+    outputs->name = av_strdup("in");
+    outputs->filter_ctx = this->buffer_src_ctx;
+    outputs->pad_idx = 0;
+    outputs->next = NULL;
+    inputs->name = av_strdup("out");
+    inputs->filter_ctx = this->buffer_sink_ctx;
+    inputs->pad_idx = 0;
+    inputs->next = NULL;
+
+    if(avfilter_graph_parse_ptr(filter_graph, filter_desc.c_str(), &inputs, &outputs, NULL) < 0){
+        std::cerr << "Cannot parse filter graph!\n";
+        avfilter_inout_free(&inputs);
+        avfilter_inout_free(&outputs);
+        avfilter_graph_free(&this->filter_graph);
+        return -1;
+    }
+    avfilter_inout_free(&inputs);
+    avfilter_inout_free(&outputs);
+
+    if(avfilter_graph_config(filter_graph, NULL) < 0){
+        std::cerr << "Cannot configure filter graph!\n";
+        avfilter_graph_free(&this->filter_graph);
+        return -1;
+    }
+
+    return 0;
+}
 
 // process, applies all filters
 int FFmpegWrapper::process(){
     #ifdef DEBUG
     std::cout << "called process method\n";
     #endif
+
     this->openInput();
+    if(this->initFilters()){
+        std::cerr << "Error while initializing filters!\n";
+        return -1;
+    }    
     this->openOutput();
 
     #ifdef DEBUG
@@ -251,41 +326,48 @@ int FFmpegWrapper::process(){
             if(avcodec_send_packet(this->codec_ctx, packet) == 0){
                 while(avcodec_receive_frame(this->codec_ctx, frame) == 0){
                     // Frame transforms
-                    sws_scale(sws_ctx, frame->data, frame->linesize, 0, src_height,
-                        frame_rgb->data, frame_rgb->linesize);
-                        frame_rgb->pts = av_rescale_q(frame->pts, this->codec_ctx->time_base, this->out_codec_ctx->time_base);
-                    // Sending frame
-                    if(avcodec_send_frame(this->out_codec_ctx, frame_rgb) < 0){
-                        std::cerr << "Cannot send frame from codec in output!\n";
-                        avcodec_free_context(&this->codec_ctx);
-                        avcodec_free_context(&this->out_codec_ctx);
-                        avformat_close_input(&this->fmt_ctx);
-                        av_frame_free(&frame);
-                        av_frame_free(&frame_rgb);
-                        av_packet_free(&packet);
-                        return -1;
+                    if (av_buffersrc_write_frame(buffer_src_ctx, frame) < 0) {
+                        std::cerr << "Ошибка при отправке кадра в граф фильтров!\n";
+                        break;
                     }
-                    // else
-                    //     std::cout << "Frame sent\n";
+                    
+                    while (av_buffersink_get_frame(buffer_sink_ctx, frame_rgb) >= 0) {
+                        frame_rgb->pts = av_rescale_q(frame->pts, this->codec_ctx->time_base, this->out_codec_ctx->time_base);
 
-                    AVPacket* pkt = av_packet_alloc();
-                    while(avcodec_receive_packet(this->out_codec_ctx, pkt) == 0){
-                        pkt->stream_index = this->out_stream->index;
-                        av_packet_rescale_ts(pkt, this->out_codec_ctx->time_base, this->out_stream->time_base);
-                        if(av_interleaved_write_frame(this->out_fmt_ctx, pkt) < 0){
-                            std::cerr << "Cannot write frame!\n";
+                        // Sending frame
+                        if(avcodec_send_frame(this->out_codec_ctx, frame_rgb) < 0){
+                            std::cerr << "Cannot send frame from codec in output!\n";
                             avcodec_free_context(&this->codec_ctx);
                             avcodec_free_context(&this->out_codec_ctx);
                             avformat_close_input(&this->fmt_ctx);
                             av_frame_free(&frame);
                             av_frame_free(&frame_rgb);
-                            av_packet_free(&pkt);
                             av_packet_free(&packet);
                             return -1;
                         }
-                        av_packet_unref(pkt);
-                    }   
-                    av_frame_unref(frame);
+
+
+                        AVPacket* pkt = av_packet_alloc();
+                        while(avcodec_receive_packet(this->out_codec_ctx, pkt) == 0){
+                            pkt->stream_index = this->out_stream->index;
+                            av_packet_rescale_ts(pkt, this->out_codec_ctx->time_base, this->out_stream->time_base);
+                            if(av_interleaved_write_frame(this->out_fmt_ctx, pkt) < 0){
+                                std::cerr << "Cannot write frame!\n";
+                                avcodec_free_context(&this->codec_ctx);
+                                avcodec_free_context(&this->out_codec_ctx);
+                                avformat_close_input(&this->fmt_ctx);
+                                av_frame_free(&frame);
+                                av_frame_free(&frame_rgb);
+                                av_packet_free(&pkt);
+                                av_packet_free(&packet);
+                                return -1;
+                            }
+                            av_packet_unref(pkt);
+                        }
+                        av_packet_free(&pkt);
+                        av_frame_unref(frame);
+                    }
+                    av_frame_unref(frame_rgb);
                 }
             }
         }

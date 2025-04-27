@@ -43,24 +43,50 @@ void OperationFactory::createOperationsList(){
         auto operations = doc["Operations"].GetArray();
         for(auto& operation: operations){
             std::string operationName = operation["type"].GetString();
-            if(operationName == "resize"){
+            if(operationName == "scale"){
                 int width = operation["width"].GetInt();
                 int height = operation["height"].GetInt();
 
-                ResizeOperation resizeOp(width, height);
-
-                this->videoOperations.push_back(&resizeOp);
+                this->videoOperations.push_back("scale=" + std::to_string(width) + ":" + std::to_string(height));
             }
             else if(operationName == "crop"){
-                int left_border = operation["left"].GetInt();
-                int right_border = operation["right"].GetInt();
-                int top_border = operation["top"].GetInt();
-                int bottom_border = operation["bottom"].GetInt();
+                int x = operation["x"].GetInt();
+                int y = operation["y"].GetInt();
+                int w = operation["w"].GetInt();
+                int h = operation["h"].GetInt();
 
-                CropOperation cropOp(left_border, right_border, top_border, bottom_border);
+                this->videoOperations.push_back("crop=" + std::to_string(x) + ":" + std::to_string(y) + ":" + std::to_string(w) + ":" + std::to_string(h));
 
-                this->videoOperations.push_back(&cropOp);
-
+            }
+            else if(operationName == "rotate"){
+                int angle = operation["angle"].GetFloat();
+                this->videoOperations.push_back("rotate=" + std::to_string(angle));
+            }
+            else if(operationName == "boxblur"){
+                int x = operation["x"].GetInt();
+                int y = operation["y"].GetInt();
+                this->videoOperations.push_back("boxblur=" + std::to_string(x) + ":" + std::to_string(y));
+            }
+            else if(operationName == "hflip"){
+                this->videoOperations.push_back("hflip");
+            }
+            else if(operationName == "vflip"){
+                this->videoOperations.push_back("vflip");
+            }
+            else if(operationName == "drawtext"){
+                std::string text = operation["text"].GetString();
+                int x = operation["x"].GetInt();
+                int y = operation["y"].GetInt();
+                int fontSize = operation["fontsize"].GetInt();
+                std::string fontColor = operation["fontcolor"].GetString();
+                this->videoOperations.push_back("drawtext=text='" + text + "':x=" + std::to_string(x) + ":y=" + std::to_string(y) + ":fontsize=" + std::to_string(fontSize) + ":fontcolor=" + fontColor);
+            }
+            else if(operationName == "setpts"){
+                std::string pts = operation["speed"].GetString();
+                this->videoOperations.push_back("setpts=" + pts);
+            }
+            else{
+                std::cerr << "Error: unknown operation type " << operationName << std::endl;
             }
         }
     }
@@ -69,6 +95,6 @@ void OperationFactory::createOperationsList(){
     #endif
 }
 
-std::vector<VideoOperation*> OperationFactory::getOperationList(){
+std::vector<std::string> OperationFactory::getOperationList(){
     return this->videoOperations;
 }
