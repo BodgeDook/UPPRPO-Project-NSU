@@ -10,10 +10,9 @@ from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtGui import QDesktopServices
 
-# importing styles:
 from styles import (apply_button_style, apply_disabled_button_style, apply_label_style,
-                    apply_title_style, apply_link_style, apply_window_style)
-from settings_window import SettingsWindow  # for Account Management
+                    apply_title_style, apply_link_style, apply_window_style, apply_welcome_window_style, theme_manager)
+from settings_window import SettingsWindow
 
 class VideoEditor(QMainWindow):
     def __init__(self):
@@ -21,10 +20,12 @@ class VideoEditor(QMainWindow):
         self.initUI()
         self.setupUndoRedo()
         self.setupAutosave()
+        theme_manager.theme_changed.connect(self.update_theme)
 
     def initUI(self):
         self.setWindowTitle('PyVideo Editor')
         self.setGeometry(0, 0, 1920, 1080)
+        apply_window_style(self)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
@@ -69,13 +70,16 @@ class VideoEditor(QMainWindow):
         self.aspect_ratio_combo = QComboBox()
         self.aspect_ratio_combo.addItems(["16:9", "4:3", "1:1", "9:16", "Custom"])
         size_layout.addWidget(QLabel("Aspect Ratio:"))
+        apply_label_style(size_layout.itemAt(size_layout.count()-1).widget())
         size_layout.addWidget(self.aspect_ratio_combo)
 
         self.rotation_buttons = QHBoxLayout()
         for angle in [0, 90, 180, 270]:
             btn = QPushButton(f"{angle}°")
+            apply_button_style(btn)
             self.rotation_buttons.addWidget(btn)
         size_layout.addWidget(QLabel("Rotation:"))
+        apply_label_style(size_layout.itemAt(size_layout.count()-1).widget())
         size_layout.addLayout(self.rotation_buttons)
         size_group.setLayout(size_layout)
         layout.addWidget(size_group)
@@ -102,6 +106,7 @@ class VideoEditor(QMainWindow):
         
         effects_layout.addWidget(self.background_removal)
         effects_layout.addWidget(QLabel("Video Filters:"))
+        apply_label_style(effects_layout.itemAt(effects_layout.count()-1).widget())
         effects_layout.addWidget(self.filters_combo)
         effects_group.setLayout(effects_layout)
         layout.addWidget(effects_group)
@@ -143,6 +148,7 @@ class VideoEditor(QMainWindow):
         
         noise_layout.addWidget(self.noise_reduction)
         noise_layout.addWidget(QLabel("Threshold:"))
+        apply_label_style(noise_layout.itemAt(noise_layout.count()-1).widget())
         noise_layout.addWidget(self.noise_threshold)
         noise_group.setLayout(noise_layout)
         layout.addWidget(noise_group)
@@ -153,7 +159,9 @@ class VideoEditor(QMainWindow):
     def create_slider(self, label, min_val, max_val):
         container = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(QLabel(label))
+        lbl = QLabel(label)
+        apply_label_style(lbl)
+        layout.addWidget(lbl)
         slider = QSlider(Qt.Horizontal)
         slider.setRange(min_val, max_val)
         slider.setValue((max_val + min_val) // 2)
@@ -207,25 +215,32 @@ class VideoEditor(QMainWindow):
     def autosave(self):
         print("Autosaving project...")
 
+    def update_theme(self, theme):
+        apply_window_style(self)
+        for widget in self.findChildren(QPushButton):
+            apply_button_style(widget)
+        for widget in self.findChildren(QLabel):
+            apply_label_style(widget)
+        self.update()
+
 class WelcomeWindowUnsigned(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        theme_manager.theme_changed.connect(self.update_theme)
 
     def initUI(self):
         self.setWindowTitle('uMovie - Welcome')
         self.setGeometry(300, 300, 800, 600)
-        apply_window_style(self)
+        apply_welcome_window_style(self)
 
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
 
-        # Заголовок
         title_label = QLabel("uMovie")
         apply_title_style(title_label)
         main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
-        # Кнопки
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(20)
 
@@ -246,13 +261,11 @@ class WelcomeWindowUnsigned(QWidget):
 
         main_layout.addLayout(buttons_layout)
 
-        # Ссылка "Why register?"
         why_register_btn = QPushButton("Why register?")
         apply_link_style(why_register_btn)
         why_register_btn.clicked.connect(self.open_why_register)
         main_layout.addWidget(why_register_btn, alignment=Qt.AlignCenter)
 
-        # Таблица Recent
         recent_label = QLabel("Recent")
         apply_label_style(recent_label)
         main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
@@ -262,7 +275,6 @@ class WelcomeWindowUnsigned(QWidget):
         recent_table.setFixedSize(300, 150)
         recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # Захардкодим данные
         recent_data = [
             ("project 4", "12:34", "Yesterday"),
             ("project 3", "23:32", "Monday"),
@@ -291,32 +303,47 @@ class WelcomeWindowUnsigned(QWidget):
             print(f"Selected folder: {folder_path}")
 
     def open_login_register(self):
-        from auth_window import AuthView, AuthViewModel, AuthModel  # Отложенный импорт
+        from auth_window import AuthView, AuthViewModel, AuthModel
         self.auth_window = AuthView(AuthViewModel(AuthModel()))
         self.auth_window.show()
 
     def open_why_register(self):
         QDesktopServices.openUrl(QUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
 
+    def update_theme(self, theme):
+        apply_welcome_window_style(self)
+        for widget in self.findChildren(QPushButton):
+            if widget.text() == "Login/Register":
+                apply_disabled_button_style(widget)
+            elif widget.text() == "Why register?":
+                apply_link_style(widget)
+            else:
+                apply_button_style(widget)
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "uMovie":
+                apply_title_style(widget)
+            else:
+                apply_label_style(widget)
+        self.update()
+
 class WelcomeWindowSigned(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        theme_manager.theme_changed.connect(self.update_theme)
 
     def initUI(self):
         self.setWindowTitle('uMovie - Welcome')
         self.setGeometry(300, 300, 800, 600)
-        apply_window_style(self)
+        apply_welcome_window_style(self)
 
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
 
-        # Main Title
         title_label = QLabel("uMovie")
         apply_title_style(title_label)
         main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
-        # Buttons
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(20)
 
@@ -337,7 +364,6 @@ class WelcomeWindowSigned(QWidget):
 
         main_layout.addLayout(buttons_layout)
 
-        # Recent Table
         recent_label = QLabel("Recent")
         apply_label_style(recent_label)
         main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
@@ -347,7 +373,6 @@ class WelcomeWindowSigned(QWidget):
         recent_table.setFixedSize(300, 150)
         recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # For example:
         recent_data = [
             ("project 4", "12:34", "Yesterday"),
             ("project 3", "23:32", "Monday"),
@@ -379,10 +404,20 @@ class WelcomeWindowSigned(QWidget):
         self.settings_window = SettingsWindow(initial_section="account")
         self.settings_window.show()
 
+    def update_theme(self, theme):
+        apply_welcome_window_style(self)
+        for widget in self.findChildren(QPushButton):
+            apply_button_style(widget)
+        for widget in self.findChildren(QLabel):
+            if widget.text() == "uMovie":
+                apply_title_style(widget)
+            else:
+                apply_label_style(widget)
+        self.update()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     print("Application initialized")
-    # for a test: change is_signed_in on True/False to switch between two windows
     is_signed_in = True
     if is_signed_in:
         welcome_window = WelcomeWindowSigned()

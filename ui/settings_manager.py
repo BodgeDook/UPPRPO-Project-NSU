@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QCo
 from PyQt5.QtCore import Qt
 
 from styles import apply_welcome_window_style, apply_button_style, apply_label_style, apply_title_style, apply_disabled_button_style, theme_manager
+from settings_manager import settings_manager
 
 from auth_window import PasswordLevel
 import re
@@ -103,6 +104,8 @@ class AppearanceView(QWidget):
 
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Light", "Dark"])
+        current_theme = theme_manager.get_theme()
+        self.theme_combo.setCurrentText(current_theme.capitalize())  # Устанавливаем текущую тему
         layout.addWidget(self.theme_combo)
 
         apply_btn = QPushButton("Apply")
