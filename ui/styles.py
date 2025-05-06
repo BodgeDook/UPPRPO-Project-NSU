@@ -1,12 +1,14 @@
 from PyQt5.QtCore import QObject, pyqtSignal
+from settings_manager import settings_manager
 
 class ThemeManager(QObject):
     theme_changed = pyqtSignal(str)
-    _current_theme = "light"
+    _current_theme = settings_manager.get_setting("theme", "light")  # download the theme from the json file
 
     def set_theme(self, theme):
         if theme != self._current_theme:
             self._current_theme = theme
+            settings_manager.set_setting("theme", theme)  # Saving the the theme into a json file
             self.theme_changed.emit(theme)
 
     def get_theme(self):

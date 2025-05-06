@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QCo
 from PyQt5.QtCore import Qt
 
 from styles import apply_welcome_window_style, apply_button_style, apply_label_style, apply_title_style, apply_disabled_button_style, theme_manager
+from settings_manager import settings_manager
 
 from auth_window import PasswordLevel
 import re
@@ -71,15 +72,13 @@ class SettingsWindow(QWidget):
     def update_theme(self, theme):
         apply_welcome_window_style(self)
         
-        # Обновляем стили кнопок навигации
         current_index = self.stacked_widget.currentIndex()
         for section, info in self.sections.items():
             if info["index"] == current_index:
-                apply_button_style(info["button"])  # Активная кнопка
+                apply_button_style(info["button"])  # Active button
             else:
-                apply_disabled_button_style(info["button"])  # Неактивные кнопки
+                apply_disabled_button_style(info["button"])  # Inactive button
         
-        # Обновляем стили остальных кнопок и меток
         for widget in self.findChildren(QPushButton):
             if widget not in [info["button"] for info in self.sections.values()]:
                 apply_button_style(widget)
@@ -103,6 +102,8 @@ class AppearanceView(QWidget):
 
         self.theme_combo = QComboBox()
         self.theme_combo.addItems(["Light", "Dark"])
+        current_theme = theme_manager.get_theme()
+        self.theme_combo.setCurrentText(current_theme.capitalize())  # Current theme installing
         layout.addWidget(self.theme_combo)
 
         apply_btn = QPushButton("Apply")

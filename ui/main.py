@@ -418,7 +418,7 @@ class WelcomeWindowSigned(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     print("Application initialized")
-    is_signed_in = True
+    is_signed_in = True # False for new users
     if is_signed_in:
         welcome_window = WelcomeWindowSigned()
     else:

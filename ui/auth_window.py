@@ -14,7 +14,7 @@ class PasswordLevel(Enum):
     MEDIUM = 2
     HARD = 3
 
-# 📌 MODEL: Handles API communication
+# MODEL: Handles API communication
 class AuthModel(QObject):
     def register(self, email, password):
         try:
@@ -123,7 +123,7 @@ class AuthViewModel(QObject):
         else:
             self.result_signal_to_ui.emit(str(response))
 
-# 🏃‍♂️ Worker Thread for API Call (Prevents UI Freezing)
+# Worker Thread for API Call (Prevents UI Freezing)
 class AuthWorker(QThread):
     result_signal = pyqtSignal(int, dict)
 
