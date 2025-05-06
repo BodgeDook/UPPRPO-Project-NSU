@@ -13,7 +13,7 @@ from PyQt5.QtGui import QDesktopServices
 # importing styles:
 from styles import (apply_button_style, apply_disabled_button_style, apply_label_style,
                     apply_title_style, apply_link_style, apply_window_style)
-from auth_window import AuthView  # for Login/Register
+from settings_window import SettingsWindow  # for Account Management
 
 class VideoEditor(QMainWindow):
     def __init__(self):
@@ -291,7 +291,8 @@ class WelcomeWindowUnsigned(QWidget):
             print(f"Selected folder: {folder_path}")
 
     def open_login_register(self):
-        self.auth_window = AuthView()
+        from auth_window import AuthView, AuthViewModel, AuthModel  # Отложенный импорт
+        self.auth_window = AuthView(AuthViewModel(AuthModel()))
         self.auth_window.show()
 
     def open_why_register(self):
@@ -310,12 +311,12 @@ class WelcomeWindowSigned(QWidget):
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
 
-        # Заголовок
+        # Main Title
         title_label = QLabel("uMovie")
         apply_title_style(title_label)
         main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
 
-        # Кнопки
+        # Buttons
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(20)
 
@@ -330,7 +331,7 @@ class WelcomeWindowSigned(QWidget):
         buttons_layout.addWidget(open_project_btn)
 
         account_management_btn = QPushButton("Account Management")
-        apply_disabled_button_style(account_management_btn)
+        apply_button_style(account_management_btn)
         account_management_btn.clicked.connect(self.open_account_management)
         buttons_layout.addWidget(account_management_btn)
 
@@ -375,18 +376,18 @@ class WelcomeWindowSigned(QWidget):
             print(f"Selected folder: {folder_path}")
 
     def open_account_management(self):
-        print("Opening Account Management (ui/settings_window.py would be called here)")
+        self.settings_window = SettingsWindow(initial_section="account")
+        self.settings_window.show()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
+    print("Application initialized")
     # for a test: change is_signed_in on True/False to switch between two windows
-    is_signed_in = False
-
+    is_signed_in = True
     if is_signed_in:
         welcome_window = WelcomeWindowSigned()
     else:
         welcome_window = WelcomeWindowUnsigned()
-
     welcome_window.show()
+    print("Window shown, starting event loop")
     sys.exit(app.exec_())

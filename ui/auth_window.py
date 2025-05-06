@@ -1,16 +1,15 @@
 import sys
 import os
 import time
-from enum import Enum # new
-
+from enum import Enum
 import re
-import requests  # Used to communicate with FastAPI backend
+import requests
 
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QVBoxLayout, QWidget, QStackedWidget
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, QThread, QTimer
 
 # Password Constant Levels:
-class PasswordLevel(Enum): # new
+class PasswordLevel(Enum):
     EASY = 1
     MEDIUM = 2
     HARD = 3
@@ -21,12 +20,6 @@ class AuthModel(QObject):
         try:
             response = requests.post(f"http://127.0.0.1:8000/user_registration?email={email}&password={password}")
             return response.status_code, response.json()
-            # if response.status_code == 200:
-            #     return response.json() # ["message"]  # Expected: "Email exists" or "Email does not exist"
-            # elif response.status_code == 500:
-            #     return response.json()["detail"]
-            # else:
-            #     return "Server error"
         except requests.RequestException:
             return None, "Network error"
     
@@ -39,11 +32,10 @@ class AuthModel(QObject):
 
 # VIEWMODEL: Handles validation + calls the model
 class AuthViewModel(QObject):
-    result_signal_to_ui = pyqtSignal(str) # Signal to update the UI with the result;
-    state_changed = pyqtSignal()    # Signal to indicate a change in state — currently not used;
-    auth_successful = pyqtSignal()  # Signal to indicate successful login;
-    processing = pyqtSignal(bool)   # Emit True when waiting for response, False when done;
-
+    result_signal_to_ui = pyqtSignal(str)
+    state_changed = pyqtSignal()
+    auth_successful = pyqtSignal()
+    processing = pyqtSignal(bool)
 
     REGISTER = 0
     LOGIN = 1
@@ -51,7 +43,7 @@ class AuthViewModel(QObject):
     def __init__(self, model):
         super().__init__()
         self.model = model
-        self.current_state = self.REGISTER  # Default to register
+        self.current_state = self.REGISTER
         self.worker = None
 
     def switch_to_login(self):
@@ -66,119 +58,70 @@ class AuthViewModel(QObject):
         if not self.validate_email(email):
             self.result_signal_to_ui.emit("Invalid email format")
             return False
-        
         self.processing.emit(True)
         self.worker = AuthWorker(self.model, email, password, "login")
-        self.worker.result_signal.connect(self.proceess_response)
+        self.worker.result_signal.connect(self.process_response)
         self.worker.start()
 
     def register_user(self, email, password1, password2):
         if not self.validate_email(email):
             self.result_signal_to_ui.emit("Invalid email format")
             return False
-
         if not self.validate_passwords(password1, password2):
             return False
-
         self.processing.emit(True)
         self.worker = AuthWorker(self.model, email, password1, "register")
-        self.worker.result_signal.connect(self.proceess_response)
+        self.worker.result_signal.connect(self.process_response)
         self.worker.start()
 
     def validate_email(self, email):
-        return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None # regex validation
-    
+        return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
+
     def validate_passwords(self, password1, password2):
         if password1 != password2:
             self.result_signal_to_ui.emit("Passwords do not match")
             return False
-
         if not self.is_valid_password(password1):
             self.result_signal_to_ui.emit("Not a strong password")
             return False
-        
         return True
-    
-    def is_valid_password(self, password): # updated
 
-        """
-        To check:
-        
-        Args:
-            password (str): your_password
-            level (PasswordLevel): Levels of difficulty (EASY, MEDIUM, HARD).
-        
-        Returns:
-            bool: True, if valid else False
-        """
-
-        # Easy: >= 8 symbols
+    def is_valid_password(self, password, level=PasswordLevel.EASY):
         if len(password) < 8:
             return False
-
-        # Easy: if at least one letter is in lower case (a-z)
         if not re.search(r"[a-z]", password):
             return False
-
-        # Easy: if at least one letter is in upper case (A-Z)
         if not re.search(r"[A-Z]", password):
             return False
-
-        # Easy: if at least there's one letter (0-9)
         if not re.search(r"[0-9]", password):
             return False
-
-        # Easy: if at least one special symbol (for instance, !@#$%^&*()_+-=[]{}|;:,.<>?)
         if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]", password):
             return False
-
-        # Medium: no repeatable symbols
         if level.value >= PasswordLevel.MEDIUM.value:
-            # if two similiar letters are next to each other:
             for i in range(len(password) - 1):
                 if password[i] == password[i + 1]:
                     return False
-
-        # Hard: dop. checks:
         if level.value >= PasswordLevel.HARD.value:
-            # Проверка на наличие "abc123"
             if "abc123" in password.lower():
                 return False
-
-            # check for the common frases being:
-            common_phrases = [
-                "password", "qwerty", "123456", "admin", "letmein",
-                "welcome", "monkey", "dragon", "sunshine", "princess"
-            ]
-            
+            common_phrases = ["password", "qwerty", "123456", "admin", "letmein",
+                            "welcome", "monkey", "dragon", "sunshine", "princess"]
             password_lower = password.lower()
             for phrase in common_phrases:
                 if phrase in password_lower:
                     return False
-
-        # Еif all the checks are ok:
         return True
-    
-    def proceess_response(self, status_code, response):
-        self.processing.emit(False)
 
+    def process_response(self, status_code, response):
+        self.processing.emit(False)
         if os.getenv("DEVELOP_MACHINE"):
             print(status_code, response)
-        
         if status_code == 200:
             self.auth_successful.emit()
         elif status_code == 500:
             self.result_signal_to_ui.emit(str(response))
         else:
-            """
-            add response filters (instead of outputting the raw responce from the server, output a "filtered" responce)
-            example (note: not the actual responce from the server):
-                response - a json file with a message "user provided invalid email"
-                filtered_response = "Invalid email or password"
-                seld.result_signal_to_ui.emit(filtered_response)
-            """
             self.result_signal_to_ui.emit(str(response))
-
 
 # 🏃‍♂️ Worker Thread for API Call (Prevents UI Freezing)
 class AuthWorker(QThread):
@@ -189,36 +132,32 @@ class AuthWorker(QThread):
         self.model = model
         self.email = email
         self.password = password
-        self.action = action # "register" or "login"
-    
+        self.action = action
+
     def run(self):
         status_code, response = getattr(self.model, self.action)(self.email, self.password)
         self.result_signal.emit(status_code, response)
-
 
 # VIEW: Handles UI interaction
 class RegisterView(QWidget):
     def __init__(self, view_model, switch_callback):
         super().__init__()
-        self.view_model = view_model  # Assign the view model
+        self.view_model = view_model
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Register Page"))
 
-        # UI Elements
         self.label = QLabel("Enter your email:", self)
         self.email_input = QLineEdit(self)
         self.password_input = QLineEdit(self)
         self.repeat_password_input = QLineEdit(self)
         self.reg_button = QPushButton("Register", self)
-        self.reg_button.setDefault(True)      # Makes it the default button
-        self.reg_button.setAutoDefault(True)  # Allows Enter key activation
-        # self.email_input.setFocus()            # Ensure it gets keyboard focus on launch
+        self.reg_button.setDefault(True)
+        self.reg_button.setAutoDefault(True)
         self.result_label = QLabel("", self)
 
         self.switch_button = QPushButton("Already have an account?")
         self.switch_button.clicked.connect(switch_callback)
 
-        # Layout
         layout.addWidget(self.label)
         layout.addWidget(self.email_input)
         layout.addWidget(self.password_input)
@@ -227,10 +166,8 @@ class RegisterView(QWidget):
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
-        self.setLayout(layout)  # Directly set the layout
-        layout.addWidget(self.switch_button)
+        self.setLayout(layout)
 
-        # 🎯 Connect UI to ViewModel
         self.reg_button.clicked.connect(self.register_helper)
         self.view_model.result_signal_to_ui.connect(self.update_result)
 
@@ -241,33 +178,26 @@ class RegisterView(QWidget):
         self.view_model.register_user(email, password1, password2)
 
     def update_result(self, result):
-        self.result_label.setText(result)  # Update UI with backend response
-
+        self.result_label.setText(result)
 
 class LoginView(QWidget):
     def __init__(self, view_model, switch_callback):
         super().__init__()
-        self.view_model = view_model  # Assign the view model
+        self.view_model = view_model
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Login Page"))
 
-
-        # UI Elements
         self.label = QLabel("Enter your email:", self)
         self.email_input = QLineEdit(self)
         self.password_input = QLineEdit(self)
         self.login_button = QPushButton("Login", self)
-        self.login_button.setDefault(True)      # Makes it the default button
-        self.login_button.setAutoDefault(True)  # Allows Enter key activation
-        # self.email_input.setFocus()            # Ensure it gets keyboard focus on launch
-
+        self.login_button.setDefault(True)
+        self.login_button.setAutoDefault(True)
         self.result_label = QLabel("", self)
 
         self.switch_button = QPushButton("Don't have an account?")
         self.switch_button.clicked.connect(switch_callback)
 
-
-        # Layout
         layout.addWidget(self.label)
         layout.addWidget(self.email_input)
         layout.addWidget(self.password_input)
@@ -275,9 +205,8 @@ class LoginView(QWidget):
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
-        self.setLayout(layout)  # Directly set the layout
+        self.setLayout(layout)
 
-        # 🎯 Connect UI to ViewModel
         self.login_button.clicked.connect(self.login_helper)
         self.view_model.result_signal_to_ui.connect(self.update_result)
 
@@ -287,13 +216,12 @@ class LoginView(QWidget):
         self.view_model.login_user(email, password)
 
     def update_result(self, result):
-        self.result_label.setText(result)  # Update UI with backend response
-
+        self.result_label.setText(result)
 
 class AuthView(QWidget):
     def __init__(self, view_model):
         super().__init__()
-        self.view_model = view_model # Reference to ViewModel
+        self.view_model = view_model
         self.layout = QVBoxLayout(self)
         self.stacked_widget = QStackedWidget()
         
@@ -304,59 +232,47 @@ class AuthView(QWidget):
         self.stacked_widget.addWidget(self.login_view)
 
         self.layout.addWidget(self.stacked_widget)
-        
-        self.view_model.state_changed.connect(self.update_view)
-        self.update_view()  # Set initial state
-
-        # Connect the remaining signals
-        self.view_model.auth_successful.connect(self.handle_success)
-        self.view_model.processing.connect(self.set_processing_state)
-        self.is_processing = False
-
-        # Example spinner label (could be a QMovie or similar)
         self.spinner_label = QLabel("Loading...", self)
         self.spinner_label.hide()
-        # Add spinner_label to your layout as needed
+        self.layout.addWidget(self.spinner_label)
+
+        self.is_processing = False
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        self.view_model.state_changed.connect(self.update_view)
+        self.view_model.auth_successful.connect(self.handle_success)
+        self.view_model.processing.connect(self.set_processing_state)
 
     def update_view(self):
-        view_model.result_signal_to_ui.emit("")     # clear the "message" box
+        self.view_model.result_signal_to_ui.emit("")
         self.stacked_widget.setCurrentIndex(self.view_model.current_state)
-    
+
     def handle_success(self):
         if os.getenv("DEVELOP_MACHINE"):
             print("Successfully logged/registered!")
-        
-        view_model.result_signal_to_ui.emit("Success!")
-        
+        self.view_model.result_signal_to_ui.emit("Success!")
         QTimer.singleShot(2000, self.close)
-        # self.close()  # Closes the window on successful login
 
     def set_processing_state(self, state):
         self.is_processing = state
         if state:
-            # Disable the UI elements that could trigger closure or further action
             self.spinner_label.show()
         else:
             self.spinner_label.hide()
 
-    # Prevent closing the window while processing
     def closeEvent(self, event):
         if self.is_processing:
-            event.ignore()  # Disables closing when waiting for a server response
+            event.ignore()
         else:
             event.accept()
-
 
 if __name__ == "__main__":
     if os.getenv("DEVELOP_MACHINE"):
         print("Running on the development machine.")
-
-    # QApplication.setAttribute(Qt.AA_MacUseFullKeyboardNavigation, True)
     app = QApplication(sys.argv)
-
     model = AuthModel()
     view_model = AuthViewModel(model)
     window = AuthView(view_model)
-
     window.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec_)
