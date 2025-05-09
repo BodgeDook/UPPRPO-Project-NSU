@@ -1,3 +1,3 @@
-D:/prog/UPPRPO-Project-NSU/render/build/CMakeFiles/render.dir
-D:/prog/UPPRPO-Project-NSU/render/build/CMakeFiles/edit_cache.dir
-D:/prog/UPPRPO-Project-NSU/render/build/CMakeFiles/rebuild_cache.dir
+/Users/danielgehrman/Documents/Programming/Projects/uMovie/render/build/CMakeFiles/render.dir
+/Users/danielgehrman/Documents/Programming/Projects/uMovie/render/build/CMakeFiles/edit_cache.dir
+/Users/danielgehrman/Documents/Programming/Projects/uMovie/render/build/CMakeFiles/rebuild_cache.dir
