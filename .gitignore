@@ -6,3 +6,5 @@ render/build
 video_venv
 myTests
 *.code-workspace
+/render/build/*
+/render/build/CMakeFiles
