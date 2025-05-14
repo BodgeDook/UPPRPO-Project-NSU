@@ -4,41 +4,22 @@ UPPRPO project by NSU students (2nd year, 4th semester).
 All dependencies are included. FFmpeg, RapidJSON
 
 
-## Project structure options
-
-```
-project-root/
-│── desktop-app/
-│   ├── ui/                  # PythonQt UI
-│   ├── core/                # C++ Render
-│   ├── Dockerfile           # Docker setup for UI app
-│   ├── requirements.txt     # Python dependencies
-│   ├── main.py              # Entry point
-│── server/
-│   ├── app/
-│   ├── Dockerfile           # Docker setup for backend
-│   ├── requirements.txt     # Python dependencies
-│   ├── main.py              # Server entry point
-│── database/
-│   ├── schema.sql           # PostgreSQL schema
-│   ├── Dockerfile           # Docker setup for PostgreSQL
-│── docker-compose.yml       # Compose file for multi-container setup
-│── .gitignore
-│── README.md
-```
+## Project structure
 
 ```
 project-root/
 ├── desktop-app/
 │   ├── ui/                  # Python/Qt UI code
-│   ├── engine/              # C++ rendering logic & ffmpeg integration
+│   ├── render/              # (aka. "engin") C++ rendering logic & ffmpeg integration
 │   ├── tests/               # Desktop app-specific tests (e.g., integration/unit tests)
-│   ├── Dockerfile           # Docker setup for the desktop app (if needed in the future)
+│   ├── dev-cache/           # App caches for development
+│   ├── ui-venv/             # Recommended location for the ui environment
 │   ├── requirements.txt     # Python dependencies for the UI
 │   ├── main.py              # Entry point for the desktop application
 │
 ├── server/
 │   ├── app/                 # Backend application code (API, business logic, etc.)
+│   ├── registration/        # User registration/login module
 │   ├── tests/               # Server-side tests
 │   ├── Dockerfile           # Docker setup for the backend server
 │   ├── requirements.txt     # Python dependencies for the backend
@@ -51,9 +32,13 @@ project-root/
 ├── docker-compose.yml       # Multi-container Docker Compose setup
 ├── docs/                    # Project documentation (design docs, API docs, etc.)
 ├── .gitignore
+├── .env-example
 └── README.md
 ```
 
+---
+
+Possible alternative:
 
 ```
 project-root/
