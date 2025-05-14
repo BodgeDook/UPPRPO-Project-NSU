@@ -9,7 +9,14 @@ All dependencies are included. FFmpeg, RapidJSON
 ```
 project-root/
 ├── desktop-app/
-│   ├── ui/                  # Python/Qt UI code
+│   ├─ windows/
+│   │   ├─ welcome.py
+│   │   ├─ signin.py
+│   │   └─ editor.py
+│   ├─ widgets/
+│   │   ├─ timeline.py
+│   │   ├─ preview.py
+│   │   └─ toolbox.py
 │   ├── render/              # (aka. "engin") C++ rendering logic & ffmpeg integration
 │   ├── tests/               # Desktop app-specific tests (e.g., integration/unit tests)
 │   ├── dev-cache/           # App caches for development
