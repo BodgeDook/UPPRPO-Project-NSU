@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from app_controller import AppController
+from controllers.app_controller import AppController
 
 def main():
     app = QApplication(sys.argv)

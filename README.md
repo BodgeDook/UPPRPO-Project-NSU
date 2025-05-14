@@ -9,35 +9,47 @@ All dependencies are included. FFmpeg, RapidJSON
 ```
 uMovie/
 ├── desktop-app/
-│   ├─ windows/
-│   │   ├─ welcome.py
-│   │   ├─ signin.py
-│   │   └─ editor.py
-│   ├─ widgets/
+│   ├─ main.py             # Entry point for the desktop application
+│   ├─ models/              # “Pure” Python logic, no Qt imports
+│   │   ├─ auth.py
+│   │   ├─ project.py # Project, Timeline, Asset logic
+│   │   └─ render.py  # The c++ redner wrapper
+│   │
+│   ├─ view/                # All our QMainWindow/QDialog subclasses
+│   │   ├─ welcome.py       # WelcomeWindow (signals only)
+│   │   ├─ editor.py        # EditorWindow (signals only)
+│   │   ├─ settings.py      # SettingsDialog
+│   │   └─ auth.py         # LoginDialog
+│   │
+│   ├─ controllers/         # Glue between models <-> views
+│   │   ├─ app_controller.py    # Instantiates Welcome, Editor, Settings, Auth
+│   │   └─ auth.py   # Handles register/login flows
+│   │
+│   ├─ widgets/             # Sub-components for the editor window
 │   │   ├─ timeline.py
 │   │   ├─ preview.py
 │   │   └─ toolbox.py
-│   ├── render/              # (aka. "engin") C++ rendering logic & ffmpeg integration
-│   ├── tests/               # Desktop app-specific tests (e.g., integration/unit tests)
-│   ├── dev-cache/           # App caches for development
-│   ├── ui-venv/             # Recommended location for the ui environment
-│   ├── requirements.txt     # Python dependencies for the UI
-│   ├── main.py              # Entry point for the desktop application
+│   │
+│   ├─ render/             # (aka. "engine") C++ rendering logic & ffmpeg integration
+│   ├─ tests/              # Desktop app-specific tests (e.g., integration/unit tests)
+│   ├─ dev-cache/          # App caches for development
+│   ├─ ui-venv/            # Recommended location for the ui environment
+│   ├─ requirements.txt    # Python dependencies for the UI
 │
 ├── server/
-│   ├── app/                 # Backend application code (API, business logic, etc.)
-│   ├── registration/        # User registration/login module
-│   ├── tests/               # Server-side tests
-│   ├── Dockerfile           # Docker setup for the backend server
-│   ├── requirements.txt     # Python dependencies for the backend
-│   ├── main.py              # Server entry point
+│   ├─ app/                # Backend application code (API, business logic, etc.)
+│   ├─ registration/       # User registration/login module
+│   ├─ tests/              # Server-side tests
+│   ├─ Dockerfile          # Docker setup for the backend server
+│   ├─ requirements.txt    # Python dependencies for the backend
+│   ├─ main.py             # Server entry point
 │
 ├── database/
-│   ├── schema.sql           # PostgreSQL database schema and seed data if applicable
-│   ├── Dockerfile           # Docker setup for the database
+│   ├─ schema.sql          # PostgreSQL database schema and seed data if applicable
+│   ├─ Dockerfile          # Docker setup for the database
 │
-├── docker-compose.yml       # Multi-container Docker Compose setup
-├── docs/                    # Project documentation (design docs, API docs, etc.)
+├── docker-compose.yml      # Multi-container Docker Compose setup
+├── docs/                   # Project documentation (design docs, API docs, etc.)
 ├── .gitignore
 ├── .env-example
 └── README.md
