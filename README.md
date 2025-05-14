@@ -7,7 +7,7 @@ All dependencies are included. FFmpeg, RapidJSON
 ## Project structure
 
 ```
-project-root/
+uMovie/
 ├── desktop-app/
 │   ├─ windows/
 │   │   ├─ welcome.py
