@@ -8,4 +8,4 @@ myTests
 *.code-workspace
 /render/build/*
 /render/build/CMakeFiles
-/ui/__pycache__
+*/__pycache__
