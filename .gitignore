@@ -9,3 +9,5 @@ myTests
 /render/build/*
 /render/build/CMakeFiles
 /ui/__pycache__
+.env
+/desktop-app/dev-cache/cache
