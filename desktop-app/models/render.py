@@ -1,5 +1,11 @@
 # models/render.py
 from PyQt5.QtGui import QImage
+from cpp_renderer import CppRenderer
+
+renderer = CppRenderer("some/path.mp4")
+n = renderer.get_total_frames()       # returns 1000
+fps = renderer.get_frame_rate()       # returns 24.0
+buf, w, h = renderer.decode_frame(42) # returns a black frame of size 640×360
 
 class PlayerModel:
     """
