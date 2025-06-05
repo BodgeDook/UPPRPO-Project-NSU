@@ -1,6 +1,6 @@
 # desktop-app/widgets/timeline.py
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QPainter, QColor, QRect
+from PyQt5.QtCore import pyqtSignal, Qt, QRect
+from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtWidgets import QWidget
 
 class TimelineWidget(QWidget):

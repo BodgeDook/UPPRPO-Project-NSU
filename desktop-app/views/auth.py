@@ -1,16 +1,28 @@
+# desktop-app/view/auth.py
+
+import os
+
 from PyQt5.QtWidgets import (
-    QWidget, QVBoxLayout, QLabel, QLineEdit,
-    QPushButton, QStackedWidget, QDialog
+    QVBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QWidget,
+    QStackedWidget,
 )
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import Qt, QTimer
+
+from controllers.auth import AuthController  # noqa: E402
+
 
 class RegisterView(QWidget):
-    # user clicked “Register” with these fields
-    register_requested = pyqtSignal(str, str, str)
-    switch_to_login    = pyqtSignal()
+    """
+    “Register” page: collects email + two passwords, calls controller.register_user().
+    """
 
-    def __init__(self):
+    def __init__(self, controller: AuthController, switch_callback):
         super().__init__()
+        self.controller = controller
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Register Page"))
 
@@ -20,15 +32,12 @@ class RegisterView(QWidget):
         self.password_input = QLineEdit(self)
         self.repeat_password_input = QLineEdit(self)
         self.reg_button = QPushButton("Register", self)
-        self.reg_button.setDefault(True)      # Makes it the default button
-        self.reg_button.setAutoDefault(True)  # Allows Enter key activation
-        self.reg_button.clicked.connect(self._on_register)
-        # self.email_input.setFocus()            # Ensure it gets keyboard focus on launch
+        self.reg_button.setDefault(True)
+        self.reg_button.setAutoDefault(True)
         self.result_label = QLabel("", self)
 
         self.switch_button = QPushButton("Already have an account?")
-        self.switch_button.clicked.connect(self.switch_to_login.emit)
-        self.switch_button.clicked.connect(self.switch_to_login.emit)
+        self.switch_button.clicked.connect(switch_callback)
 
         # Layout
         layout.addWidget(self.label)
@@ -39,50 +48,42 @@ class RegisterView(QWidget):
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
-        self.setLayout(layout)  # Directly set the layout
-        layout.addWidget(self.switch_button)
+        # 🎯 Connect UI to Controller
+        self.reg_button.clicked.connect(self.register_helper)
+        self.controller.result_signal_to_ui.connect(self.update_result)
 
+    def register_helper(self):
+        email = self.email_input.text()
+        password1 = self.password_input.text()
+        password2 = self.repeat_password_input.text()
+        self.controller.register_user(email, password1, password2)
 
-    # def register_helper(self):
-    #     email = self.email_input.text()
-    #     password1 = self.password_input.text()
-    #     password2 = self.repeat_password_input.text()
-    #     self.view_model.register_user(email, password1, password2)
-
-    def _on_register(self):
-        self.register_requested.emit(
-            self.email_input.text(),
-            self.password_input.text(),
-            self.repeat_password_input.text()
-        )
-
-    def show_message(self, text: str):
-        self.result_label.setText(text) # Update UI with backend response
+    def update_result(self, result):
+        self.result_label.setText(result)  # Update UI with backend response
 
 
 class LoginView(QWidget):
-    login_requested = pyqtSignal(str, str)
-    switch_to_register = pyqtSignal()
+    """
+    “Login” page: collects email + password, calls controller.login_user().
+    """
 
-    def __init__(self):
+    def __init__(self, controller: AuthController, switch_callback):
         super().__init__()
+        self.controller = controller
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Login Page"))
-
 
         # UI Elements
         self.label = QLabel("Enter your email:", self)
         self.email_input = QLineEdit(self)
         self.password_input = QLineEdit(self)
         self.login_button = QPushButton("Login", self)
-        self.login_button.setDefault(True)      # Makes it the default button
-        self.login_button.setAutoDefault(True)  # Allows Enter key activation
-        self.login_button.clicked.connect(self._on_login)
-        # self.email_input.setFocus()            # Ensure it gets keyboard focus on launch
-
+        self.login_button.setDefault(True)
+        self.login_button.setAutoDefault(True)
         self.result_label = QLabel("", self)
+
         self.switch_button = QPushButton("Don't have an account?")
-        self.switch_button.clicked.connect(self.switch_to_register.emit)
+        self.switch_button.clicked.connect(switch_callback)
 
         # Layout
         layout.addWidget(self.label)
@@ -92,71 +93,80 @@ class LoginView(QWidget):
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
-        self.setLayout(layout)  # Directly set the layout
+        self.setLayout(layout)
+
+        # 🎯 Connect UI to Controller
+        self.login_button.clicked.connect(self.login_helper)
+        self.controller.result_signal_to_ui.connect(self.update_result)
+
+    def login_helper(self):
+        email = self.email_input.text()
+        password = self.password_input.text()
+        self.controller.login_user(email, password)
+
+    def update_result(self, result):
+        self.result_label.setText(result)  # Update UI with backend response
 
 
-    def _on_login(self):
-        self.login_requested.emit(
-            self.email_input.text(),
-            self.password_input.text()
-        )
-
-    # def login_helper(self):
-    #     email = self.email_input.text()
-    #     password = self.password_input.text()
-    #     self.view_model.login_user(email, password)
-
-
-    def show_message(self, text: str):
-        self.result_label.setText(text)  # Update UI with backend response
-
-
-# class AuthDialog(QDialog):
-#     def __init__(self, parent=None):
-#         super().__init__(parent)
-#         self.setWindowTitle("Login")
-#         self.resize(300, 200)
-
-#         layout = QVBoxLayout()
-#         self.username = QLineEdit()
-#         self.username.setPlaceholderText("Username")
-#         self.password = QLineEdit()
-#         self.password.setPlaceholderText("Password")
-#         self.password.setEchoMode(QLineEdit.Password)
-
-#         login_button = QPushButton("Login")
-#         login_button.clicked.connect(self._login)
-
-#         layout.addWidget(QLabel("Please login"))
-#         layout.addWidget(self.username)
-#         layout.addWidget(self.password)
-#         layout.addWidget(login_button)
-#         self.setLayout(layout)
-
-#     def _login(self):
-#         # Replace with actual logic
-#         print(f"Logging in: {self.username.text()}")
-#         self.accept()
-
-class AuthDialog(QDialog):
+class AuthView(QWidget):
     """
-    Container that swaps between RegisterView and LoginView.
-    Emits accepted() when auth succeeds.
+    Container for both RegisterView and LoginView. Uses QStackedWidget to swap between them.
+    Listens for controller.state_changed and controller.auth_successful.
     """
-    def __init__(self):
+
+    def __init__(self, controller: AuthController):
         super().__init__()
-        self.stack = QStackedWidget(self)
-        self.register_view = RegisterView()
-        self.login_view    = LoginView()
-        self.stack.addWidget(self.register_view)
-        self.stack.addWidget(self.login_view)
+        self.controller = controller
+        self.layout = QVBoxLayout(self)
+        self.stacked_widget = QStackedWidget()
 
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.stack)
+        # Instantiate the two pages, passing the same controller
+        self.register_view = RegisterView(self.controller, self.controller.switch_to_login)
+        self.login_view = LoginView(self.controller, self.controller.switch_to_register)
 
-        # Switching pages:
-        self.register_view.switch_to_login.connect(
-            lambda: self.stack.setCurrentWidget(self.login_view))
-        self.login_view.switch_to_register.connect(
-            lambda: self.stack.setCurrentWidget(self.register_view))
+        self.stacked_widget.addWidget(self.register_view)
+        self.stacked_widget.addWidget(self.login_view)
 
+        self.layout.addWidget(self.stacked_widget)
+
+        # Connect controller signals to update this view
+        self.controller.state_changed.connect(self.update_view)
+        self.controller.auth_successful.connect(self.handle_success)
+        self.controller.processing.connect(self.set_processing_state)
+
+        # Spinner/Loading indicator (could be replaced with a QMovie)
+        self.spinner_label = QLabel("Loading...", self)
+        self.spinner_label.hide()
+        self.layout.addWidget(self.spinner_label)
+
+        self.is_processing = False
+
+        # Initialize to the correct page
+        self.update_view()
+
+    def update_view(self):
+        # Clear any previous message
+        self.controller.result_signal_to_ui.emit("")
+        # Swap pages based on controller.current_state
+        self.stacked_widget.setCurrentIndex(self.controller.current_state)
+
+    def handle_success(self):
+        if os.getenv("DEVELOP_MACHINE"):
+            print("Successfully logged/registered!")
+        self.controller.result_signal_to_ui.emit("Success!")
+        # Close this window after a short delay
+        QTimer.singleShot(2000, self.close)
+
+    def set_processing_state(self, state: bool):
+        self.is_processing = state
+        if state:
+            self.spinner_label.show()
+        else:
+            self.spinner_label.hide()
+
+    def closeEvent(self, event):
+        # Prevent closing if a request is still in flight
+        if self.is_processing:
+            event.ignore()
+        else:
+            event.accept()
