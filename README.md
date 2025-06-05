@@ -13,6 +13,7 @@ uMovie/
 │   ├─ models/              # “Pure” Python logic, no Qt imports
 │   │   ├─ auth.py
 │   │   ├─ project.py # Project, Timeline, Asset logic
+│   │   ├─ timeline.py
 │   │   └─ render.py  # The c++ redner wrapper
 │   │
 │   ├─ view/                # All our QMainWindow/QDialog subclasses
