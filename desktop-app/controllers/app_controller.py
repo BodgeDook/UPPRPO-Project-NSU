@@ -1,62 +1,84 @@
+# desktop-app/controllers/app_controller.py
+
+from PyQt5.QtWidgets import QApplication
 from views.welcome import WelcomeWindow
 from views.editor import EditorWindow
 from views.settings import SettingsDialog
-# from views.auth import AuthDialog
-from controllers.auth import AuthController
+from views.auth import AuthView  # If you show auth from here, otherwise import your AuthController and AuthView where needed
+# If you have a separate AuthController inside controllers/auth.py, you can instantiate it in main.py or here.
 
-from PyQt5.QtWidgets import QDialog 
+from models.project import Project  # Your own Project class for loading/creating
 
 class AppController:
     def __init__(self):
-
+        # 1) Create the “Welcome” screen
         self.welcome = WelcomeWindow()
-        self.editor = EditorWindow()
-        self.settings = SettingsDialog(parent=None)  # floating dialog
-        # self.auth = AuthDialog(parent=self.welcome)
 
-        # connect Welcome → open project/new project
+        # 2) Initially, no editor is open
+        self.editor = None
+
+        # 3) Create a single SettingsDialog (modal). We’ll only exec_() it when needed.
+        self.settings = SettingsDialog(parent=None)
+
+        # 4) (Optional) if you launch login from AppController, you might instantiate AuthController/AuthView here.
+        #    But since you have an AuthView already, you could also do that from main.py.
+        #    For now, leave it out, or do:
+        # from controllers.auth import AuthController
+        # from view.auth import AuthView
+        # model = AuthModel()
+        # self.auth_ctrl = AuthController(model)
+        # self.auth_view = AuthView(self.auth_ctrl)
+
+        # — Connect WelcomeWindow signals to our slots —
         self.welcome.open_project_requested.connect(self._open_editor)
         self.welcome.new_project_requested.connect(self._open_editor)
-        # connect Welcome → login/register
         self.welcome.login_requested.connect(self._show_login)
-        self.welcome.settings_requested.connect(self.settings.exec_)
 
-        # connect Editor → settings
-        # parent can be main editor window so dialog stays on top
-        # self.editor_settings_slot = lambda: self.settings.exec_()
-        self.editor.settings_requested.connect(self.settings.exec_)
-        self.editor.closed.connect(self.welcome.show)
+        # If you want Settings from Welcome (rare), you could also do:
+        # self.welcome.settings_requested.connect(lambda: self.settings.exec_())
 
     def start(self):
+        """ Show the welcome screen when the app starts. """
         self.welcome.show()
 
+    def _show_login(self):
+        """
+        If you want to handle login/register here, do something like:
+          auth_model = AuthModel()
+          self.auth_ctrl = AuthController(auth_model)
+          self.auth_view = AuthView(self.auth_ctrl)
+          self.auth_view.show()
+        Or, if you already did that in __init__, simply:
+          self.auth_view.show()
+        """
+        # Example (uncomment if you wired AuthView here):
+        # self.auth_view.show()
+        pass
+
     def _open_editor(self, project_path=None):
-        self.welcome.close()    # might need to change to hide()
-        # if editor already exists, close or switch project
+        """
+        Called when the user clicks “Open Project” or “New Project” on the welcome screen.
+
+        If project_path is None → new project; otherwise → load from file.
+        """
+
+        # 1) If there is already an EditorWindow open, close it first
         if self.editor:
             self.editor.close()
-        self.editor = EditorWindow(project=project_path)
-        # make sure closing *this* editor brings back the welcome screen
-        self.editor.closed.connect(self.welcome.show)
-        # wire settings and maybe logout back to welcome
-        self.editor.settings_requested.connect(self.settings.exec_)
-        self.editor.show()
+            self.editor = None
 
-    # def _show_login(self):
-    #     # 1) Instantiate AuthController, passing the welcome window as parent
-    #     auth_ctrl = AuthController(parent=self.welcome)
-
-    #     # 2) Show the dialog modally and check the result
-    #     result = auth_ctrl.view.exec_()
-    #     if result == auth_ctrl.view.Accepted:
-    #         # user logged in successfully
-    #         print("User is now authenticated")
-    #     else:
-    #         print("Login cancelled or failed")
-    
-    def _show_login(self):
-        auth = AuthController(parent=self.welcome)
-        if auth.exec_() == QDialog.Accepted:
-            print("Logged in!")
+        # 2) Load/create the Project model
+        if project_path:
+            project = Project.load_from_file(project_path)
         else:
-            print("Did not log in.")
+            project = Project.create_new()  # however you create an empty project
+
+        # 3) Instantiate EditorWindow with the project
+        self.editor = EditorWindow(project=project)
+
+        # 4) Whenever the user clicks “Settings” inside the editor, pop up our single SettingsDialog
+        self.editor.settings_requested.connect(self.settings.exec_)
+
+        # 5) Show the editor and hide the welcome screen
+        self.editor.show()
+        self.welcome.close()
