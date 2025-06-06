@@ -1,6 +1,8 @@
-import sys
+import sys, os
 from PyQt5.QtWidgets import QApplication
-from app_controller import AppController
+from controllers.app_controller import AppController
+
+sys.path.append(os.path.dirname(__file__))
 
 def main():
     app = QApplication(sys.argv)
