@@ -10,3 +10,6 @@ myTests
 /render/build/CMakeFiles
 */__pycache__
 *.pyc
+/ui/__pycache__
+.env
+/desktop-app/dev-cache/cache
