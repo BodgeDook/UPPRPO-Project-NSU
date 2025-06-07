@@ -14,15 +14,17 @@ jobs:
       POSTGRES_HOST: fastapi_db
       POSTGRES_PORT: 5432
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Install docker-compose and netcat-openbsd
       run: |
         sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
         sudo apt-get update
         sudo apt-get install -y netcat-openbsd
+    - name: Change to registration directory
+      run: cd server/registration
     - name: Start services
-      run: docker-compose up -d
+      run: docker-compose -f server/registration/docker-compose.yml up -d
     - name: Wait for services to start
       run: |
         until nc -z 127.0.0.1 8000; do
@@ -51,12 +53,12 @@ jobs:
     - name: Reset database
       run: docker exec -i fastapi_db psql -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DATABASE }} -c "TRUNCATE TABLE users RESTART IDENTITY;"
     - name: Run tests
-      run: bash tests/test.sh
+      run: bash server/registration/tests/test.sh
     - name: Show FastAPI logs after tests
       if: always()
       run: docker logs fastapi_app
     - name: Show logs if tests fail
       if: failure()
-      run: docker-compose logs
+      run: docker-compose -f server/registration/docker-compose.yml logs
     - name: Stop services
-      run: docker-compose down
+      run: docker-compose -f server/registration/docker-compose.yml down
