@@ -12,7 +12,7 @@ from .render import PlayerModel  # your existing C++/FFmpeg wrapper
 
 class Project:
     """
-    Represents a single video‐editing project. 
+    Represents a single video-editing project. 
     On disk, each project lives in a folder with:
       ├─ project.json
       ├─ assets/
@@ -31,7 +31,7 @@ class Project:
     @classmethod
     def create_new(cls, base_dir):
         """
-        Create a brand‐new project under base_dir. 
+        Create a brand-new project under base_dir. 
         `base_dir` is assumed to be an existing directory (e.g. uMovie/desktop-app/dev-cache/NewProjectXYZ).
         """
         # Ensure the base directory exists

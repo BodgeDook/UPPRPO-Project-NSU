@@ -25,6 +25,7 @@ class EditorWindow(QMainWindow):
 
     def __init__(self, project):
         super().__init__()
+        self.setAcceptDrops(True)
         self.project = project  # instance of models/project.py → Project
         self.setWindowTitle(f"uMovie – {project.metadata.get('name', '')}")
         self.resize(1200, 800)
@@ -48,22 +49,26 @@ class EditorWindow(QMainWindow):
             # Listen for data changes so the widget repaints
             self.timeline_model.dataChanged.connect(self.timeline_widget.update)
 
-        # ─── 3) Layout with splitters ───
-        h_split = QSplitter(Qt.Horizontal)
-        h_split.addWidget(self.toolbox_widget)
+        # ─── 3) Layout with splitters (iMovie‐style) ───
+        # Top split: toolbox (1/4) and preview (3/4)
+        top_split = QSplitter(Qt.Horizontal)
+        top_split.addWidget(self.toolbox_widget)
+        top_split.addWidget(self.preview_widget)
+        # Set initial sizes: toolbox 1 part, preview 3 parts
+        top_split.setStretchFactor(0, 1)
+        top_split.setStretchFactor(1, 3)
 
-        v_right_split = QSplitter(Qt.Vertical)
-        v_right_split.addWidget(self.preview_widget)
-        v_right_split.addWidget(self.timeline_widget)
-        v_right_split.setSizes([600, 200])
-
-        h_split.addWidget(v_right_split)
-        h_split.setStretchFactor(1, 4)
-        h_split.setSizes([150, 850])
+        # Main split: top_split above the timeline
+        main_split = QSplitter(Qt.Vertical)
+        main_split.addWidget(top_split)
+        main_split.addWidget(self.timeline_widget)
+        # Set initial sizes: top 1 part, bottom 1 part (equal halves)
+        main_split.setStretchFactor(0, 1)
+        main_split.setStretchFactor(1, 1)
 
         container = QWidget()
         layout = QVBoxLayout()
-        layout.addWidget(h_split)
+        layout.addWidget(main_split)
         container.setLayout(layout)
         self.setCentralWidget(container)
 
@@ -139,3 +144,31 @@ class EditorWindow(QMainWindow):
         Delegate to Project.save() to write project.json and clip‐list.
         """
         self.project.save()
+    
+    # ─────────────────────────────────────────────────────────────────────────────
+    # Drag-and-Drop
+    # ─────────────────────────────────────────────────────────────────────────────
+
+    def dragEnterEvent(self, event):
+        # only accept if it’s a file drop
+        if event.mimeData().hasUrls():
+            event.acceptProposedAction()
+        else:
+            event.ignore()
+    
+    def dropEvent(self, event):
+        # for each dropped URL...
+        for url in event.mimeData().urls():
+            path = url.toLocalFile()
+            if not path:
+                continue
+
+            # delegate to your model
+            # this will copy the file into assets/ and update your timeline model
+            self.project.add_asset(path)
+
+        # re-bind your preview to show the new PlayerModel
+        self.preview_widget.set_player(self.project.player)
+
+        # your TimelineModel.emit dataChanged, so the widget repaints
+        event.acceptProposedAction()
