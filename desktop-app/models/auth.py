@@ -3,7 +3,7 @@
 import requests  # Used to communicate with FastAPI backend
 
 # URL = "http://127.0.0.1:8000/"
-URL = "https://umovie.gehrman.me/api"
+URL = "https://umovie.gehrman.me"
 
 
 class AuthModel:

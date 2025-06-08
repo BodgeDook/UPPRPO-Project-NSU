@@ -12,7 +12,7 @@ jobs:
       POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
       POSTGRES_DATABASE: ${{ secrets.POSTGRES_DATABASE }}
       POSTGRES_HOST: fastapi_db
-      POSTGRES_PORT: 5432
+      POSTGRES_PORT: 5434
     steps:
     - uses: actions/checkout@v4
     - name: Install docker-compose and netcat-openbsd
@@ -27,7 +27,7 @@ jobs:
       run: docker-compose -f server/registration/docker-compose.yml up -d
     - name: Wait for services to start
       run: |
-        until nc -z 127.0.0.1 8000; do
+        until nc -z 127.0.0.1 8002; do
           echo "Waiting for FastAPI..."
           sleep 1
         done
