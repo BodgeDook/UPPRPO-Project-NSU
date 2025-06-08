@@ -14,6 +14,7 @@ from PyQt5.QtCore import Qt, QTimer
 
 from controllers.auth import AuthController
 
+from PyQt5.QtWidgets import QCheckBox  # Добавляем импорт
 
 class RegisterView(QWidget):
     def __init__(self, controller: AuthController, switch_callback):
@@ -28,6 +29,7 @@ class RegisterView(QWidget):
         self.password_input.setEchoMode(QLineEdit.Password)
         self.repeat_password_input = QLineEdit(self)
         self.repeat_password_input.setEchoMode(QLineEdit.Password)
+        self.show_password = QCheckBox("Show Password", self)
         self.reg_button = QPushButton("Register", self)
         self.reg_button.setDefault(True)
         self.reg_button.setAutoDefault(True)
@@ -40,11 +42,13 @@ class RegisterView(QWidget):
         layout.addWidget(self.email_input)
         layout.addWidget(self.password_input)
         layout.addWidget(self.repeat_password_input)
+        layout.addWidget(self.show_password)
         layout.addWidget(self.reg_button)
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
 
         self.reg_button.clicked.connect(self.register_helper)
+        self.show_password.stateChanged.connect(self.toggle_password_visibility)
         self.controller.result_signal_to_ui.connect(self.update_result)
 
     def register_helper(self):
@@ -52,6 +56,11 @@ class RegisterView(QWidget):
         password1 = self.password_input.text()
         password2 = self.repeat_password_input.text()
         self.controller.register_user(email, password1, password2)
+
+    def toggle_password_visibility(self, state):
+        mode = QLineEdit.Normal if state else QLineEdit.Password
+        self.password_input.setEchoMode(mode)
+        self.repeat_password_input.setEchoMode(mode)
 
     def update_result(self, result):
         self.result_label.setText(result)
@@ -68,6 +77,7 @@ class LoginView(QWidget):
         self.email_input = QLineEdit(self)
         self.password_input = QLineEdit(self)
         self.password_input.setEchoMode(QLineEdit.Password)
+        self.show_password = QCheckBox("Show Password", self)
         self.login_button = QPushButton("Login", self)
         self.login_button.setDefault(True)
         self.login_button.setAutoDefault(True)
@@ -79,6 +89,7 @@ class LoginView(QWidget):
         layout.addWidget(self.label)
         layout.addWidget(self.email_input)
         layout.addWidget(self.password_input)
+        layout.addWidget(self.show_password)
         layout.addWidget(self.login_button)
         layout.addWidget(self.result_label)
         layout.addWidget(self.switch_button)
@@ -86,12 +97,18 @@ class LoginView(QWidget):
         self.setLayout(layout)
 
         self.login_button.clicked.connect(self.login_helper)
+        self.show_password.stateChanged.connect(self.toggle_password_visibility)
         self.controller.result_signal_to_ui.connect(self.update_result)
 
     def login_helper(self):
         email = self.email_input.text()
         password = self.password_input.text()
         self.controller.login_user(email, password)
+        
+    def toggle_password_visibility(self, state):
+        """Переключает видимость пароля в зависимости от состояния чекбокса."""
+        mode = QLineEdit.Normal if state else QLineEdit.Password
+        self.password_input.setEchoMode(mode)
 
     def update_result(self, result):
         self.result_label.setText(result)

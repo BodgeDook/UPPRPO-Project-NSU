@@ -9,7 +9,7 @@ class WelcomeWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("uMovie – Welcome")
-        self.resize(400, 200)
+        self.resize(400, 50)
 
         # Создаем контейнер и лэйаут
         self.container = QWidget()

@@ -70,3 +70,18 @@ class AuthModel:
             return response.status_code, response.json()
         except requests.RequestException:
             return None, "Network error"
+    
+    def logout(self, email):
+        try:
+            headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
+            data = {
+                "email": email
+            }
+            response = requests.post(
+                "http://127.0.0.1:8000/user_login",
+                json=data,
+                headers=headers
+            )
+            return response.status_code, response.json()
+        except requests.RequestException:
+            return None, "Network error"
