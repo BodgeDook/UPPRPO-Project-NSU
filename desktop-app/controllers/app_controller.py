@@ -42,9 +42,8 @@ class AppController:
     def _handle_auth_success(self):
         if os.getenv("DEVELOP_MACHINE"):
             print("Authentication successful, showing authenticated UI")
-        # Переключаем UI на авторизованное состояние
         self.welcome.show_authenticated_ui()
-        self.welcome.show()  # Убедимся, что окно видно
+        self.welcome.show()
 
     def _new_project(self):
         default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
@@ -75,10 +74,18 @@ class AppController:
 
         try:
             json_path = os.path.join(project_dir, "project.json")
-            if os.path.exists(json_path):
-                project = Project.load_from_file(json_path)
-            else:
+            # Проверяем, является ли project_dir файлом .json
+            if project_dir.endswith(".json"):
+                json_path = project_dir
+                project_dir = os.path.dirname(project_dir)
+
+            if not os.path.exists(json_path):
+                if os.getenv("DEVELOP_MACHINE"):
+                    print(f"Project file not found at {json_path}, creating new project")
                 project = Project.create_new(project_dir)
+            else:
+                project = Project.load_from_file(json_path)
+
             self.editor = EditorWindow(project=project)
             self.editor.settings_requested.connect(self.settings.exec_)
             self.editor.show()
@@ -86,4 +93,5 @@ class AppController:
         except Exception as e:
             if os.getenv("DEVELOP_MACHINE"):
                 print(f"Failed to open editor: {e}")
+            self.welcome.show_authenticated_ui()  # Возвращаемся к авторизованному UI
             self.welcome.show()

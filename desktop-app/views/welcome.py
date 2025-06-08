@@ -1,15 +1,15 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QPushButton
-
+import os
 class WelcomeWindow(QMainWindow):
-    open_project_requested = pyqtSignal(str)  # path to an existing project file
+    open_project_requested = pyqtSignal(str)  # path to an existing project directory
     new_project_requested = pyqtSignal()      # create a brand-new project
     login_requested = pyqtSignal()            # open the login dialog
 
     def __init__(self):
         super().__init__()
         self.setWindowTitle("uMovie – Welcome")
-        self.resize(400, 50)
+        self.resize(400, 200)
 
         # Создаем контейнер и лэйаут
         self.container = QWidget()
@@ -35,21 +35,18 @@ class WelcomeWindow(QMainWindow):
         from PyQt5.QtWidgets import QFileDialog
         path, _ = QFileDialog.getOpenFileName(self, "Open uMovie Project", filter="uMovie (*.json)")
         if path:
-            self.open_project_requested.emit(path)
+            project_dir = os.path.dirname(path)
+            self.open_project_requested.emit(project_dir)
 
     def show_unauthenticated_ui(self):
         """Показывает UI до авторизации (только кнопка Log In / Register)."""
-        # Очищаем лэйаут
         self._clear_layout()
-        # Добавляем только кнопку логина
         self.layout.addWidget(self.btn_login)
         self.layout.addStretch(1)
 
     def show_authenticated_ui(self):
         """Показывает UI после авторизации (кнопки Open Project и Create New Project)."""
-        # Очищаем лэйаут
         self._clear_layout()
-        # Добавляем кнопки для работы с проектами
         self.layout.addWidget(self.btn_open)
         self.layout.addWidget(self.btn_new)
         self.layout.addStretch(1)

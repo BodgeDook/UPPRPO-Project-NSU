@@ -71,14 +71,15 @@ class AuthModel:
         except requests.RequestException:
             return None, "Network error"
     
-    def logout(self, email):
+    def change_password(self, email, new_password):
         try:
             headers = {'accept': 'application/json', 'Content-Type': 'application/json'}
             data = {
-                "email": email
+                "email": email,
+                "password": new_password
             }
             response = requests.post(
-                "http://127.0.0.1:8000/user_login",
+                "http://127.0.0.1:8000/user_change_password",
                 json=data,
                 headers=headers
             )

@@ -147,6 +147,24 @@ async def check_is_email_exists(email: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
 
+async def update_pass(email: str, updated_password:str):
+    try:
+        conn = await connect_to_db()
+
+        result = await conn.fetchval("SELECT COUNT(*) FROM users WHERE email = $1;", email)
+        if result == 0:
+            raise HTTPException(status_code=401, detail="Invalid email")
+
+        await conn.execute(
+            "UPDATE users SET password = $1 WHERE email = $2;",
+            updated_password, email
+        )
+
+        await conn.close()
+        return {"status": "success", "email": email, "new_password": updated_password}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Unexpected error: {str(e)}")
+
 @router.post("/user_registration")
 async def save_data(user: UserRegistration):
     hashed_password = pbkdf2_sha256.hash(user.password)
@@ -159,6 +177,11 @@ async def post_login(user: UserLogin):
 @router.post("/user_logout")
 async def post_logaut(user: UserLogout):
     return await logaut(user.email)
+
+@router.post("/user_change_password")
+async def post_update_pass(user: UserRegistration):
+    hashed_password = pbkdf2_sha256.hash(user.password)
+    return await update_pass(user.email, hashed_password)
 
 @router.get("/get_users_db")
 async def get_data():
