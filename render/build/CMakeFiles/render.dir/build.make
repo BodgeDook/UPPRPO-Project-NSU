@@ -83,26 +83,11 @@ CMakeFiles/render.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/render.dir/main.cpp.s"
 	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\render\main.cpp -o CMakeFiles\render.dir\main.cpp.s
 
-CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/flags.make
-CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/includes_CXX.rsp
-CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: D:/prog/UPPRPO-Project-NSU/render/ffmpegwrapper.cpp
-CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/render.dir/ffmpegwrapper.cpp.obj"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/render.dir/ffmpegwrapper.cpp.obj -MF CMakeFiles\render.dir\ffmpegwrapper.cpp.obj.d -o CMakeFiles\render.dir\ffmpegwrapper.cpp.obj -c D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp
-
-CMakeFiles/render.dir/ffmpegwrapper.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/render.dir/ffmpegwrapper.cpp.i"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp > CMakeFiles\render.dir\ffmpegwrapper.cpp.i
-
-CMakeFiles/render.dir/ffmpegwrapper.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/render.dir/ffmpegwrapper.cpp.s"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp -o CMakeFiles\render.dir\ffmpegwrapper.cpp.s
-
 CMakeFiles/render.dir/operationfactory.cpp.obj: CMakeFiles/render.dir/flags.make
 CMakeFiles/render.dir/operationfactory.cpp.obj: CMakeFiles/render.dir/includes_CXX.rsp
 CMakeFiles/render.dir/operationfactory.cpp.obj: D:/prog/UPPRPO-Project-NSU/render/operationfactory.cpp
 CMakeFiles/render.dir/operationfactory.cpp.obj: CMakeFiles/render.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/render.dir/operationfactory.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/render.dir/operationfactory.cpp.obj"
 	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/render.dir/operationfactory.cpp.obj -MF CMakeFiles\render.dir\operationfactory.cpp.obj.d -o CMakeFiles\render.dir\operationfactory.cpp.obj -c D:\prog\UPPRPO-Project-NSU\render\operationfactory.cpp
 
 CMakeFiles/render.dir/operationfactory.cpp.i: cmake_force
@@ -117,7 +102,7 @@ CMakeFiles/render.dir/videoeditor.cpp.obj: CMakeFiles/render.dir/flags.make
 CMakeFiles/render.dir/videoeditor.cpp.obj: CMakeFiles/render.dir/includes_CXX.rsp
 CMakeFiles/render.dir/videoeditor.cpp.obj: D:/prog/UPPRPO-Project-NSU/render/videoeditor.cpp
 CMakeFiles/render.dir/videoeditor.cpp.obj: CMakeFiles/render.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/render.dir/videoeditor.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/render.dir/videoeditor.cpp.obj"
 	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/render.dir/videoeditor.cpp.obj -MF CMakeFiles\render.dir\videoeditor.cpp.obj.d -o CMakeFiles\render.dir\videoeditor.cpp.obj -c D:\prog\UPPRPO-Project-NSU\render\videoeditor.cpp
 
 CMakeFiles/render.dir/videoeditor.cpp.i: cmake_force
@@ -128,47 +113,46 @@ CMakeFiles/render.dir/videoeditor.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/render.dir/videoeditor.cpp.s"
 	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\render\videoeditor.cpp -o CMakeFiles\render.dir\videoeditor.cpp.s
 
-CMakeFiles/render.dir/videooperations.cpp.obj: CMakeFiles/render.dir/flags.make
-CMakeFiles/render.dir/videooperations.cpp.obj: CMakeFiles/render.dir/includes_CXX.rsp
-CMakeFiles/render.dir/videooperations.cpp.obj: D:/prog/UPPRPO-Project-NSU/render/videooperations.cpp
-CMakeFiles/render.dir/videooperations.cpp.obj: CMakeFiles/render.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/render.dir/videooperations.cpp.obj"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/render.dir/videooperations.cpp.obj -MF CMakeFiles\render.dir\videooperations.cpp.obj.d -o CMakeFiles\render.dir\videooperations.cpp.obj -c D:\prog\UPPRPO-Project-NSU\render\videooperations.cpp
+CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/flags.make
+CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/includes_CXX.rsp
+CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: D:/prog/UPPRPO-Project-NSU/render/ffmpegwrapper.cpp
+CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: CMakeFiles/render.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/render.dir/ffmpegwrapper.cpp.obj"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/render.dir/ffmpegwrapper.cpp.obj -MF CMakeFiles\render.dir\ffmpegwrapper.cpp.obj.d -o CMakeFiles\render.dir\ffmpegwrapper.cpp.obj -c D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp
 
-CMakeFiles/render.dir/videooperations.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/render.dir/videooperations.cpp.i"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\render\videooperations.cpp > CMakeFiles\render.dir\videooperations.cpp.i
+CMakeFiles/render.dir/ffmpegwrapper.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/render.dir/ffmpegwrapper.cpp.i"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp > CMakeFiles\render.dir\ffmpegwrapper.cpp.i
 
-CMakeFiles/render.dir/videooperations.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/render.dir/videooperations.cpp.s"
-	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\render\videooperations.cpp -o CMakeFiles\render.dir\videooperations.cpp.s
+CMakeFiles/render.dir/ffmpegwrapper.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/render.dir/ffmpegwrapper.cpp.s"
+	C:\mingw64\bin\c++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.cpp -o CMakeFiles\render.dir\ffmpegwrapper.cpp.s
 
 # Object files for target render
 render_OBJECTS = \
 "CMakeFiles/render.dir/main.cpp.obj" \
-"CMakeFiles/render.dir/ffmpegwrapper.cpp.obj" \
 "CMakeFiles/render.dir/operationfactory.cpp.obj" \
 "CMakeFiles/render.dir/videoeditor.cpp.obj" \
-"CMakeFiles/render.dir/videooperations.cpp.obj"
+"CMakeFiles/render.dir/ffmpegwrapper.cpp.obj"
 
 # External object files for target render
 render_EXTERNAL_OBJECTS =
 
 render.exe: CMakeFiles/render.dir/main.cpp.obj
-render.exe: CMakeFiles/render.dir/ffmpegwrapper.cpp.obj
 render.exe: CMakeFiles/render.dir/operationfactory.cpp.obj
 render.exe: CMakeFiles/render.dir/videoeditor.cpp.obj
-render.exe: CMakeFiles/render.dir/videooperations.cpp.obj
+render.exe: CMakeFiles/render.dir/ffmpegwrapper.cpp.obj
 render.exe: CMakeFiles/render.dir/build.make
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avfilter.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avformat.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avcodec.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/swscale.lib
 render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avutil.lib
+render.exe: D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/swresample.lib
 render.exe: CMakeFiles/render.dir/linkLibs.rsp
 render.exe: CMakeFiles/render.dir/objects1.rsp
 render.exe: CMakeFiles/render.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Linking CXX executable render.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=D:\prog\UPPRPO-Project-NSU\render\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Linking CXX executable render.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\render.dir\link.txt --verbose=$(VERBOSE)
 	C:\mingw64\bin\cmake.exe -E copy_directory D:/prog/UPPRPO-Project-NSU/render/ffmpeg/bin D:/prog/UPPRPO-Project-NSU/render/build
 

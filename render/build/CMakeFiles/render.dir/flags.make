@@ -6,5 +6,5 @@ CXX_DEFINES = -DDEBUG
 
 CXX_INCLUDES = @CMakeFiles/render.dir/includes_CXX.rsp
 
-CXX_FLAGS = -std=gnu++17
+CXX_FLAGS = 
 

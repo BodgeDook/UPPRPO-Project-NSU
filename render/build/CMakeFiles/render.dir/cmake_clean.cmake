@@ -7,8 +7,6 @@ file(REMOVE_RECURSE
   "CMakeFiles/render.dir/operationfactory.cpp.obj.d"
   "CMakeFiles/render.dir/videoeditor.cpp.obj"
   "CMakeFiles/render.dir/videoeditor.cpp.obj.d"
-  "CMakeFiles/render.dir/videooperations.cpp.obj"
-  "CMakeFiles/render.dir/videooperations.cpp.obj.d"
   "librender.dll.a"
   "render.exe"
   "render.exe.manifest"

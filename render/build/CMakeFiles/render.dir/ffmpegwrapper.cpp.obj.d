@@ -237,6 +237,21 @@ CMakeFiles/render.dir/ffmpegwrapper.cpp.obj: \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersrc.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/avfilter.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersink.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/swresample.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version_major.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version_major.h \
+ D:\prog\UPPRPO-Project-NSU\render\settings.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\track.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\item.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\effect.hpp \
+ C:/mingw64/include/c++/13.1.0/map \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
+ C:/mingw64/include/c++/13.1.0/ext/aligned_buffer.h \
+ C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_multimap.h \
+ C:/mingw64/include/c++/13.1.0/bits/erase_if.h \
  C:/mingw64/include/c++/13.1.0/sstream \
  C:/mingw64/include/c++/13.1.0/bits/sstream.tcc \
  C:/mingw64/include/c++/13.1.0/iostream

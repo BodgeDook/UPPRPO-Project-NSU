@@ -224,30 +224,6 @@ videoeditor.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videoeditor.cpp.s
 .PHONY : videoeditor.cpp.s
 
-videooperations.obj: videooperations.cpp.obj
-.PHONY : videooperations.obj
-
-# target to build an object file
-videooperations.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.obj
-.PHONY : videooperations.cpp.obj
-
-videooperations.i: videooperations.cpp.i
-.PHONY : videooperations.i
-
-# target to preprocess a source file
-videooperations.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.i
-.PHONY : videooperations.cpp.i
-
-videooperations.s: videooperations.cpp.s
-.PHONY : videooperations.s
-
-# target to generate assembly for a file
-videooperations.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\render.dir\build.make CMakeFiles/render.dir/videooperations.cpp.s
-.PHONY : videooperations.cpp.s
-
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -269,9 +245,6 @@ help:
 	@echo ... videoeditor.obj
 	@echo ... videoeditor.i
 	@echo ... videoeditor.s
-	@echo ... videooperations.obj
-	@echo ... videooperations.i
-	@echo ... videooperations.s
 .PHONY : help
 
 

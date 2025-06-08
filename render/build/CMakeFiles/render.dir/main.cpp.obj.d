@@ -152,18 +152,77 @@ CMakeFiles/render.dir/main.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/stl_vector.h \
  C:/mingw64/include/c++/13.1.0/bits/stl_bvector.h \
  C:/mingw64/include/c++/13.1.0/bits/vector.tcc \
- D:\prog\UPPRPO-Project-NSU\render\videooperations.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\operationfactory.hpp \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/document.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/reader.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/allocators.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
  C:/mingw64/include/c++/13.1.0/cstring \
  C:/mingw64/x86_64-w64-mingw32/include/string.h \
  C:/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/stdint.h \
+ C:/mingw64/x86_64-w64-mingw32/include/stdint.h \
+ C:/mingw64/x86_64-w64-mingw32/include/inttypes.h \
+ C:/mingw64/include/c++/13.1.0/cassert \
+ C:/mingw64/x86_64-w64-mingw32/include/assert.h \
+ C:/mingw64/include/c++/13.1.0/utility \
+ C:/mingw64/include/c++/13.1.0/bits/stl_relops.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/meta.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
+ C:/mingw64/include/c++/13.1.0/memory \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tempbuf.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_raw_storage_iter.h \
+ C:/mingw64/include/c++/13.1.0/bits/align.h \
+ C:/mingw64/include/c++/13.1.0/bits/unique_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr_base.h \
+ C:/mingw64/include/c++/13.1.0/bits/allocated_ptr.h \
+ C:/mingw64/include/c++/13.1.0/ext/aligned_buffer.h \
+ C:/mingw64/include/c++/13.1.0/ext/concurrence.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr_atomic.h \
+ C:/mingw64/include/c++/13.1.0/bits/atomic_base.h \
+ C:/mingw64/include/c++/13.1.0/bits/atomic_lockfree_defines.h \
+ C:/mingw64/include/c++/13.1.0/backward/auto_ptr.h \
+ C:/mingw64/include/c++/13.1.0/pstl/glue_memory_defs.h \
+ C:/mingw64/include/c++/13.1.0/pstl/execution_defs.h \
+ C:/mingw64/include/c++/13.1.0/limits \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/stream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/encodings.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/encodedstream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/memorystream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/clzll.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/stack.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/allocators.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/swap.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/strtod.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/ieee754.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/biginteger.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/diyfp.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/clzll.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/pow10.h \
+ C:/mingw64/include/c++/13.1.0/climits \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/error/error.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/strfunc.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/stream.h \
+ C:/mingw64/include/c++/13.1.0/iterator \
+ C:/mingw64/include/c++/13.1.0/bits/stream_iterator.h \
+ D:\prog\UPPRPO-Project-NSU\render\track.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\item.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\effect.hpp \
+ C:/mingw64/include/c++/13.1.0/map \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
+ C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_multimap.h \
+ C:/mingw64/include/c++/13.1.0/bits/erase_if.h \
+ D:\prog\UPPRPO-Project-NSU\render\settings.hpp \
  C:/mingw64/include/c++/13.1.0/algorithm \
  C:/mingw64/include/c++/13.1.0/bits/stl_algo.h \
  C:/mingw64/include/c++/13.1.0/bits/algorithmfwd.h \
  C:/mingw64/include/c++/13.1.0/bits/stl_heap.h \
  C:/mingw64/include/c++/13.1.0/bits/uniform_int_dist.h \
- C:/mingw64/include/c++/13.1.0/bits/stl_tempbuf.h \
  C:/mingw64/include/c++/13.1.0/pstl/glue_algorithm_defs.h \
- C:/mingw64/include/c++/13.1.0/pstl/execution_defs.h \
  C:/mingw64/include/c++/13.1.0/regex C:/mingw64/include/c++/13.1.0/bitset \
  C:/mingw64/include/c++/13.1.0/locale \
  C:/mingw64/include/c++/13.1.0/bits/locale_facets_nonio.h \
@@ -178,16 +237,7 @@ CMakeFiles/render.dir/main.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/stl_deque.h \
  C:/mingw64/include/c++/13.1.0/bits/deque.tcc \
  C:/mingw64/include/c++/13.1.0/bits/stl_stack.h \
- C:/mingw64/include/c++/13.1.0/ext/aligned_buffer.h \
- C:/mingw64/include/c++/13.1.0/bits/shared_ptr.h \
- C:/mingw64/include/c++/13.1.0/bits/shared_ptr_base.h \
- C:/mingw64/include/c++/13.1.0/bits/allocated_ptr.h \
- C:/mingw64/include/c++/13.1.0/bits/unique_ptr.h \
- C:/mingw64/include/c++/13.1.0/ext/concurrence.h \
  C:/mingw64/include/c++/13.1.0/bits/std_function.h \
- C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
- C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
- C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
  C:/mingw64/include/c++/13.1.0/bits/regex_constants.h \
  C:/mingw64/include/c++/13.1.0/bits/regex_error.h \
  C:/mingw64/include/c++/13.1.0/bits/regex_automaton.h \

@@ -2,43 +2,41 @@
 #include "operationfactory.hpp"
 #include "ffmpegwrapper.hpp"
 
-VideoEditor::VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath, std::string_view outputCodec, int dst_width, int dst_height): inputFilePath(inputFilePath), outputFilePath(outputFilePath), outputCodec(outputCodec), dst_width(dst_width), dst_height(dst_height){}
-
-
-int VideoEditor::loadOperations(const std::string_view jsonFilePath){
-
-    #ifdef DEBUG
-        std::cout << "Opening " << std::string(jsonFilePath).c_str() << std::endl;
-    #endif
-
+VideoEditor::VideoEditor(const std::string_view jsonFilePath): jsonFilePath(jsonFilePath){
     std::string jsonFilePath_str = std::string(jsonFilePath);
+    this->factory = OperationFactory(jsonFilePath_str.c_str());
+}
 
-    OperationFactory factory(jsonFilePath_str.c_str());
-    factory.createOperationsList();
 
-    this->videoOperations = factory.getOperationList();
+int VideoEditor::parseJSON(){
+    int status = 0;
 
-    #ifdef DEBUG
-        std::cout << "Done loading operations" << std::endl;
-    #endif
+    status = this->factory.parseSettings();
+    if(!status)
+        status = this->factory.parseTracks();
+
+    if(status){
+        std::cerr << "Error whie parsing JSON config\n";
+        return 1;
+    }
+
+    this->settings = this->factory.getSettings();
+    this->tracks = this->factory.getTracks();
 
     return 0;
 }
 
-int VideoEditor::render(){
+int VideoEditor::render(std::string src){
     #ifdef DEBUG
         std::cout << "Rendering..." << std::endl;
     #endif
-    FFmpegWrapper wrapper(this->inputFilePath, this->outputFilePath, this->outputCodec, this->dst_width, this->dst_height);
-    this->videoOperations.emplace_back("scale=" + std::to_string(this->dst_width) + ":" + std::to_string(this->dst_height));
-    for(std::string filter: this->videoOperations){
-        wrapper.addFilter(filter);
-        std::cout << "Adding filter " << filter << std::endl;
-    }
+    FFmpegWrapper wrapper(this->settings, this->tracks);
 
-    // wrapper.openInput();
-    // wrapper.openOutput();
-    wrapper.process();
+    wrapper.process(src);
+
+    #ifdef DEBUG
+        std::cout << "Done\n";
+    #endif
 
     return 0;
 }

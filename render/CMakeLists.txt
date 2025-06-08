@@ -5,7 +5,7 @@
 # target_link_directories(main PRIVATE ${FFMPEG_LIBRARY_DIRS})
 # target_link_libraries(main PRIVATE ${FFMPEG_LIBRARIES})
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.25)
 project(render)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -20,6 +20,7 @@ set(FFMPEG_LIBRARIES
     "${FFMPEG_DIR}/lib/avcodec.lib"
     "${FFMPEG_DIR}/lib/swscale.lib"
     "${FFMPEG_DIR}/lib/avutil.lib"
+    "${FFMPEG_DIR}/lib/swresample.lib"
 )
 
 # Проверка существования библиотек и заголовков
@@ -28,11 +29,8 @@ foreach(lib ${FFMPEG_LIBRARIES})
         message(FATAL_ERROR "Library not found: ${lib}")
     endif()
 endforeach()
-if(NOT EXISTS "${FFMPEG_INCLUDE_DIRS}/libavfilter/buffersrc.h")
-    message(FATAL_ERROR "Header file libavfilter/buffersrc.h not found")
-endif()
 
-add_executable(render main.cpp ffmpegwrapper.cpp operationfactory.cpp videoeditor.cpp videooperations.cpp)
+add_executable(render main.cpp operationfactory.cpp videoeditor.cpp ffmpegwrapper.cpp)
 
 target_include_directories(render PRIVATE ${FFMPEG_INCLUDE_DIRS})
 

@@ -152,20 +152,79 @@ CMakeFiles/render.dir/videoeditor.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/bits/stl_vector.h \
  C:/mingw64/include/c++/13.1.0/bits/stl_bvector.h \
  C:/mingw64/include/c++/13.1.0/bits/vector.tcc \
- D:\prog\UPPRPO-Project-NSU\render\videooperations.hpp \
  D:\prog\UPPRPO-Project-NSU\render\operationfactory.hpp \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/document.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/reader.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/allocators.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
+ C:/mingw64/include/c++/13.1.0/cstring \
+ C:/mingw64/x86_64-w64-mingw32/include/string.h \
+ C:/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h \
+ C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/stdint.h \
+ C:/mingw64/x86_64-w64-mingw32/include/stdint.h \
+ C:/mingw64/x86_64-w64-mingw32/include/inttypes.h \
+ C:/mingw64/include/c++/13.1.0/cassert \
+ C:/mingw64/x86_64-w64-mingw32/include/assert.h \
+ C:/mingw64/include/c++/13.1.0/utility \
+ C:/mingw64/include/c++/13.1.0/bits/stl_relops.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/meta.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
+ C:/mingw64/include/c++/13.1.0/memory \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tempbuf.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_raw_storage_iter.h \
+ C:/mingw64/include/c++/13.1.0/bits/align.h \
+ C:/mingw64/include/c++/13.1.0/bits/unique_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr_base.h \
+ C:/mingw64/include/c++/13.1.0/bits/allocated_ptr.h \
+ C:/mingw64/include/c++/13.1.0/ext/aligned_buffer.h \
+ C:/mingw64/include/c++/13.1.0/ext/concurrence.h \
+ C:/mingw64/include/c++/13.1.0/bits/shared_ptr_atomic.h \
+ C:/mingw64/include/c++/13.1.0/bits/atomic_base.h \
+ C:/mingw64/include/c++/13.1.0/bits/atomic_lockfree_defines.h \
+ C:/mingw64/include/c++/13.1.0/backward/auto_ptr.h \
+ C:/mingw64/include/c++/13.1.0/pstl/glue_memory_defs.h \
+ C:/mingw64/include/c++/13.1.0/pstl/execution_defs.h \
+ C:/mingw64/include/c++/13.1.0/limits \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/stream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/encodings.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/encodedstream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/memorystream.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/clzll.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/stack.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/allocators.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/swap.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/strtod.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/ieee754.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/biginteger.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/diyfp.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/clzll.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/pow10.h \
+ C:/mingw64/include/c++/13.1.0/climits \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/error/error.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/rapidjson.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/internal/strfunc.h \
+ D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/stream.h \
+ C:/mingw64/include/c++/13.1.0/iterator \
+ C:/mingw64/include/c++/13.1.0/bits/stream_iterator.h \
+ D:\prog\UPPRPO-Project-NSU\render\track.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\item.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\effect.hpp \
+ C:/mingw64/include/c++/13.1.0/map \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
+ C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_multimap.h \
+ C:/mingw64/include/c++/13.1.0/bits/erase_if.h \
+ D:\prog\UPPRPO-Project-NSU\render\settings.hpp \
  D:\prog\UPPRPO-Project-NSU\render\ffmpegwrapper.hpp \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavformat/avformat.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavcodec/codec_par.h \
- C:/mingw64/lib/gcc/x86_64-w64-mingw32/13.1.0/include/stdint.h \
- C:/mingw64/x86_64-w64-mingw32/include/stdint.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/avutil.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/common.h \
- C:/mingw64/x86_64-w64-mingw32/include/inttypes.h \
  C:/mingw64/include/c++/13.1.0/math.h C:/mingw64/include/c++/13.1.0/cmath \
  C:/mingw64/x86_64-w64-mingw32/include/math.h \
  C:/mingw64/include/c++/13.1.0/bits/specfun.h \
- C:/mingw64/include/c++/13.1.0/limits \
  C:/mingw64/include/c++/13.1.0/tr1/gamma.tcc \
  C:/mingw64/include/c++/13.1.0/tr1/special_function_util.h \
  C:/mingw64/include/c++/13.1.0/tr1/bessel_function.tcc \
@@ -178,8 +237,6 @@ CMakeFiles/render.dir/videoeditor.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/tr1/poly_hermite.tcc \
  C:/mingw64/include/c++/13.1.0/tr1/poly_laguerre.tcc \
  C:/mingw64/include/c++/13.1.0/tr1/riemann_zeta.tcc \
- C:/mingw64/x86_64-w64-mingw32/include/string.h \
- C:/mingw64/x86_64-w64-mingw32/include/sec_api/string_s.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/attributes.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/error.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavutil/macros.h \
@@ -240,4 +297,8 @@ CMakeFiles/render.dir/videoeditor.cpp.obj: \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/version_major.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersrc.h \
  D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/avfilter.h \
- D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersink.h
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libavfilter/buffersink.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/swresample.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version_major.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version.h \
+ D:/prog/UPPRPO-Project-NSU/render/ffmpeg/include/libswresample/version_major.h

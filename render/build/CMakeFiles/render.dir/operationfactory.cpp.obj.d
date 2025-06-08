@@ -101,7 +101,6 @@ CMakeFiles/render.dir/operationfactory.cpp.obj: \
  C:/mingw64/include/c++/13.1.0/cerrno \
  C:/mingw64/include/c++/13.1.0/bits/charconv.h \
  C:/mingw64/include/c++/13.1.0/bits/basic_string.tcc \
- D:\prog\UPPRPO-Project-NSU\render\videooperations.hpp \
  C:/mingw64/include/c++/13.1.0/iostream \
  C:/mingw64/include/c++/13.1.0/ostream C:/mingw64/include/c++/13.1.0/ios \
  C:/mingw64/include/c++/13.1.0/exception \
@@ -200,4 +199,14 @@ CMakeFiles/render.dir/operationfactory.cpp.obj: \
  D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/stream.h \
  C:/mingw64/include/c++/13.1.0/iterator \
  C:/mingw64/include/c++/13.1.0/bits/stream_iterator.h \
+ D:\prog\UPPRPO-Project-NSU\render\track.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\item.hpp \
+ D:\prog\UPPRPO-Project-NSU\render\effect.hpp \
+ C:/mingw64/include/c++/13.1.0/map \
+ C:/mingw64/include/c++/13.1.0/bits/stl_tree.h \
+ C:/mingw64/include/c++/13.1.0/bits/node_handle.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_map.h \
+ C:/mingw64/include/c++/13.1.0/bits/stl_multimap.h \
+ C:/mingw64/include/c++/13.1.0/bits/erase_if.h \
+ D:\prog\UPPRPO-Project-NSU\render\settings.hpp \
  D:/prog/UPPRPO-Project-NSU/render/rapidjson/include/rapidjson/filereadstream.h

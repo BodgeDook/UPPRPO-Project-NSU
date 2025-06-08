@@ -2,17 +2,39 @@
 #include <string_view>
 #include <vector>
 #include <string>
-#include "videooperations.hpp"
+#include <vector>
+#include <iostream>
+
+#include <rapidjson/document.h>
+
+// #include "videooperations.hpp"
+#include "track.hpp"
+#include "settings.hpp"
 
 class OperationFactory{
 public:
+    OperationFactory();
     OperationFactory(std::string_view jsonFilePath);
-    void createOperationsList();
-    std::vector<std::string> getOperationList();
-    std::vector<std::string> videoOperations;
+
+    int parseSettings();
+
+    int parseTracks();
+
+    void testParse() const;
+
+    Settings getSettings() const;
+
+    std::vector<Track> getTracks() const;
 
 private:
-    std::string jsonFilePath;
-    
+    char readBuffer[65536];
 
+    int status;
+
+    rapidjson::Document doc;
+    
+    std::string jsonFilePath;
+
+    Settings settings;
+    std::vector<Track> tracks;
 };
