@@ -24,7 +24,7 @@ class AppController:
         self.welcome.new_project_requested.connect(self._new_project)
         self.welcome.login_requested.connect(self._show_login)
 
-        # Connect auth success to show WelcomeWindow
+        # Connect auth success to show authenticated UI
         self.auth_controller.auth_successful.connect(self._handle_auth_success)
 
     def start(self):
@@ -41,8 +41,10 @@ class AppController:
 
     def _handle_auth_success(self):
         if os.getenv("DEVELOP_MACHINE"):
-            print("Authentication successful, returning to WelcomeWindow")
-        self.welcome.show()  # Ensure WelcomeWindow is visible
+            print("Authentication successful, showing authenticated UI")
+        # Переключаем UI на авторизованное состояние
+        self.welcome.show_authenticated_ui()
+        self.welcome.show()  # Убедимся, что окно видно
 
     def _new_project(self):
         default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
