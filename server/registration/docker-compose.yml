@@ -1,11 +1,11 @@
-version: '3.8'
+# version: '3.8'
 
 services:
   web:
     build: .
     container_name: fastapi_app
     ports:
-      - "8000:8000"
+      - "8001:8000"
     environment:
       - EMAIL_SENDER=${EMAIL_SENDER}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}

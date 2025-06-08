@@ -13,3 +13,4 @@ myTests
 /ui/__pycache__
 .env
 /desktop-app/dev-cache/cache
+/desktop-app/__pycache__
