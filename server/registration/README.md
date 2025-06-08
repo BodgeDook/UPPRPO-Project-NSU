@@ -1,3 +1,13 @@
+# 📚 Table of Contents
+
+- [Preparation](#preparation)
+  - [vscode part](#vscode-part)
+  - [SQL part](#sql-part)
+  - [Docker](#docker)
+- [Launch](#launch)
+- [FastApi requests](#fastapi-requests)
+- [HTTP Exceptions](#http-exceptions)
+
 # Preparation
 ## vscode part
 ```
@@ -11,7 +21,7 @@ EMAIL_PASSWORD=
 POSTGRES_USER=
 POSTGRES_PASSWORD=
 POSTGRES_DATABASE=
-POSTGRES_HOST=localhost
+POSTGRES_HOST=fastapi_db
 POSTGRES_PORT=5432
 ```
 EMAIL_PASSWORD - it is the app password of the Google account from which the messages will be sent.
@@ -53,6 +63,12 @@ CREATE TABLE verification_codes (
 );
 ```
 
+## Docker
+```
+docker-compose up --build
+```
+
+
 # Launch
 To launch FastApi app:
 ```
@@ -81,17 +97,18 @@ uvicorn main:app --reload
   ```
   curl "http://127.0.0.1:8000/get_users_db"
   ```
+
 - send code to email
   ```
   curl -X POST "http://127.0.0.1:8000/send-code/" -H "Content-Type: application/json" -d '{"email": "<email>"}'
   ```
 - compare the user's code with the code from the verification_codes table
   ```
-  curl -X POST "http://127.0.0.1:8000/check-code?email=<email>&user_code=<code>"
+  curl -X POST "http://127.0.0.1:8000/check-code" -H "Content-Type: application/json" -d '{"email": "<email>", "user_code": "<code>"}'
   ```
 - save the verification_codes table in json
   ```
-  curl "http://127.0.0.1:8000/get_codes_db"
+  curl "http://127.0.0.1:8000/get_codes_db" 
   ```
 
 # HTTP Exceptions
@@ -101,5 +118,6 @@ uvicorn main:app --reload
 401 -- Unauthorized
 404 -- Not Found
 409 -- Conflict With Server
+422 -- Unprocessable Content
 500 -- Internal Server Error
 ```
