@@ -4,6 +4,7 @@ services:
   web:
     build: .
     container_name: fastapi_app
+    restart: always
     ports:
       - "8002:8000"
     environment:
