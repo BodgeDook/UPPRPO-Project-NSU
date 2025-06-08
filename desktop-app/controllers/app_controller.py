@@ -1,5 +1,8 @@
 import os
-from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout
+
+from PyQt5.QtWidgets import QFileDialog, QInputDialog
+# from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout
+# develop
 from PyQt5.QtCore import QStandardPaths
 
 from views.welcome import WelcomeWindow
@@ -46,18 +49,47 @@ class AppController:
         self.welcome.show()
 
     def _new_project(self):
-        default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
+        """
+        Called when the user clicks “New Project”. 
+        We prompt them for a project folder under dev-cache (or a default location).
+        """
+
+        default_loc = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dev-cache")
+        # # default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
+
+#         default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
+#develop
         os.makedirs(default_loc, exist_ok=True)
 
-        proj_dir = QFileDialog.getExistingDirectory(
-            None,
-            "Select (or create) a new project folder under dev-cache",
-            default_loc,
-            QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
-        )
-        if not proj_dir:
-            return
+        # proj_dir = QFileDialog.getExistingDirectory(
+        #     None,
+        #     "Select (or create) a new project folder under dev-cache",
+        #     default_loc,
+        #     QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
+        # )
+        # if not proj_dir:
+        #     return  # user cancelled
 
+        # 1) Show a modal text input dialog
+        name, ok = QInputDialog.getText(
+            None,                      # no parent widget
+            "New Project",             # dialog window title
+            "Enter a name for your new project:"  # prompt text
+        )
+
+        # 2) Check if the user clicked “OK” and entered something
+        if not ok or not name.strip():
+            return  # they cancelled or gave an empty name
+
+        # 3) Use that name to create your folder
+        proj_dir = os.path.join(default_loc, name.strip())
+        os.makedirs(proj_dir, exist_ok=True)
+
+        # 4) Hand off to your model and view
+
+#         if not proj_dir:
+#             return
+# develop
         project = Project.create_new(proj_dir)
         self._open_editor(project_dir=proj_dir)
 
