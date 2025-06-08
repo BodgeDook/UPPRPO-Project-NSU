@@ -1,9 +1,8 @@
 render/*.mp4
 .vscode
 render/test_ffmpeg.cpp
-render/build
+render/build/*
 .DS_Store
 video_venv
 myTests
 *.code-workspace
-render/aboba.txt
