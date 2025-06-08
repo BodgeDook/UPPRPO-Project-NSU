@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Тест регистрации
-REG_STATUS=$(curl -X POST "http://127.0.0.1:8002/user_registration" \
+REG_STATUS=$(curl -X POST "http://127.0.0.1:8000/user_registration" \
   -H "accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "testpassword"}' \
@@ -12,7 +12,7 @@ if [ "$REG_STATUS" != "200" ]; then
 fi
 
 # Тест входа
-LOGIN_STATUS=$(curl -X POST "http://127.0.0.1:8002/user_login" \
+LOGIN_STATUS=$(curl -X POST "http://127.0.0.1:8000/user_login" \
   -H "accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "password": "testpassword"}' \
@@ -23,7 +23,7 @@ if [ "$LOGIN_STATUS" != "200" ]; then
 fi
 
 # Тест обновления баланса
-UPDATE_BALANCE=$(curl -X POST "http://127.0.0.1:8002/update_balance" \
+UPDATE_BALANCE=$(curl -X POST "http://127.0.0.1:8000/update_balance" \
   -H "accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com", "amount": 100.0}' \
@@ -34,7 +34,7 @@ if [ "$UPDATE_BALANCE" != "200" ]; then
 fi
 
 # Тест получения данных пользователей
-GET_DATA=$(curl "http://127.0.0.1:8002/get_users_db" \
+GET_DATA=$(curl "http://127.0.0.1:8000/get_users_db" \
   -H "accept: application/json" \
   -w "%{http_code}\n" -o /dev/null)
 if [ "$GET_DATA" != "200" ]; then
@@ -43,7 +43,7 @@ if [ "$GET_DATA" != "200" ]; then
 fi
 
 # Тест выхода
-LOGAUT_STATUS=$(curl -X POST "http://127.0.0.1:8002/user_logout" \
+LOGAUT_STATUS=$(curl -X POST "http://127.0.0.1:8000/user_logout" \
   -H "accept: application/json" \
   -H "Content-Type: application/json" \
   -d '{"email": "test@example.com"}' \
