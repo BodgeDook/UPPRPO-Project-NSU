@@ -2,6 +2,9 @@
 
 import requests  # Used to communicate with FastAPI backend
 
+# URL = "http://127.0.0.1:8000/"
+URL = "https://umovie.gehrman.me/api"
+
 
 class AuthModel:
     """
@@ -16,7 +19,7 @@ class AuthModel:
                 "password": password
             }
             response = requests.post(
-                "http://127.0.0.1:8000/user_registration",
+                str(URL + "/user_registration"),
                 json=data,
                 headers=headers
             )
@@ -32,7 +35,7 @@ class AuthModel:
                 "password": password
             }
             response = requests.post(
-                "http://127.0.0.1:8000/user_login",
+                str(URL + "/user_login"),
                 json=data,
                 headers=headers
             )
@@ -47,7 +50,7 @@ class AuthModel:
                 "email": email
             }
             response = requests.post(
-                "http://127.0.0.1:8000/send-code/",
+                str(URL + "/send-code/"),
                 json=data,
                 headers=headers
             )
@@ -63,7 +66,7 @@ class AuthModel:
                 "user_code": user_code
             }
             response = requests.post(
-                "http://127.0.0.1:8000/check-code/",
+                str(URL + "/check-code/"),
                 json=data,
                 headers=headers
             )
@@ -79,7 +82,7 @@ class AuthModel:
                 "password": new_password
             }
             response = requests.post(
-                "http://127.0.0.1:8000/user_change_password",
+                str(URL + "/user_change_password"),
                 json=data,
                 headers=headers
             )
