@@ -1,45 +1,29 @@
-# desktop-app/controllers/auth.py
-
 import os
 import re
-from enum import Enum
 
-from PyQt5.QtCore import QObject, pyqtSignal, QThread
-
-
-# Password Constant Levels:
-# class PasswordLevel(Enum):
-#     EASY = 1
-#     MEDIUM = 2
-#     HARD = 3
-
+from PyQt5.QtCore import QObject, pyqtSignal, QThread, QTimer
 
 class AuthController(QObject):
-    """
-    Acts as the “controller” for authentication: validation, threading, and
-    communicating with AuthModel. Emits signals to update the UI.
-    """
-
-    # Emitted whenever there's a message (e.g. “Invalid email format”, server errors, etc.)
     result_signal_to_ui = pyqtSignal(str)
-
-    # Emitted when state switches (register <-> login), so the view can swap pages
     state_changed = pyqtSignal()
-
-    # Emitted when login/register succeeds
+    forgot_password_state_changed = pyqtSignal()
     auth_successful = pyqtSignal()
-
-    # Emitted True/False to tell the view to show/hide a “busy” spinner
     processing = pyqtSignal(bool)
 
     REGISTER = 0
     LOGIN = 1
+    VERIFY = 2
+    FORGOT_PASSWORD = 3
+    FORGOT_PASSWORD_EMAIL = 0
+    VERIFY_NEW_PASSWORD = 1
 
     def __init__(self, model):
         super().__init__()
         self.model = model
-        self.current_state = self.REGISTER  # default to register
+        self.current_state = self.REGISTER
+        self.forgot_password_state = self.FORGOT_PASSWORD_EMAIL
         self.worker = None
+        self.current_email = None
 
     def switch_to_login(self):
         self.current_state = self.LOGIN
@@ -48,6 +32,12 @@ class AuthController(QObject):
     def switch_to_register(self):
         self.current_state = self.REGISTER
         self.state_changed.emit()
+
+    def switch_to_forgot_password(self):
+        self.current_state = self.FORGOT_PASSWORD
+        self.forgot_password_state = self.FORGOT_PASSWORD_EMAIL
+        self.state_changed.emit()
+        self.forgot_password_state_changed.emit()
 
     def login_user(self, email, password):
         if not self.validate_email(email):
@@ -72,6 +62,46 @@ class AuthController(QObject):
         self.worker.result_signal.connect(self.process_response)
         self.worker.start()
 
+    def verify_code(self, email, code):
+        if not code.strip():
+            self.result_signal_to_ui.emit("Please enter the verification code")
+            return False
+
+        self.processing.emit(True)
+        self.worker = AuthWorker(self.model, email, code, "verify_code")
+        self.worker.result_signal.connect(self.process_response)
+        self.worker.start()
+
+    def send_verification_code_for_reset(self, email):
+        if not self.validate_email(email):
+            self.result_signal_to_ui.emit("Invalid email format")
+            return False
+
+        self.current_email = email
+        self.processing.emit(True)
+        self.worker = AuthWorker(self.model, email, None, "send_code")
+        self.worker.result_signal.connect(self.process_forgot_password_response)
+        self.worker.start()
+
+    def verify_and_update_password(self, email, code, new_password, repeat_password):
+        if not code.strip():
+            self.result_signal_to_ui.emit("Please enter the verification code")
+            return False
+
+        if not self.validate_passwords(new_password, repeat_password):
+            return False
+
+        self.processing.emit(True)
+        self.worker = AuthWorker(self.model, email, code, "verify_code")
+        self.worker.result_signal.connect(lambda action, status, response: self.process_verify_and_update_password(email, new_password))
+        self.worker.start()
+
+    def resend_code(self, email):
+        self.processing.emit(True)
+        self.worker = AuthWorker(self.model, email, None, "send_code")
+        self.worker.result_signal.connect(self.process_response)
+        self.worker.start()
+
     def validate_email(self, email):
         return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
 
@@ -87,98 +117,110 @@ class AuthController(QObject):
         return True
 
     def is_valid_password(self, password):
-        """
-        To check:
-
-        Args:
-            password (str): your_password
-
-        Returns:
-            bool: True, if valid else False
-        """
-
-        # Easy: >= 8 symbols
         if len(password) < 8:
             return False
-
-        # Easy: if at least one letter is in lower case (a-z)
         if not re.search(r"[a-z]", password):
             return False
-
-        # Easy: if at least one letter is in upper case (A-Z)
         if not re.search(r"[A-Z]", password):
             return False
-
-        # Easy: if at least there's one letter (0-9)
         if not re.search(r"[0-9]", password):
             return False
-
-        # Easy: if at least one special symbol (for instance, !@#$%^&*()_+-=[]{}|;:,.<>?)
         if not re.search(r"[!@#$%^&*()_+\-=\[\]{}|;:,.<>?]", password):
             return False
-
-        # Medium: no repeatable symbols
-        # if level.value >= PasswordLevel.MEDIUM.value:
-        # if two similar letters are next to each other:
-        for i in range(len(password) - 1):
-            if password[i] == password[i + 1]:
-                return False
-
-        # Hard: additional checks:
-        # if level.value >= PasswordLevel.HARD.value:
-        # Проверка на наличие "abc123"
         if "abc123" in password.lower():
             return False
-
-        # check for the common phrases:
         common_phrases = [
-            "password",
-            "qwerty",
-            "123456",
-            "admin",
-            "letmein",
-            "welcome",
-            "monkey",
-            "dragon",
-            "sunshine",
-            "princess",
+            "password", "qwerty", "123456", "admin", "letmein",
+            "welcome", "monkey", "dragon", "sunshine", "princess"
         ]
-
         password_lower = password.lower()
         for phrase in common_phrases:
             if phrase in password_lower:
                 return False
-
-        # If all the checks are okay:
         return True
 
-    def process_response(self, status_code, response):
+    def process_response(self, action, status_code, response):
         self.processing.emit(False)
 
         if os.getenv("DEVELOP_MACHINE"):
-            print(status_code, response)
+            print(action, status_code, response)
 
-        if status_code == 200:
-            self.auth_successful.emit()
-        elif status_code == 500:
-            self.result_signal_to_ui.emit(str(response))
+        if action in ("register", "login"):
+            if status_code in (200, 201):
+                self.current_email = self.worker.email
+                self.current_state = self.VERIFY
+                self.state_changed.emit()
+                self.worker = AuthWorker(self.model, self.current_email, None, "send_code")
+                self.worker.result_signal.connect(self.process_response)
+                self.worker.start()
+            else:
+                self.result_signal_to_ui.emit(str(response.get('message', response)))
+        elif action == "send_code":
+            if status_code in (200, 201):
+                self.result_signal_to_ui.emit("Verification code sent successfully")
+            else:
+                self.result_signal_to_ui.emit(f"Failed to send verification code: {response.get('message', response)}")
+        elif action == "verify_code":
+            if status_code == 200:
+                self.result_signal_to_ui.emit("Verification successful!")
+                QTimer.singleShot(2000, lambda: self.auth_successful.emit())
+            else:
+                self.result_signal_to_ui.emit(f"Verification failed: {response.get('message', response)}")
+
+    def process_forgot_password_response(self, action, status_code, response):
+        self.processing.emit(False)
+
+        if os.getenv("DEVELOP_MACHINE"):
+            print(action, status_code, response)
+
+        if action == "send_code":
+            if status_code in (200, 201):
+                self.result_signal_to_ui.emit("Verification code sent successfully")
+                self.forgot_password_state = self.VERIFY_NEW_PASSWORD
+                self.forgot_password_state_changed.emit()
+            else:
+                self.result_signal_to_ui.emit(f"Failed to send verification code: {response.get('message', response)}")
+
+    def process_verify_and_update_password(self, email, new_password):
+        self.processing.emit(False)
+
+        if self.worker.status_code == 200:
+            self.result_signal_to_ui.emit("Verification successful, updating password...")
+            self.worker = AuthWorker(self.model, email, new_password, "change_password")
+            self.worker.result_signal.connect(self.process_password_update_response)
+            self.worker.start()
         else:
-            self.result_signal_to_ui.emit(str(response))
+            self.result_signal_to_ui.emit(f"Verification failed: {self.worker.response.get('message', self.worker.response)}")
+
+    def process_password_update_response(self, action, status_code, response):
+        self.processing.emit(False)
+
+        if status_code in (200, 201):
+            self.result_signal_to_ui.emit("Password updated successfully!")
+            QTimer.singleShot(2000, lambda: self.switch_to_login())
+        else:
+            self.result_signal_to_ui.emit(f"Failed to update password: {response.get('message', response)}")
 
 
 class AuthWorker(QThread):
-    """
-    Worker Thread for API Calls (login/register) so the UI does not freeze.
-    """
-    result_signal = pyqtSignal(int, dict)
+    result_signal = pyqtSignal(str, int, object)
 
-    def __init__(self, model, email, password, action):
+    def __init__(self, model, email, data=None, action=""):
         super().__init__()
         self.model = model
         self.email = email
-        self.password = password
-        self.action = action  # "register" or "login"
+        self.data = data
+        self.action = action
+        self.status_code = None
+        self.response = None
 
     def run(self):
-        status_code, response = getattr(self.model, self.action)(self.email, self.password)
-        self.result_signal.emit(status_code, response)
+        if self.action == "send_code":
+            self.status_code, self.response = self.model.send_code(self.email)
+        elif self.action == "verify_code":
+            self.status_code, self.response = self.model.verify_code(self.email, self.data)
+        elif self.action == "change_password":
+            self.status_code, self.response = self.model.change_password(self.email, self.data)
+        else:
+            self.status_code, self.response = getattr(self.model, self.action)(self.email, self.data)
+        self.result_signal.emit(self.action, self.status_code, self.response)

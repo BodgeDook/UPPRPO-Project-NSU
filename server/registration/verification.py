@@ -1,17 +1,15 @@
 import random
 import ssl
 import json
-import re
 import os
 import asyncio
 from functools import partial
 
 from fastapi import BackgroundTasks, HTTPException, APIRouter
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
-import asyncpg
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -20,19 +18,18 @@ from db import connect_to_db
 sender_email = os.getenv("EMAIL_SENDER")
 sender_password = os.getenv("EMAIL_PASSWORD")
 
+router = APIRouter()
 
+# Модели Pydantic для валидации
 class EmailSchema(BaseModel):
-    email: str
+    email: EmailStr  # Автоматическая валидация формата email
 
+class CheckCodeSchema(BaseModel):
+    email: EmailStr
+    user_code: str = Field(..., pattern=r"^\d{6}$")
 
 def generate_code():
     return str(random.randint(100000, 999999))
-
-
-def is_valid_email_format(email: str) -> bool:
-    email_regex = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-    return re.match(email_regex, email) is not None
-
 
 def send_email(receiver_email, verification_code):
     if not sender_email:
@@ -40,17 +37,33 @@ def send_email(receiver_email, verification_code):
     if not sender_password:
         raise HTTPException(status_code=500, detail="EMAIL_PASSWORD environment variable not set")
 
-    if not is_valid_email_format(receiver_email):
-        raise HTTPException(status_code=400, detail="Invalid email format")
+    subject = "Confirmation of registration (no reply please)"
 
-    subject = "Сonfirmation of registration (no reply pls)"
-    body = f"Your code: {verification_code}"
+    # HTML-содержимое письма
+    html_content = f"""
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
+        <div style="max-width: 600px; margin: auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+          <h2 style="text-align: center; color: #333;"> Email Verification Code</h2>
+          <p style="text-align: center; font-size: 16px; color: #555;">Use the following code to complete your registration:</p>
+          <div style="font-size: 24px; font-weight: bold; text-align: center; padding: 15px; background-color: #f0f0f0; border: 2px dashed #4CAF50; border-radius: 5px; margin: 20px 0;">
+            {verification_code}
+          </div>
+          <p style="text-align: center; color: #888;">This code is valid for a limited time. Please do not share it with anyone.</p>
+        </div>
+      </body>
+    </html>
+    """
 
-    msg = MIMEMultipart()
+    msg = MIMEMultipart("alternative")
     msg["From"] = sender_email
     msg["To"] = receiver_email
     msg["Subject"] = subject
-    msg.attach(MIMEText(body, "plain"))
+
+    plain_text = f"Your code: {verification_code}"
+
+    msg.attach(MIMEText(plain_text, "plain"))
+    msg.attach(MIMEText(html_content, "html"))
 
     context = ssl.create_default_context()
     try:
@@ -60,11 +73,9 @@ def send_email(receiver_email, verification_code):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Email error: {str(e)}")
 
-
 async def send_email_async(receiver_email, verification_code):
     loop = asyncio.get_event_loop()
     await loop.run_in_executor(None, partial(send_email, receiver_email, verification_code))
-
 
 async def save_to_db(email: str, code: str):
     try:
@@ -90,7 +101,6 @@ async def save_to_db(email: str, code: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB error: {str(e)}")
 
-
 async def get_data_from_db():
     try:
         conn = await connect_to_db()
@@ -114,7 +124,6 @@ async def get_data_from_db():
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DB fetch error: {str(e)}")
 
-
 async def is_code_valid(email: str, user_code: str):
     try:
         conn = await connect_to_db()
@@ -136,13 +145,9 @@ async def is_code_valid(email: str, user_code: str):
         """, email)
 
         await conn.close()
-        return {"status": "success", "message": "Code verified successfully", "email": email}
-
+        return {"status": "success", "message": "Code verified successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Verification error: {str(e)}")
-
-
-router = APIRouter()
 
 """
 curl -X POST "http://127.0.0.1:8000/send-code/" -H "Content-Type: application/json" -d '{"email": "<email>"}'
@@ -153,7 +158,6 @@ async def send_verification_code(data: EmailSchema, background_tasks: Background
     background_tasks.add_task(send_email_async, data.email, code)
     return await save_to_db(data.email, code)
 
-
 """
 curl "http://127.0.0.1:8000/get_codes_db" 
 """
@@ -161,10 +165,9 @@ curl "http://127.0.0.1:8000/get_codes_db"
 async def get_data():
     return await get_data_from_db()
 
-
 """
-curl -X POST "http://127.0.0.1:8000/check-code?email=<email>&user_code=<code>"
+curl -X POST "http://127.0.0.1:8000/check-code" -H "Content-Type: application/json" -d '{"email": "<email>", "user_code": "<code>"}'
 """
 @router.post("/check-code")
-async def check_code(email: str, user_code: str):
-    return await is_code_valid(email, user_code)
+async def check_code(data: CheckCodeSchema):
+    return await is_code_valid(data.email, data.user_code)
