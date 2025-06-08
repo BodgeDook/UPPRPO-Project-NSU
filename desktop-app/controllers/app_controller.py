@@ -1,12 +1,13 @@
-# desktop-app/controllers/app_controller.py
-
 import os
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout
 from PyQt5.QtCore import QStandardPaths
 
 from views.welcome import WelcomeWindow
 from views.editor import EditorWindow
 from views.settings import SettingsDialog
+from views.auth import AuthView
+from controllers.auth import AuthController
+from models.auth import AuthModel
 from models.project import Project
 
 
@@ -15,25 +16,35 @@ class AppController:
         self.welcome = WelcomeWindow()
         self.editor = None
         self.settings = SettingsDialog(parent=None)
+        self.auth_model = AuthModel()
+        self.auth_controller = AuthController(self.auth_model)
 
-        # Wire welcome signals:
+        # Wire welcome signals
         self.welcome.open_project_requested.connect(self._open_editor)
         self.welcome.new_project_requested.connect(self._new_project)
         self.welcome.login_requested.connect(self._show_login)
+
+        # Connect auth success to show WelcomeWindow
+        self.auth_controller.auth_successful.connect(self._handle_auth_success)
 
     def start(self):
         self.welcome.show()
 
     def _show_login(self):
-        # Launch your AuthView if you wired it here; otherwise, handle elsewhere
-        pass
+        dialog = QDialog(self.welcome)
+        dialog.setWindowTitle("Login / Register")
+        layout = QVBoxLayout()
+        auth_view = AuthView(self.auth_controller)
+        layout.addWidget(auth_view)
+        dialog.setLayout(layout)
+        dialog.exec_()
+
+    def _handle_auth_success(self):
+        if os.getenv("DEVELOP_MACHINE"):
+            print("Authentication successful, returning to WelcomeWindow")
+        self.welcome.show()  # Ensure WelcomeWindow is visible
 
     def _new_project(self):
-        """
-        Called when the user clicks “New Project”. 
-        We prompt them for a project folder under dev-cache (or a default location).
-        """
-        # Suggest a “dev-cache” subfolder in your repo for now:
         default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
         os.makedirs(default_loc, exist_ok=True)
 
@@ -44,33 +55,33 @@ class AppController:
             QFileDialog.ShowDirsOnly | QFileDialog.DontResolveSymlinks,
         )
         if not proj_dir:
-            return  # user cancelled
+            return
 
-        # Instantiate a new project in that folder
         project = Project.create_new(proj_dir)
-
-        # Now open the editor with that project
         self._open_editor(project_dir=proj_dir)
 
     def _open_editor(self, project_dir=None):
-        """
-        project_dir is either:
-          1) a folder containing project.json (when loading), or
-          2) a folder we just created (with no clips yet).
-        """
         if self.editor:
             self.editor.close()
             self.editor = None
 
-        # If project_dir has project.json, load; otherwise, assume create_new was already called
-        json_path = os.path.join(project_dir, "project.json")
-        if os.path.exists(json_path):
-            project = Project.load_from_file(json_path)
-        else:
-            # In case we ended up here directly (shouldn't usually happen), create new:
-            project = Project.create_new(project_dir)
+        if not project_dir:
+            if os.getenv("DEVELOP_MACHINE"):
+                print("No project directory provided, returning to WelcomeWindow")
+            self.welcome.show()
+            return
 
-        self.editor = EditorWindow(project=project)
-        self.editor.settings_requested.connect(self.settings.exec_)
-        self.editor.show()
-        self.welcome.close()
+        try:
+            json_path = os.path.join(project_dir, "project.json")
+            if os.path.exists(json_path):
+                project = Project.load_from_file(json_path)
+            else:
+                project = Project.create_new(project_dir)
+            self.editor = EditorWindow(project=project)
+            self.editor.settings_requested.connect(self.settings.exec_)
+            self.editor.show()
+            self.welcome.close()
+        except Exception as e:
+            if os.getenv("DEVELOP_MACHINE"):
+                print(f"Failed to open editor: {e}")
+            self.welcome.show()
