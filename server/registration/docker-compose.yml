@@ -5,7 +5,7 @@ services:
     build: .
     container_name: fastapi_app
     ports:
-      - "8001:8000"
+      - "8002:8000"
     environment:
       - EMAIL_SENDER=${EMAIL_SENDER}
       - EMAIL_PASSWORD=${EMAIL_PASSWORD}
