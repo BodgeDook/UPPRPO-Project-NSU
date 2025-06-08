@@ -1,8 +1,6 @@
 import os
 
-from PyQt5.QtWidgets import QFileDialog, QInputDialog
-# from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout
-# develop
+from PyQt5.QtWidgets import QFileDialog, QInputDialog, QDialog, QVBoxLayout
 from PyQt5.QtCore import QStandardPaths
 
 from views.welcome import WelcomeWindow
@@ -55,10 +53,7 @@ class AppController:
         """
 
         default_loc = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dev-cache")
-        # # default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
 
-#         default_loc = os.path.join(os.path.dirname(__file__), "dev-cache")
-#develop
         os.makedirs(default_loc, exist_ok=True)
 
         # proj_dir = QFileDialog.getExistingDirectory(

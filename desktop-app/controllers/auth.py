@@ -164,8 +164,13 @@ class AuthController(QObject):
             if status_code == 200:
                 self.result_signal_to_ui.emit("Verification successful!")
                 QTimer.singleShot(2000, lambda: self.auth_successful.emit())
-            else:
-                self.result_signal_to_ui.emit(f"Verification failed: {response.get('message', response)}")
+            # else:
+            #     self.result_signal_to_ui.emit(f"Verification failed: {response.get('message', response)}")
+            try:
+                msg = response.get('message', response)
+            except AttributeError:
+                msg = response
+            self.result_signal_to_ui.emit(f"Verification failed: {msg}")
 
     def process_forgot_password_response(self, action, status_code, response):
         self.processing.emit(False)
