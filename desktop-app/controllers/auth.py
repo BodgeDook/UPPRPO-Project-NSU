@@ -203,7 +203,7 @@ class AuthController(QObject):
 
 
 class AuthWorker(QThread):
-    result_signal = pyqtSignal(str, int, dict)
+    result_signal = pyqtSignal(str, int, object)
 
     def __init__(self, model, email, data=None, action=""):
         super().__init__()
