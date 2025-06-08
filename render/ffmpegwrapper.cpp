@@ -386,6 +386,18 @@ int FFmpegWrapper::extractAudio(std::string& input_file, double from_sec, double
 
     av_write_trailer(output_fmt_ctx);
 
+    if (input_fmt_ctx) avformat_close_input(&input_fmt_ctx);
+    if (output_fmt_ctx && !(output_fmt_ctx->oformat->flags & AVFMT_NOFILE)) avio_closep(&output_fmt_ctx->pb);
+    if (output_fmt_ctx) avformat_free_context(output_fmt_ctx);
+    if (decode_ctx) avcodec_free_context(&decode_ctx);
+    if (encode_ctx) avcodec_free_context(&encode_ctx);
+    if (swr_ctx) swr_free(&swr_ctx);
+    if (pkt) av_packet_free(&pkt);
+    if (enc_pkt) av_packet_free(&enc_pkt);
+    if (frame) av_frame_free(&frame);
+    if (converted_frame) av_frame_free(&converted_frame);
+    av_channel_layout_uninit(&dec_ch_layout);
+
     return ret < 0 ? 1 : 0;
 }
 
