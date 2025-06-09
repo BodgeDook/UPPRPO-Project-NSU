@@ -1,10 +1,6 @@
 import os
 
-
-
 from PyQt5.QtWidgets import QFileDialog, QInputDialog, QDialog, QVBoxLayout
-# from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout
-
 # develop
 from PyQt5.QtCore import QStandardPaths
 

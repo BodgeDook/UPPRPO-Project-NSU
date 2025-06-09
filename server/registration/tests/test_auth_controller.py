@@ -74,6 +74,7 @@ def test_login_logic(auth_controller):
 
     auth_controller.worker.start.assert_not_called()
     auth_controller.login_user = default_login_user
+    auth_controller.state_changed.emit.reset_mock()
 
 # register_user
 def test_register_logic(auth_controller):
@@ -82,7 +83,7 @@ def test_register_logic(auth_controller):
 
     default_register_user = auth_controller.register_user
 
-    def mocked_register_user(email, password1, password2):
+    def mocked_register_user(email, password1):
         auth_controller.processing.emit(True)
         auth_controller.worker = Mock()
         auth_controller.worker.email = email
@@ -91,7 +92,7 @@ def test_register_logic(auth_controller):
         auth_controller.worker.start = Mock()
 
     auth_controller.register_user = mocked_register_user
-    auth_controller.register_user("test@gmail.com", "MyPass123!", "MyPass123!")
+    auth_controller.register_user("test@gmail.com", "MyPass123!")
     auth_controller.processing.emit.assert_called_once_with(True)   
 
     assert auth_controller.worker is not None
@@ -101,6 +102,7 @@ def test_register_logic(auth_controller):
 
     auth_controller.worker.start.assert_not_called()
     auth_controller.register_user = default_register_user
+    auth_controller.state_changed.emit.reset_mock()
 
 # verify_code
 def test_verify_logic_invalid_code(auth_controller):
@@ -116,7 +118,6 @@ def test_verify_logic_valid_code(auth_controller):
         auth_controller.processing.emit(True)
         auth_controller.worker = Mock()
         auth_controller.worker.email = email
-        auth_controller.worker.code = code
         auth_controller.worker.action = "verify_code"
         auth_controller.worker.data = code
         auth_controller.worker.result_signal = Mock()
@@ -135,6 +136,92 @@ def test_verify_logic_valid_code(auth_controller):
     
     assert result is None
     auth_controller.verify_code = original_verify_code
+    auth_controller.state_changed.emit.reset_mock()
+
+def test_resend_code(auth_controller):
+    default_resend_code = auth_controller.resend_code
+
+    def mocked_resend_code(email):
+        auth_controller.processing.emit(True)
+        auth_controller.worker = Mock()
+        auth_controller.worker.email = email
+        auth_controller.worker.data = None
+        auth_controller.worker.action = "send_code"
+        auth_controller.worker.result_signal = Mock()
+        auth_controller.worker.start = Mock()
+    
+    auth_controller.resend_code = mocked_resend_code
+    auth_controller.resend_code("test@gmail.com")
+    auth_controller.processing.emit.assert_called_once_with(True)
+    assert auth_controller.worker is not None
+    assert auth_controller.worker.email == "test@gmail.com"
+    assert auth_controller.worker.action == "send_code"
+    assert auth_controller.worker.data is None
+    auth_controller.worker.start.assert_not_called()
+    auth_controller.resend_code = default_resend_code
+    auth_controller.state_changed.emit.reset_mock()
+
+# send verification code for reset
+def test_verification_code_for_reset(auth_controller):
+    auth_controller.validate_email = Mock(return_value=True)
+    defautl_method = auth_controller.send_verification_code_for_reset
+    
+    def mocked_send_verification_code_for_reset(email):
+        auth_controller.processing.emit(True) 
+        auth_controller.worker = Mock()
+        auth_controller.worker.email = email
+        auth_controller.worker.action = "send_code"
+        auth_controller.worker.data = None
+        auth_controller.worker.result_signal = Mock()
+        auth_controller.worker.start = Mock()  
+    
+    auth_controller.send_verification_code_for_reset = mocked_send_verification_code_for_reset
+    auth_controller.send_verification_code_for_reset("test@gmail.com")
+    auth_controller.processing.emit.assert_called_once_with(True)
+    assert auth_controller.worker is not None
+    assert auth_controller.worker.email == "test@gmail.com"
+    assert auth_controller.worker.action == "send_code"
+    assert auth_controller.worker.data is None
+    auth_controller.worker.start.assert_not_called()
+    auth_controller.send_verification_code_for_reset = defautl_method
+    auth_controller.state_changed.emit.reset_mock()
+
+# response for login 200
+def test_process_response_login_success(auth_controller):
+
+    default_process_response = auth_controller.process_response
+    
+    def mocked_process_response(action, status_code, response):
+        if action in ("register", "login") and status_code in (200, 201):
+            auth_controller.current_email = auth_controller.worker.email
+            auth_controller.current_state = auth_controller.VERIFY
+            auth_controller.state_changed.emit()
+            auth_controller.worker = Mock()
+            auth_controller.worker.start = Mock()
+        elif action == "login" and status_code not in (200, 201):
+            auth_controller.result_signal_to_ui.emit(str(response.get('message', response)))
+
+        
+    auth_controller.process_response = mocked_process_response
+    auth_controller.worker = Mock()
+    auth_controller.worker.email = "test@gmail.com"
+    auth_controller.worker.current_email = None
+
+    auth_controller.process_response("login", 200, {})
+    assert auth_controller.current_email == "test@gmail.com"
+    assert auth_controller.current_state == auth_controller.VERIFY
+    auth_controller.state_changed.emit.assert_called_once()
+    auth_controller.state_changed.emit.reset_mock()
+
+    auth_controller.current_email = "another@gmail.com"
+    auth_controller.process_response("login", 400, {"message": "Invalid credentials"})
+    auth_controller.result_signal_to_ui.emit.assert_called_once_with("Invalid credentials")
+    assert auth_controller.current_email == "another@gmail.com" # не обновляется на тест емаил
+    auth_controller.result_signal_to_ui.emit.reset_mock()
+    
+
+    auth_controller.process_response = default_process_response
+    
 
 # is_valid_password
 def test_is_invalid_password_invalid(auth_controller):

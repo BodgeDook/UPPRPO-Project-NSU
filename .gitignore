@@ -9,7 +9,7 @@ myTests
 .env
 /desktop-app/dev-cache/cache
 /desktop-app/__pycache__
-
+/.pytest_cache
 /desktop-app/render/*.mp4
 /desktop-app/render/build
 /desktop-app/render/_videooperations.*
