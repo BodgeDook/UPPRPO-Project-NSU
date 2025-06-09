@@ -30,6 +30,8 @@ private:
     std::vector<std::pair<double, double>> video_time_markers;
     std::vector<std::pair<double, double>> audio_time_markers;
 
+    std::vector<std::string> track_sources;
+
     void configureTimeline(std::string type);
 
     int processAudio();
@@ -47,14 +49,17 @@ private:
     int mergeTrackAudio(Track track);
     int mergeTrackVideo(Track track);
 
+    // Merge pair of tracks
+    int mergePairAudioTracks(std::string& src1, std::string& src2, std::string& output_filename);
+    int mergePairVideoTracks(std::string& src1, std::string& src2, std::string& output_filename);
 
     // Merge all tracks
     int mergeAudioTracks();
     int mergeVideoTracks();
 
     // Apply single transform on track
-    int applyVideoTransform();
-    int applyAudioTransform();
+    int applyVideoTransform(std::string& src);
+    int applyAudioTransform(std::string& src);
 
     int applyAllVideoTransforms();
     int applyAllAudioTransforms();
