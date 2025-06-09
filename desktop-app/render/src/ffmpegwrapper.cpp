@@ -403,7 +403,7 @@ int FFmpegWrapper::extractAudio(std::string& input_file, double from_sec, double
 
 int processVideo();
 
-int FFmpegWrapper::createAudioVoid(double duration, int sample_rate, int channels){
+int createAudioVoid(double duration, int sample_rate = 48000, int channels = 2){
     std::string filename = "tmp/void.wav";
     AVFormatContext* fmt_ctx = nullptr;
     avformat_alloc_output_context2(&fmt_ctx, nullptr, nullptr, filename.c_str());
@@ -412,9 +412,7 @@ int FFmpegWrapper::createAudioVoid(double duration, int sample_rate, int channel
     AVCodecContext* codec_ctx = avcodec_alloc_context3(codec);
     codec_ctx->sample_rate = sample_rate;
     codec_ctx->ch_layout.nb_channels = channels == 1 ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
-    // codec_ctx->ch_layout = av_get_channel_layout_nb_channels(codec_ctx->ch_layout);
-    av_channel_layout_default(&codec_ctx->ch_layout, codec_ctx->ch_layout.nb_channels);
-    std::cout << "Num channels: " << codec_ctx->ch_layout.nb_channels << ", " << AV_CH_LAYOUT_STEREO << "\n";
+    codec_ctx->ch_layout.nb_channels = av_get_channel_layout_nb_channels(codec_ctx->ch_layout);
     
     codec_ctx->sample_fmt = AV_SAMPLE_FMT_S32;
     avcodec_open2(codec_ctx, codec, nullptr);
@@ -455,6 +453,5 @@ void FFmpegWrapper::process(std::string src){
 
     std::cout << "Done configuring timeline\n";
 
-    this->extractAudio(src, 10, 20);
-    this->createAudioVoid(10, 48000, 2);
+    extractAudio(src, 10, 20);
 }
