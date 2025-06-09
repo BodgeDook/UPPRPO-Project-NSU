@@ -22,14 +22,13 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option){
 int main(int argc, char** argv){
     if(argc == 1)
         std::cerr << "No parameters specified";
-    else if(cmdOptionExists(argv, argv + argc, "-config") && cmdOptionExists(argv, argv + argc, "-src")){
+    else if(cmdOptionExists(argv, argv + argc, "-config")){
         std::string config_file(getCmdOption(argv, argv + argc, "-config"));
-        std::string src(getCmdOption(argv, argv + argc, "-src"));
         
         VideoEditor editor(config_file);
 
         editor.parseJSON();
-        editor.render(src);
+        editor.render();
     }
 
     return 0;

@@ -5,8 +5,8 @@
 #include <string_view>
 #include <vector>
 
-// #include "videooperations.hpp"
 #include "operationfactory.hpp"
+#include "render_export.hpp"
 
 class VideoEditor{
 public:
@@ -14,7 +14,7 @@ public:
 
     int parseJSON();
 
-    int render(std::string src);
+    int render();
 
 private:
     std::string jsonFilePath;

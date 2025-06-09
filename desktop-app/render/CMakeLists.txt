@@ -44,7 +44,10 @@ if(BUILD_SHARED_LIB)
 
     if(WIN32)
         target_compile_definitions(render PRIVATE RENDER_BUILD_DLL)
-        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
+
+    if(UNIX)
+        target_compile_options(render PRIVATE -fvisibility=hidden)
     endif()
 
 else()
@@ -54,12 +57,17 @@ else()
         videoeditor.cpp 
         ffmpegwrapper.cpp
     )
-    # target_include_directories(render PRIVATE ${CMAKE_SOURCE_DIR}/include)
 endif()
 
 target_include_directories(render PRIVATE
     ${FFMPEG_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/rapidjson/include
+    ${CMAKE_SOURCE_DIR}
+)
+
+target_include_directories(render
+  PUBLIC
+    
 )
 
 target_link_libraries(render PRIVATE ${FFMPEG_LIBRARIES})
