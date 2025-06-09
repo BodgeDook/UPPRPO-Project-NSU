@@ -49,6 +49,7 @@ def test_forgot_password_state(auth_controller):
     auth_controller.state_changed.emit.assert_called_once()
     auth_controller.forgot_password_state_changed.emit.assert_called_once()
 
+# login_user
 def test_login_logic(auth_controller):
     auth_controller.validate_email = Mock(return_value=True)
 
@@ -74,6 +75,7 @@ def test_login_logic(auth_controller):
     auth_controller.worker.start.assert_not_called()
     auth_controller.login_user = default_login_user
 
+# register_user
 def test_register_logic(auth_controller):
     auth_controller.validate_email = Mock(return_value=True)
     auth_controller.validate_passwords = Mock(return_value=True)
@@ -100,7 +102,41 @@ def test_register_logic(auth_controller):
     auth_controller.worker.start.assert_not_called()
     auth_controller.register_user = default_register_user
 
+# verify_code
+def test_verify_logic_invalid_code(auth_controller):
+    result = auth_controller.verify_code("test@gmail.com", "")
+    auth_controller.result_signal_to_ui.emit.assert_called_once_with("Please enter the verification code")
+    assert result is False
 
+# verify_code
+def test_verify_logic_valid_code(auth_controller):
+    original_verify_code = auth_controller.verify_code
+    
+    def mocked_verify_code(email, code):
+        auth_controller.processing.emit(True)
+        auth_controller.worker = Mock()
+        auth_controller.worker.email = email
+        auth_controller.worker.code = code
+        auth_controller.worker.action = "verify_code"
+        auth_controller.worker.data = code
+        auth_controller.worker.result_signal = Mock()
+        auth_controller.worker.start = Mock() 
+    
+    auth_controller.verify_code = mocked_verify_code
+    
+    result = auth_controller.verify_code("test@gmail.com", "123456")
+    auth_controller.processing.emit.assert_called_once_with(True)
+    
+    assert auth_controller.worker is not None
+    assert auth_controller.worker.email == "test@gmail.com"
+    assert auth_controller.worker.action == "verify_code"
+    assert auth_controller.worker.data == "123456"
+    auth_controller.worker.start.assert_not_called()
+    
+    assert result is None
+    auth_controller.verify_code = original_verify_code
+
+# is_valid_password
 def test_is_invalid_password_invalid(auth_controller):
 
     short_invalid_password = "MyPas1!"

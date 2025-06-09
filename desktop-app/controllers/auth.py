@@ -63,6 +63,7 @@ class AuthController(QObject):
         self.worker.result_signal.connect(self.process_response)
         self.worker.start()
 
+    # covered
     def verify_code(self, email, code):
         if not code.strip():
             self.result_signal_to_ui.emit("Please enter the verification code")

@@ -62,7 +62,7 @@ jobs:
     - name: Run Qt tests
       run: |
         export PYTHONPATH=.:$PYTHONPATH
-        pytest server/registration/tests/test_auth_controller.py
+        pytest server/registration/tests/test_auth_controller.py -v
   
     - name: Show FastAPI logs after tests
       if: always()
