@@ -24,21 +24,22 @@ class AuthController(QObject):
         self.forgot_password_state = self.FORGOT_PASSWORD_EMAIL
         self.worker = None
         self.current_email = None
-
+    # covered
     def switch_to_login(self):
         self.current_state = self.LOGIN
         self.state_changed.emit()
-
+    # covered
     def switch_to_register(self):
         self.current_state = self.REGISTER
         self.state_changed.emit()
-
+    # covered
     def switch_to_forgot_password(self):
         self.current_state = self.FORGOT_PASSWORD
         self.forgot_password_state = self.FORGOT_PASSWORD_EMAIL
         self.state_changed.emit()
         self.forgot_password_state_changed.emit()
 
+    # covered
     def login_user(self, email, password):
         if not self.validate_email(email):
             self.result_signal_to_ui.emit("Invalid email format")
@@ -48,7 +49,7 @@ class AuthController(QObject):
         self.worker = AuthWorker(self.model, email, password, "login")
         self.worker.result_signal.connect(self.process_response)
         self.worker.start()
-
+    # covered
     def register_user(self, email, password1, password2):
         if not self.validate_email(email):
             self.result_signal_to_ui.emit("Invalid email format")
@@ -104,7 +105,7 @@ class AuthController(QObject):
 
     def validate_email(self, email):
         return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
-
+    # covered
     def validate_passwords(self, password1, password2):
         if password1 != password2:
             self.result_signal_to_ui.emit("Passwords do not match")
@@ -115,7 +116,7 @@ class AuthController(QObject):
             return False
 
         return True
-
+    # covered
     def is_valid_password(self, password):
         if len(password) < 8:
             return False
