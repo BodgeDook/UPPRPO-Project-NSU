@@ -10,8 +10,6 @@ project(render)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_compile_definitions(DEBUG)
-
 set(FFMPEG_DIR "${CMAKE_SOURCE_DIR}/ffmpeg")
 set(FFMPEG_INCLUDE_DIRS "${FFMPEG_DIR}/include")
 set(FFMPEG_LIBRARIES 
@@ -23,20 +21,48 @@ set(FFMPEG_LIBRARIES
     "${FFMPEG_DIR}/lib/swresample.lib"
 )
 
-# Проверка существования библиотек и заголовков
 foreach(lib ${FFMPEG_LIBRARIES})
     if(NOT EXISTS ${lib})
         message(FATAL_ERROR "Library not found: ${lib}")
     endif()
 endforeach()
 
-add_executable(render main.cpp operationfactory.cpp videoeditor.cpp ffmpegwrapper.cpp)
+option(BUILD_SHARED_LIB "Build shared or executable" OFF)
 
-target_include_directories(render PRIVATE ${FFMPEG_INCLUDE_DIRS})
+option(BUILD_DEBUG "Build debug/release version" ON)
+
+if(BUILD_DEBUG)
+    add_compile_definitions(DEBUG)
+endif()
+
+if(BUILD_SHARED_LIB)
+    add_library(render SHARED
+        operationfactory.cpp
+        videoeditor.cpp
+        ffmpegwrapper.cpp
+    )
+
+    if(WIN32)
+        target_compile_definitions(render PRIVATE RENDER_BUILD_DLL)
+        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    endif()
+
+else()
+    add_executable(render 
+        main.cpp 
+        operationfactory.cpp 
+        videoeditor.cpp 
+        ffmpegwrapper.cpp
+    )
+    # target_include_directories(render PRIVATE ${CMAKE_SOURCE_DIR}/include)
+endif()
+
+target_include_directories(render PRIVATE
+    ${FFMPEG_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/rapidjson/include
+)
 
 target_link_libraries(render PRIVATE ${FFMPEG_LIBRARIES})
-
-target_include_directories(render PRIVATE ${CMAKE_SOURCE_DIR}/rapidjson/include)
 
 add_custom_command(TARGET render POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory

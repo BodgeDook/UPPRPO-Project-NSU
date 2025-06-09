@@ -50,7 +50,7 @@ private:
     int applyAllVideoTransforms();
     int applyAllAudioTransforms();
 
-    int createAudioVoid(double duration, int sample_rate, int channels);
+    int createAudioVoid(double duration);
     int createVideoVoid();
 
     int extractAudio(std::string& input_file, double from_sec, double to_sec);
