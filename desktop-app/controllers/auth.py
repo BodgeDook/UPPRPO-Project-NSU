@@ -74,6 +74,7 @@ class AuthController(QObject):
         self.worker.result_signal.connect(self.process_response)
         self.worker.start()
 
+    # covered
     def send_verification_code_for_reset(self, email):
         if not self.validate_email(email):
             self.result_signal_to_ui.emit("Invalid email format")
@@ -98,6 +99,7 @@ class AuthController(QObject):
         self.worker.result_signal.connect(lambda action, status, response: self.process_verify_and_update_password(email, new_password))
         self.worker.start()
 
+    # covered
     def resend_code(self, email):
         self.processing.emit(True)
         self.worker = AuthWorker(self.model, email, None, "send_code")
@@ -140,7 +142,7 @@ class AuthController(QObject):
             if phrase in password_lower:
                 return False
         return True
-
+    # covered partly
     def process_response(self, action, status_code, response):
         self.processing.emit(False)
 
