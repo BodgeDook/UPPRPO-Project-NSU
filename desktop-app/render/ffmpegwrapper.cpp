@@ -402,7 +402,9 @@ int FFmpegWrapper::extractAudio(std::string& input_file, std::string& output_fil
     return ret < 0 ? 1 : 0;
 }
 
-int processVideo();
+int FFmpegWrapper::extractVideo(std::string& input_file, std::string& output_file, double from_sec, double to_sec){
+    
+}
 
 int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int sample_rate, int channels){
     int ret;

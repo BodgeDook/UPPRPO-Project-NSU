@@ -34,9 +34,6 @@ private:
 
     void configureTimeline(std::string type);
 
-    int processAudio();
-    int processVideo();
-
     // Merge 2 files
     int mergeAudioSourcePair(std::string& src1, std::string& src2, std::string& output_filename);
     int mergeVideoSourcePair(std::string& src1, std::string& src2, std::string& output_filename);
@@ -65,8 +62,10 @@ private:
     int applyAllAudioTransforms();
 
     int createAudioVoid(std::string& filename, double duration, int sample_rate, int channels);
-    int createVideoVoid();
+    int createVideoVoid(std::string& filename, double duration, int sample_rate, int channels);
 
     int extractAudio(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
-    int extractVideo(std::string& input_file, int from, int to);
+    int extractVideo(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
+
+    int combineVideoAudio(std::string& video_src, std::string& audio_src);
 };
