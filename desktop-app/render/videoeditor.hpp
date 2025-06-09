@@ -5,21 +5,21 @@
 #include <string_view>
 #include <vector>
 
-// #include "videooperations.hpp"
-#include "operationfactory.hpp"
+#include "videooperations.hpp"
+
 
 class VideoEditor{
 public:
-    VideoEditor(const std::string_view jsonFilePath);
+    VideoEditor(const std::string_view inputFilePath, const std::string_view outputFilePath, std::string_view outputCodec, int dst_width, int dst_height);
 
-    int parseJSON();
+    int loadOperations(const std::string_view jsonFilePath);
 
-    int render(std::string src);
+    int render();
 
 private:
-    std::string jsonFilePath;
-
-    OperationFactory factory;
-    Settings settings;
-    std::vector<Track> tracks;
+    std::string inputFilePath;
+    std::string outputFilePath;
+    std::string outputCodec;
+    int dst_width, dst_height;
+    std::vector<VideoOperation*> videoOperations;
 };

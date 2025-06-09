@@ -3,458 +3,340 @@
 #include <string>
 #include <iostream>
 
-FFmpegWrapper::FFmpegWrapper(Settings settings, std::vector<Track> tracks): settings(settings), tracks(tracks){};
 
-// type: "video" | "audio"
-void FFmpegWrapper::configureTimeline(std::string type){
-    std::vector<std::pair<int, int>> time_markers;
-    for(auto& track: tracks){
-        if(track.type == type){
-            for(auto& item: track.items)
-                time_markers.push_back({item.startFrame, item.endFrame});
-        }
+/*
+    FFmpegWrapper class, wraps interaction with FFmpeg API into custom interface
+    Has methods:
+    1. openInput method opend input file stream
+    2. openOutput method opens output file stream
+    3. addFilter method adds string representation of filter into vector of string representations of filters
+    4. process method applies all filters from std::vector<std::string> filters
+*/
+
+//  Constructor, gets inputFilename and outputFilename.
+FFmpegWrapper::FFmpegWrapper(std::string_view inputFilename, std::string_view outputFilename, std::string_view outputCodec, int dst_width, int dst_height): 
+    inputFilename(inputFilename), outputFilename(outputFilename), outputCodecStr(outputCodec), dst_width(dst_width), dst_height(dst_height){};
+
+// openInput, opens input file
+int FFmpegWrapper::openInput(){
+    this->fmt_ctx = avformat_alloc_context();
+    if (avformat_open_input(&fmt_ctx, std::string(this->inputFilename).c_str(), NULL, NULL) < 0) {
+        std::cerr << "Error while opening a file! (avformat_open_input)\n";
+        avformat_close_input(&fmt_ctx);
+        return -1;
+    }
+    if (avformat_find_stream_info(fmt_ctx, NULL) < 0) {
+        std::cerr << "Error while opening a file! (avformat_find_stream_info)\n";
+        avformat_close_input(&fmt_ctx);
+        return -1;
     }
 
-    if(type == std::string("audio"))
-        this->audio_time_markers = time_markers;
-    else if(type == std::string("video"))
-        this->video_time_markers = time_markers;
-}
-
-int FFmpegWrapper::extractAudio(std::string& input_file, double from_sec, double to_sec) {
-    int ret = 0;
-    std::string output_file = "tmp/tmp_audio.wav";
-
-    AVFormatContext *input_fmt_ctx = nullptr;
-    AVFormatContext *output_fmt_ctx = nullptr;
-    AVCodecContext *decode_ctx = nullptr;
-    AVCodecContext *encode_ctx = nullptr;
-    SwrContext* swr_ctx = nullptr;
-    AVPacket *pkt = nullptr;
-    AVPacket *enc_pkt = nullptr;
-    AVFrame *frame = nullptr;
-    AVFrame *converted_frame = nullptr;
-    AVChannelLayout dec_ch_layout{};
-
-    int audio_stream_index = -1;
-
-    av_log_set_level(AV_LOG_DEBUG);
-
-    // Open input file
-    if ((ret = avformat_open_input(&input_fmt_ctx, input_file.c_str(), nullptr, nullptr)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Unable to open %s. Error code: %s\n", input_file.c_str(), ret);
-        avformat_close_input(&input_fmt_ctx);
-        return ret;
-    }
-
-    // Find streams info
-    if ((ret = avformat_find_stream_info(input_fmt_ctx, nullptr)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Unable to find stream info. Error code: %s\n", ret);
-        avformat_close_input(&input_fmt_ctx);
-        return ret;
-    }
-
-    // Find audio stream
-    audio_stream_index = av_find_best_stream(input_fmt_ctx, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
-    if (audio_stream_index < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Unable to find audio stream in %s\n", input_file.c_str());
-        ret = AVERROR_STREAM_NOT_FOUND;
-        avformat_close_input(&input_fmt_ctx);
-        return ret;
-    }
-    AVStream* audio_stream = input_fmt_ctx->streams[audio_stream_index];
-    AVRational time_base = audio_stream->time_base;
-
-    // Rescaling timestamps "from" and "to" from seconds to pts (Presentation Timestamps)
-    long long from_pts = av_rescale_q(static_cast<long long>(from_sec * AV_TIME_BASE), AV_TIME_BASE_Q, time_base);
-    long long to_pts = av_rescale_q(static_cast<long long>(to_sec * AV_TIME_BASE), AV_TIME_BASE_Q, time_base);
-    long long output_pts = 0;
-
-    // Decoder setup
-    const AVCodec* decoder = avcodec_find_decoder(audio_stream->codecpar->codec_id);
-    if (!decoder) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to find decoder\n");
-        ret = AVERROR_DECODER_NOT_FOUND;
-        avformat_close_input(&input_fmt_ctx);
-        return ret;
-    }
-    decode_ctx = avcodec_alloc_context3(decoder);
-    if (!decode_ctx) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        return ret;
-    }
-    avcodec_parameters_to_context(decode_ctx, audio_stream->codecpar);
-    if ((ret = avcodec_open2(decode_ctx, decoder, nullptr)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to open decoder. Error code: %s\n", ret);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        return ret;
-    }
-
-    // Encoder setup
-    const AVCodec* encoder = avcodec_find_encoder_by_name("pcm_s32le"); // WAV без сжатия, 16-bit
-    if (!encoder) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to find pcm_s16le encoder\n");
-        ret = AVERROR_ENCODER_NOT_FOUND;
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        return ret;
-    }
-    encode_ctx = avcodec_alloc_context3(encoder);
-    if (!encode_ctx) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        return ret;
-    }
-
-    // Channel layout setup
-    if (av_channel_layout_copy(&dec_ch_layout, &decode_ctx->ch_layout) < 0 || dec_ch_layout.nb_channels == 0) {
-        av_channel_layout_default(&dec_ch_layout, decode_ctx->ch_layout.nb_channels);
-    }
-    av_channel_layout_copy(&encode_ctx->ch_layout, &dec_ch_layout);
-
-    encode_ctx->sample_rate = decode_ctx->sample_rate;
-    encode_ctx->sample_fmt = encoder->sample_fmts[0];
-    encode_ctx->time_base = {1, encode_ctx->sample_rate};
-
-    if ((ret = avcodec_open2(encode_ctx, encoder, nullptr)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to open encoder. Error code: %s\n", ret);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        return ret;
-    }
-
-    // Set up swresample to convert samples format
-    if (swr_alloc_set_opts2(&swr_ctx, &encode_ctx->ch_layout, encode_ctx->sample_fmt, encode_ctx->sample_rate,
-                           &dec_ch_layout, decode_ctx->sample_fmt, decode_ctx->sample_rate, 0, nullptr) < 0) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-    if ((ret = swr_init(swr_ctx)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Failed to initialize SWR context. Error code: %s\n", ret);
-        avformat_close_input(&input_fmt_ctx);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-    
-    // Create output temporary file
-    avformat_alloc_output_context2(&output_fmt_ctx, nullptr, nullptr, output_file.c_str());
-    if (!output_fmt_ctx) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avformat_close_input(&output_fmt_ctx);
-        avio_closep(&output_fmt_ctx->pb);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-    AVStream* out_stream = avformat_new_stream(output_fmt_ctx, nullptr);
-    if (!out_stream) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avformat_close_input(&output_fmt_ctx);
-        avio_closep(&output_fmt_ctx->pb);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-    avcodec_parameters_from_context(out_stream->codecpar, encode_ctx);
-    out_stream->time_base = encode_ctx->time_base;
-
-    if (!(output_fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
-        if ((ret = avio_open(&output_fmt_ctx->pb, output_file.c_str(), AVIO_FLAG_WRITE)) < 0) {
-            av_log(NULL, AV_LOG_ERROR, "Could not open output file '%s'. Error: %s\n", output_file.c_str(), ret);
-            avformat_close_input(&input_fmt_ctx);
-            avformat_close_input(&output_fmt_ctx);
-            avio_closep(&output_fmt_ctx->pb);
-            avcodec_free_context(&decode_ctx);
-            avcodec_free_context(&encode_ctx);
-            av_channel_layout_uninit(&dec_ch_layout);
-            swr_free(&swr_ctx);
-            return ret;
-        }
-    }
-
-    if ((ret = avformat_write_header(output_fmt_ctx, nullptr)) < 0) {
-        av_log(NULL, AV_LOG_ERROR, "Error occurred when writing header. Error: %s\n", ret);
-        avformat_close_input(&input_fmt_ctx);
-        avformat_close_input(&output_fmt_ctx);
-        avio_closep(&output_fmt_ctx->pb);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-
-    // Use av_seek_frame to jump to starter point
-    if (av_seek_frame(input_fmt_ctx, audio_stream_index, from_pts, AVSEEK_FLAG_BACKWARD) < 0) {
-        av_log(NULL, AV_LOG_WARNING, "Could not seek to position %f\n", from_sec);
-        avformat_close_input(&input_fmt_ctx);
-        avformat_close_input(&output_fmt_ctx);
-        avio_closep(&output_fmt_ctx->pb);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        return ret;
-    }
-    avcodec_flush_buffers(decode_ctx);
-
-    // Allocate memory for packets and frames
-    pkt = av_packet_alloc();
-    enc_pkt = av_packet_alloc();
-    frame = av_frame_alloc();
-    converted_frame = av_frame_alloc();
-    if (!pkt || !enc_pkt || !frame || !converted_frame) {
-        ret = AVERROR(ENOMEM);
-        avformat_close_input(&input_fmt_ctx);
-        avformat_close_input(&output_fmt_ctx);
-        avio_closep(&output_fmt_ctx->pb);
-        avcodec_free_context(&decode_ctx);
-        avcodec_free_context(&encode_ctx);
-        av_channel_layout_uninit(&dec_ch_layout);
-        swr_free(&swr_ctx);
-        av_packet_free(&pkt);
-        av_packet_free(&enc_pkt);
-        av_frame_free(&frame);
-        av_frame_free(&converted_frame);
-        return ret;
-    }
-
-    // Main loop
-    while (av_read_frame(input_fmt_ctx, pkt) >= 0) {
-        if (pkt->stream_index != audio_stream_index) {
-            av_packet_unref(pkt);
-            continue;
-        }
-
-        // Exit condition
-        if (pkt->pts > to_pts && pkt->pts != AV_NOPTS_VALUE) {
-            av_packet_unref(pkt);
+    this->video_stream_index = -1;
+    for (unsigned int i = 0; i < this->fmt_ctx->nb_streams; i++) {
+        if (this->fmt_ctx->streams[i]->codecpar->codec_type == AVMEDIA_TYPE_VIDEO) {
+            this->video_stream_index = i;
             break;
         }
+    }
+    if (this->video_stream_index == -1) {
+        std::cerr << "Video stream not found!\n";
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
 
-        if ((ret = avcodec_send_packet(decode_ctx, pkt)) < 0) {
-            av_log(NULL, AV_LOG_ERROR, "Error sending packet to decoder\n");
-            avformat_close_input(&input_fmt_ctx);
-            avformat_close_input(&output_fmt_ctx);
-            avio_closep(&output_fmt_ctx->pb);
-            avcodec_free_context(&decode_ctx);
-            avcodec_free_context(&encode_ctx);
-            av_channel_layout_uninit(&dec_ch_layout);
-            swr_free(&swr_ctx);
-            av_packet_free(&pkt);
-            av_packet_free(&enc_pkt);
-            av_frame_free(&frame);
-            av_frame_free(&converted_frame);
-            return ret;
+    this->codecpar = this->fmt_ctx->streams[this->video_stream_index]->codecpar;
+
+    #ifdef DEBUG
+    std::cout << "Found Codec " << codecpar->codec_id << "\n";
+    #endif
+    this->codec = avcodec_find_decoder(this->codecpar->codec_id);
+    if (!this->codec) {
+        std::cerr << "Decoder not found!\n";
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+    this->codec_ctx = avcodec_alloc_context3(this->codec);
+    if (avcodec_parameters_to_context(this->codec_ctx, this->codecpar) < 0) {
+        std::cerr << "Error while copying codec parameters!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+    if (avcodec_open2(this->codec_ctx, this->codec, NULL) < 0) {
+        std::cerr << "Error while opening decoder!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+
+    AVRational stream_time_base = this->fmt_ctx->streams[this->video_stream_index]->time_base;
+    if (stream_time_base.num > 0 && stream_time_base.den > 0) {
+        this->codec_ctx->time_base = stream_time_base;
+    } else if (this->codec_ctx->framerate.num > 0 && this->codec_ctx->framerate.den > 0) {
+        this->codec_ctx->time_base = AVRational{this->codec_ctx->framerate.den, this->codec_ctx->framerate.num};
+    } else {
+        this->codec_ctx->time_base = AVRational{1, 60}; // Запасное значение для 60 FPS
+    }
+
+    this->src_pix_fmt = this->codec_ctx->pix_fmt;
+
+    #ifdef DEBUG
+    std::cout << "Input time_base: " << this->codec_ctx->time_base.num << "/" << this->codec_ctx->time_base.den << "\n";
+    std::cout << "Input framerate: " << this->codec_ctx->framerate.num << "/" << this->codec_ctx->framerate.den << "\n";
+    #endif
+    return 0;
+}
+
+
+// openOutput, opens output file
+int FFmpegWrapper::openOutput(){
+    this->out_fmt_ctx = NULL;
+    avformat_alloc_output_context2(&this->out_fmt_ctx, NULL, NULL, std::string(this->outputFilename).c_str());
+    if(!this->out_fmt_ctx){
+        std::cerr << "Cannot create output context!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+    this->out_stream = avformat_new_stream(this->out_fmt_ctx, NULL);
+    if(!this->out_stream){
+        std::cerr << "Cannot create output video stream!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+
+    this->output_codec = avcodec_find_encoder_by_name(this->outputCodecStr.c_str());
+    if (!this->output_codec) {
+        std::cerr << "Encoder not found for " << this->outputCodecStr << "!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+
+    this->out_codec_ctx = avcodec_alloc_context3(this->output_codec);
+    if(!this->out_codec_ctx){
+        std::cerr << "Cannot create output codec context!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+    this->out_codec_ctx->width = this->dst_width;
+    this->out_codec_ctx->height = this->dst_height;
+    this->out_codec_ctx->pix_fmt = AV_PIX_FMT_YUV420P;
+    this->out_codec_ctx->framerate = this->codec_ctx->framerate;
+    this->out_codec_ctx->time_base = this->codec_ctx->time_base;
+    // this->out_codec_ctx->bit_rate = this->codec_ctx->bit_rate;
+
+    this->out_stream->time_base = this->out_codec_ctx->time_base;
+    #ifdef DEBUG
+    std::cout << "dst_width = " << this->out_codec_ctx->width << ", dst_height = " << this->out_codec_ctx->height << ", timebase = " << 
+    this->out_codec_ctx->time_base.num << " / " << this->out_codec_ctx->time_base.den << ", pix_fmt = " << this->out_codec_ctx->pix_fmt << ", framerate = " << 
+    this->out_codec_ctx->framerate.num << " / " << this->out_codec_ctx->framerate.den << ", bit_rate = " << this->out_codec_ctx->bit_rate << "\n";
+    #endif
+
+    AVDictionary* opts = NULL;
+    av_dict_set(&opts, "crf", "23", 0); // Quality
+    av_dict_set(&opts, "preset", "medium", 0); // Preset
+    if(avcodec_open2(this->out_codec_ctx, this->output_codec, &opts)){
+        std::cerr << "Cannot open codec for output!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avcodec_free_context(&this->out_codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        av_dict_free(&opts);
+        return -1;
+    }
+
+    if(avcodec_parameters_from_context(this->out_stream->codecpar, this->out_codec_ctx) < 0){
+        std::cerr << "Cannot copy params to output stream!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avcodec_free_context(&this->out_codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
+
+    if(!(out_fmt_ctx->oformat->flags & AVFMT_NOFILE)){
+        if(avio_open(&this->out_fmt_ctx->pb, this->outputFilename.c_str(), AVIO_FLAG_WRITE) < 0){
+            std::cerr << "Cannot open output file!\n";
+            avcodec_free_context(&this->codec_ctx);
+            avcodec_free_context(&this->out_codec_ctx);
+            avformat_close_input(&this->fmt_ctx);
+            return -1;
         }
+    }
 
-        while (ret >= 0) {
-            ret = avcodec_receive_frame(decode_ctx, frame);
-            if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF) break;
-            if (ret < 0) {
-                av_log(NULL, AV_LOG_ERROR, "Error receiving frame from decoder\n");
-                avformat_close_input(&input_fmt_ctx);
-                avformat_close_input(&output_fmt_ctx);
-                avio_closep(&output_fmt_ctx->pb);
-                avcodec_free_context(&decode_ctx);
-                avcodec_free_context(&encode_ctx);
-                av_channel_layout_uninit(&dec_ch_layout);
-                swr_free(&swr_ctx);
-                av_packet_free(&pkt);
-                av_packet_free(&enc_pkt);
-                av_frame_free(&frame);
-                av_frame_free(&converted_frame);
-                return ret;
-            }
+    if(avformat_write_header(this->out_fmt_ctx, NULL) < 0){
+        std::cerr << "Cannot write header for output file!\n";
+        avcodec_free_context(&this->codec_ctx);
+        avcodec_free_context(&this->out_codec_ctx);
+        avformat_close_input(&this->fmt_ctx);
+        return -1;
+    }
 
-            long long frame_pts = frame->pts;
-            if (frame_pts == AV_NOPTS_VALUE) {
-                av_frame_unref(frame);
-                continue;
-            }
-            long long frame_end_pts = frame_pts + frame->nb_samples;
+    this->dst_pix_fmt = this->out_codec_ctx->pix_fmt;
+    
+    #ifdef DEBUG
+    std::cout << "Dst pix fmt = " << this->dst_pix_fmt << "\n";
+    #endif
+    return 0;
+}
 
-            if (frame_end_pts > from_pts && frame_pts < to_pts) {
-                int start_sample = (frame_pts < from_pts) ? (from_pts - frame_pts) : 0;
-                int end_sample = (frame_end_pts > to_pts) ? (to_pts - frame_pts) : frame->nb_samples;
-                int sample_count = end_sample - start_sample;
+// addFilter, adds string representation of filter into std::vector<std::string> filters
+void FFmpegWrapper::addFilter(const std::string_view filter){
+    this->filters.push_back(std::string(filter));
+}
 
-                if (sample_count <= 0) continue;
-                av_frame_unref(converted_frame);
 
-                converted_frame->nb_samples = sample_count;
-                converted_frame->ch_layout = encode_ctx->ch_layout;
-                converted_frame->format = encode_ctx->sample_fmt;
-                converted_frame->sample_rate = encode_ctx->sample_rate;
+// process, applies all filters
+int FFmpegWrapper::process(){
+    #ifdef DEBUG
+    std::cout << "called process method\n";
+    #endif
+    this->openInput();
+    this->openOutput();
 
-                if (av_frame_get_buffer(converted_frame, 0) < 0) {
-                    av_log(NULL, AV_LOG_ERROR, "Could not allocate converted frame buffer\n");
-                    ret = AVERROR(ENOMEM);
-                    avformat_close_input(&input_fmt_ctx);
-                    avformat_close_input(&output_fmt_ctx);
-                    avio_closep(&output_fmt_ctx->pb);
-                    avcodec_free_context(&decode_ctx);
-                    avcodec_free_context(&encode_ctx);
-                    av_channel_layout_uninit(&dec_ch_layout);
-                    swr_free(&swr_ctx);
-                    av_packet_free(&pkt);
-                    av_packet_free(&enc_pkt);
-                    av_frame_free(&frame);
-                    av_frame_free(&converted_frame);
-                    return ret;
-                }
-                
-                const uint8_t** src_data = (const uint8_t**)frame->data;
-                if (start_sample > 0) {
-                    int plane_size;
-                    int line_size;
-                    av_samples_get_buffer_size(&plane_size, decode_ctx->ch_layout.nb_channels, frame->nb_samples, decode_ctx->sample_fmt, 1);
-                    av_samples_get_buffer_size(&line_size, 1, frame->nb_samples, decode_ctx->sample_fmt, 1);
-                    
-                    if (av_sample_fmt_is_planar(decode_ctx->sample_fmt)) {
-                        for (int i = 0; i < decode_ctx->ch_layout.nb_channels; i++) {
-                           if(frame->data[i]) frame->data[i] += line_size / frame->nb_samples * start_sample;
+    #ifdef DEBUG
+    std::cout << "Input duration: " << this->fmt_ctx->duration / AV_TIME_BASE << " seconds\n";
+    std::cout << "Input framerate: " << this->codec_ctx->framerate.num << "/" << this->codec_ctx->framerate.den << "\n";
+    std::cout << "Input time_base: " << this->codec_ctx->time_base.num << "/" << this->codec_ctx->time_base.den << "\n";
+    // std::cout << "Input PTS: " << frame->pts << ", Output PTS: " << frame_rgb->pts << "\n";
+    //         << ", Output time_base: " << this->out_codec_ctx->time_base.num << "/" << this->out_codec_ctx->time_base.den << "\n";
+    #endif
+
+    AVPacket* packet = av_packet_alloc();
+    AVFrame* frame = av_frame_alloc();
+    AVFrame* frame_rgb = av_frame_alloc();
+    
+    int num_bytes = av_image_get_buffer_size(this->dst_pix_fmt, this->dst_width, this->dst_height, 1);
+    uint8_t* buffer = (uint8_t*)av_malloc(num_bytes * sizeof(uint8_t));
+    if (!buffer) {
+        std::cerr << "Cannot allocate buffer for frame_rgb.\n";
+        return -1;
+    }
+    #ifdef DEBUG
+    std::cout << "alloceted data\n";
+    #endif
+    av_image_fill_arrays(frame_rgb->data, frame_rgb->linesize, buffer, this->dst_pix_fmt, this->dst_width, this->dst_height, 1);
+    frame_rgb->width  = this->dst_width;
+    frame_rgb->height = this->dst_height;
+    frame_rgb->format = this->dst_pix_fmt;
+    #ifdef DEBUG
+    std::cout << "av_image_fill_arrays done\n";
+    #endif
+    #ifdef DEBUG
+    std::cout << "opened input and output\n";
+    #endif
+
+    int src_width = this->codecpar->width;
+    int src_height = this->codecpar->height;
+    
+    #ifdef DEBUG
+    std::cout << "params set\n";
+    #endif
+    #ifdef DEBUG
+    std::cout << src_width << "\n" << src_height << "\n" << this->src_pix_fmt << "\n"
+    << this->dst_width << "\n" << this->dst_height << "\n" << this->dst_pix_fmt << "\n";
+    #endif
+
+    SwsContext* sws_ctx = sws_getContext(src_width, src_height, this->src_pix_fmt,
+        this->dst_width, this->dst_height, this->dst_pix_fmt,
+        SWS_BILINEAR, NULL, NULL, NULL);
+    if (!sws_ctx) {
+    std::cerr << "Error initializing swscontext!\n";
+    return -1;
+    }
+
+    while(av_read_frame(this->fmt_ctx, packet) >= 0){
+        if(packet->stream_index == this->video_stream_index){
+            if(avcodec_send_packet(this->codec_ctx, packet) == 0){
+                while(avcodec_receive_frame(this->codec_ctx, frame) == 0){
+                    // Frame transforms
+                    sws_scale(sws_ctx, frame->data, frame->linesize, 0, src_height,
+                        frame_rgb->data, frame_rgb->linesize);
+                        frame_rgb->pts = av_rescale_q(frame->pts, this->codec_ctx->time_base, this->out_codec_ctx->time_base);
+                    // Sending frame
+                    if(avcodec_send_frame(this->out_codec_ctx, frame_rgb) < 0){
+                        std::cerr << "Cannot send frame from codec in output!\n";
+                        avcodec_free_context(&this->codec_ctx);
+                        avcodec_free_context(&this->out_codec_ctx);
+                        avformat_close_input(&this->fmt_ctx);
+                        av_frame_free(&frame);
+                        av_frame_free(&frame_rgb);
+                        av_packet_free(&packet);
+                        return -1;
+                    }
+                    // else
+                    //     std::cout << "Frame sent\n";
+
+                    AVPacket* pkt = av_packet_alloc();
+                    while(avcodec_receive_packet(this->out_codec_ctx, pkt) == 0){
+                        pkt->stream_index = this->out_stream->index;
+                        av_packet_rescale_ts(pkt, this->out_codec_ctx->time_base, this->out_stream->time_base);
+                        if(av_interleaved_write_frame(this->out_fmt_ctx, pkt) < 0){
+                            std::cerr << "Cannot write frame!\n";
+                            avcodec_free_context(&this->codec_ctx);
+                            avcodec_free_context(&this->out_codec_ctx);
+                            avformat_close_input(&this->fmt_ctx);
+                            av_frame_free(&frame);
+                            av_frame_free(&frame_rgb);
+                            av_packet_free(&pkt);
+                            av_packet_free(&packet);
+                            return -1;
                         }
-                    } else {
-                        if(frame->data[0]) frame->data[0] += plane_size / frame->nb_samples * start_sample;
-                    }
-                }
-
-                int conv_samples = swr_convert(swr_ctx, converted_frame->data, sample_count, src_data, sample_count);
-                if (conv_samples < 0) {
-                    av_log(NULL, AV_LOG_ERROR, "Error converting audio\n");
-                    avformat_close_input(&input_fmt_ctx);
-                    avformat_close_input(&output_fmt_ctx);
-                    avio_closep(&output_fmt_ctx->pb);
-                    avcodec_free_context(&decode_ctx);
-                    avcodec_free_context(&encode_ctx);
-                    av_channel_layout_uninit(&dec_ch_layout);
-                    swr_free(&swr_ctx);
-                    av_packet_free(&pkt);
-                    av_packet_free(&enc_pkt);
-                    av_frame_free(&frame);
-                    av_frame_free(&converted_frame);
-                    return ret;
-                }
-
-                converted_frame->pts = output_pts;
-                output_pts += conv_samples;
-
-                if (avcodec_send_frame(encode_ctx, converted_frame) >= 0) {
-                    while (avcodec_receive_packet(encode_ctx, enc_pkt) == 0) {
-                        enc_pkt->stream_index = 0;
-                        av_packet_rescale_ts(enc_pkt, encode_ctx->time_base, out_stream->time_base);
-                        av_interleaved_write_frame(output_fmt_ctx, enc_pkt);
-                        av_packet_unref(enc_pkt);
-                    }
+                        av_packet_unref(pkt);
+                    }   
+                    av_frame_unref(frame);
                 }
             }
-            av_frame_unref(frame);
         }
+        av_packet_unref(packet);
+    }
+
+    avcodec_send_frame(this->out_codec_ctx, NULL);
+    AVPacket* pkt = av_packet_alloc();
+    while (avcodec_receive_packet(this->out_codec_ctx, pkt) == 0) {
+        pkt->stream_index = this->out_stream->index;
+        av_packet_rescale_ts(pkt, this->out_codec_ctx->time_base, this->out_stream->time_base);
+        av_interleaved_write_frame(this->out_fmt_ctx, pkt);
         av_packet_unref(pkt);
     }
+    av_packet_free(&pkt);
 
-    // Flush encoder buffers
-    avcodec_send_frame(encode_ctx, nullptr);
-    while (avcodec_receive_packet(encode_ctx, enc_pkt) == 0) {
-        enc_pkt->stream_index = 0;
-        av_packet_rescale_ts(enc_pkt, encode_ctx->time_base, out_stream->time_base);
-        av_interleaved_write_frame(output_fmt_ctx, enc_pkt);
-        av_packet_unref(enc_pkt);
+    av_write_trailer(this->out_fmt_ctx);
+
+    av_frame_free(&frame);
+    av_frame_free(&frame_rgb);
+    av_packet_free(&packet);
+    avcodec_free_context(&this->codec_ctx);
+    avcodec_free_context(&this->out_codec_ctx);
+    avformat_close_input(&this->fmt_ctx);
+    av_free(buffer);
+    sws_freeContext(sws_ctx);
+    if (!(this->out_fmt_ctx->oformat->flags & AVFMT_NOFILE)) {
+        avio_closep(&this->out_fmt_ctx->pb);
     }
+    avformat_free_context(this->out_fmt_ctx);
 
-    av_write_trailer(output_fmt_ctx);
+    // std::stringstream parseFilterSS;
+    // std::string parameter;
+    // std::string operation;
+    // for(std::string filter:filters){
+    //     std::vector<std::string> parameters;
+    //     parseFilterSS << filter;
 
-    if (input_fmt_ctx) avformat_close_input(&input_fmt_ctx);
-    if (output_fmt_ctx && !(output_fmt_ctx->oformat->flags & AVFMT_NOFILE)) avio_closep(&output_fmt_ctx->pb);
-    if (output_fmt_ctx) avformat_free_context(output_fmt_ctx);
-    if (decode_ctx) avcodec_free_context(&decode_ctx);
-    if (encode_ctx) avcodec_free_context(&encode_ctx);
-    if (swr_ctx) swr_free(&swr_ctx);
-    if (pkt) av_packet_free(&pkt);
-    if (enc_pkt) av_packet_free(&enc_pkt);
-    if (frame) av_frame_free(&frame);
-    if (converted_frame) av_frame_free(&converted_frame);
-    av_channel_layout_uninit(&dec_ch_layout);
+    //     parseFilterSS >> operation;
+        
+    //     while(parseFilterSS >> parameter)
+    //         parameters.push_back(parameter);
 
-    return ret < 0 ? 1 : 0;
-}
+    //     #ifdef DEBUG
+    //         std::cout << operation << " ";
+    //         for(std::string parameter: parameters)
+    //             std::cout << parameter << " ";
+    //         std::cout << std::endl;
+    //         std::stringstream().swap(parseFilterSS);
+    //     #endif
+    // }
 
-int processVideo();
-
-int FFmpegWrapper::createAudioVoid(double duration, int sample_rate, int channels){
-    std::string filename = "tmp/void.wav";
-    AVFormatContext* fmt_ctx = nullptr;
-    avformat_alloc_output_context2(&fmt_ctx, nullptr, nullptr, filename.c_str());
-    AVStream* stream = avformat_new_stream(fmt_ctx, nullptr);
-    const AVCodec* codec = avcodec_find_encoder_by_name("pcm_s32le");
-    AVCodecContext* codec_ctx = avcodec_alloc_context3(codec);
-    codec_ctx->sample_rate = sample_rate;
-    codec_ctx->ch_layout.nb_channels = channels == 1 ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
-    // codec_ctx->ch_layout = av_get_channel_layout_nb_channels(codec_ctx->ch_layout);
-    av_channel_layout_default(&codec_ctx->ch_layout, codec_ctx->ch_layout.nb_channels);
-    std::cout << "Num channels: " << codec_ctx->ch_layout.nb_channels << ", " << AV_CH_LAYOUT_STEREO << "\n";
-    
-    codec_ctx->sample_fmt = AV_SAMPLE_FMT_S32;
-    avcodec_open2(codec_ctx, codec, nullptr);
-    stream->time_base = {1, sample_rate};
-    avio_open(&fmt_ctx->pb, filename.c_str(), AVIO_FLAG_WRITE);
-    avformat_write_header(fmt_ctx, nullptr);
-
-}
-int createVideoVoid();
-
-int mergePairAudio(std::string& src1, std::string& src2, double from1, double to1, double from2, double to2){
-
-}
-
-int mergePairVideo();
-
-int mergeTrackAudio();
-
-int mergeTrackVideo();
-
-int mergeAudioTracks();
-
-int mergeVideoTracks();
-
-int applyVideoTransform();
-
-int applyAudioTransform();
-
-int applyAllVideoTransforms();
-
-int applyAllAudioTransforms();
-
-
-
-void FFmpegWrapper::process(std::string src){
-    this->configureTimeline(std::string("audio"));
-    this->configureTimeline(std::string("video"));
-
-    std::cout << "Done configuring timeline\n";
-
-    this->extractAudio(src, 10, 20);
-    this->createAudioVoid(10, 48000, 2);
+    return 0;
 }
