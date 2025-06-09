@@ -22,37 +22,46 @@ class FFmpegWrapper{
 public:
     FFmpegWrapper(Settings settings, std::vector<Track> tracks);
 
-    void process(std::string src);
+    int process();
 private:
     Settings settings;
     std::vector<Track> tracks;
 
-    std::vector<std::pair<int, int>> video_time_markers;
-    std::vector<std::pair<int, int>> audio_time_markers;
+    std::vector<std::pair<double, double>> video_time_markers;
+    std::vector<std::pair<double, double>> audio_time_markers;
 
     void configureTimeline(std::string type);
 
     int processAudio();
     int processVideo();
 
-    int mergePairAudio(std::string& src1, std::string& src2, double from1, double to1, double from2, double to2);
-    int mergePairVideo();
+    // Merge 2 files
+    int mergeAudioSourcePair(std::string& src1, std::string& src2, std::string& output_filename);
+    int mergeVideoSourcePair(std::string& src1, std::string& src2, std::string& output_filename);
 
-    int mergeTrackAudio();
-    int mergeTrackVideo();
+    // Merge pair of sources
+    int mergePairAudio(std::string& src1, std::string& src2, std::string& output_filename, double from1, double to1, double from2, double to2);
+    int mergePairVideo(std::string& src1, std::string& src2, std::string& output_filename, double from1, double to1, double from2, double to2);
 
+    // Merge all sources of one track
+    int mergeTrackAudio(Track track);
+    int mergeTrackVideo(Track track);
+
+
+    // Merge all tracks
     int mergeAudioTracks();
     int mergeVideoTracks();
 
+    // Apply single transform on track
     int applyVideoTransform();
     int applyAudioTransform();
 
     int applyAllVideoTransforms();
     int applyAllAudioTransforms();
 
-    int createAudioVoid(double duration, int sample_rate, int channels);
+    int createAudioVoid(std::string& filename, double duration, int sample_rate, int channels);
     int createVideoVoid();
 
-    int extractAudio(std::string& input_file, double from_sec, double to_sec);
+    int extractAudio(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
     int extractVideo(std::string& input_file, int from, int to);
 };

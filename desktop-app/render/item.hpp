@@ -9,7 +9,7 @@ struct Item{
     std::string name;
     std::string type;
     std::string source;
-    int startFrame;
-    int endFrame;
+    double begin;
+    double end;
     std::vector<Effect> effects;
 };

@@ -26,13 +26,13 @@ int VideoEditor::parseJSON(){
     return 0;
 }
 
-int VideoEditor::render(std::string src){
+int VideoEditor::render(){
     #ifdef DEBUG
         std::cout << "Rendering..." << std::endl;
     #endif
     FFmpegWrapper wrapper(this->settings, this->tracks);
 
-    wrapper.process(src);
+    wrapper.process();
 
     #ifdef DEBUG
         std::cout << "Done\n";

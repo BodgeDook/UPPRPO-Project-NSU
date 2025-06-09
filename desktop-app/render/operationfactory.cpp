@@ -109,14 +109,14 @@ int OperationFactory::parseTracks(){
                         if(item.HasMember("name") && item["name"].IsString() &&
                         item.HasMember("type") && item["type"].IsString() &&
                         item.HasMember("source") && item["source"].IsString() &&
-                        item.HasMember("in_frame") && item["in_frame"].IsInt() &&
-                        item.HasMember("out_frame") && item["out_frame"].IsInt() &&
+                        item.HasMember("begin") && item["begin"].IsInt() &&
+                        item.HasMember("end") && item["end"].IsInt() &&
                         item.HasMember("effects") && item["effects"].IsArray()){
                             std::string item_name = item["name"].GetString();
                             std::string item_type = item["type"].GetString();
                             std::string item_source = item["source"].GetString();
-                            int in_frame = item["in_frame"].GetInt();
-                            int out_frame = item["out_frame"].GetInt();
+                            double begin = item["begin"].GetDouble();
+                            double end = item["end"].GetDouble();
                             auto effects = item["effects"].GetArray();
                             std::vector<Effect> effects_vect;
                             
@@ -164,7 +164,7 @@ int OperationFactory::parseTracks(){
                                 }
 
                             }
-                            Item item_struct{item_name, item_type, item_source, in_frame, out_frame, effects_vect};
+                            Item item_struct{item_name, item_type, item_source, begin, end, effects_vect};
                             items_vect.push_back(item_struct);
                         }
                         else{
@@ -218,8 +218,8 @@ void OperationFactory::testParse() const{
                     std::cout << "\t\tname: " << item.name << "\n";
                     std::cout << "\t\ttype: " << item.type << "\n";
                     std::cout << "\t\tsource: " << item.source << "\n";
-                    std::cout << "\t\tstartFrame: " << item.startFrame << "\n";
-                    std::cout << "\t\tendFrame: " << item.endFrame << "\n";
+                    std::cout << "\t\tstartFrame: " << item.begin << "\n";
+                    std::cout << "\t\tendFrame: " << item.end << "\n";
 
                     std::cout << "\t\tEffects:\n";
                     if(!item.effects.empty()){
