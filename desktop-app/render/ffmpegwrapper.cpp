@@ -474,7 +474,7 @@ int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int s
 
     int nb_samples = codec_ctx->frame_size;
     if (nb_samples <= 0) {
-        nb_samples = 1024;  // либо любая другая удобная константа > 0
+        nb_samples = 1024;
     }
     frame->nb_samples = nb_samples;
 
@@ -572,20 +572,20 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 
     int ret = avformat_open_input(&input_format_context1, src1.c_str(), nullptr, nullptr);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not open input 1\n");
     return ret;
     }
 
     ret = avformat_open_input(&input_format_context2, src2.c_str(), nullptr, nullptr);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not open input 2\n");
     avformat_close_input(&input_format_context1);
     return ret;
     }
 
     ret = avformat_find_stream_info(input_format_context1, nullptr);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not find stream 1 info\n");
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
     return ret;
@@ -593,7 +593,7 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 
     ret = avformat_find_stream_info(input_format_context2, nullptr);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not find stream 2 info\n");
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
     return ret;
@@ -602,7 +602,7 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
     AVFormatContext *output_format_context = nullptr;
     ret = avformat_alloc_output_context2(&output_format_context, nullptr, nullptr, output_filename.c_str());
     if (!output_format_context) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not allocate output context\n");
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
     return ret;
@@ -610,18 +610,17 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 
     AVStream *output_stream = avformat_new_stream(output_format_context, nullptr);
     if (!output_stream) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not create new stream\n");
     avformat_free_context(output_format_context);
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
     return ret;
     }
 
-    // Копирование параметров из первого входного потока
     AVCodecParameters *input_codec_params = input_format_context1->streams[0]->codecpar;
     ret = avcodec_parameters_copy(output_stream->codecpar, input_codec_params);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not copy params from input 1 context\n");
     avformat_free_context(output_format_context);
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
@@ -630,7 +629,7 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 
     ret = avio_open(&output_format_context->pb, output_filename.c_str(), AVIO_FLAG_WRITE);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not open output file\n");
     avformat_free_context(output_format_context);
     avformat_close_input(&input_format_context1);
     avformat_close_input(&input_format_context2);
@@ -639,7 +638,7 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 
     ret = avformat_write_header(output_format_context, nullptr);
     if (ret < 0) {
-    // Обработка ошибки
+    av_log(NULL, AV_LOG_ERROR, "Could not write header\n");
     avio_closep(&output_format_context->pb);
     avformat_free_context(output_format_context);
     avformat_close_input(&input_format_context1);
@@ -654,20 +653,20 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
         AVPacket packet;
         ret = av_read_frame(input_format_context1, &packet);
         if (ret < 0) {
-            break; // Конец первого файла
+            break;
         }
 
-        // Обновление PTS и DTS пакета
+        // Update PTS and DTS
         packet.pts = current_pts;
         packet.dts = current_dts;
         current_pts += packet.duration;
         current_dts += packet.duration;
 
-        // Запись пакета в выходной файл
+        // Write into output file
         ret = av_interleaved_write_frame(output_format_context, &packet);
         av_packet_unref(&packet);
         if (ret < 0) {
-            // Обработка ошибки
+            av_log(NULL, AV_LOG_ERROR, "Could not write 1 packet into output file\n");
             break;
         }
     }
@@ -676,20 +675,20 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
         AVPacket packet;
         ret = av_read_frame(input_format_context2, &packet);
         if (ret < 0) {
-            break; // Конец второго файла
+            break;
         }
 
-        // Обновление PTS и DTS пакета
+        // Updata PTS and DTS
         packet.pts = current_pts;
         packet.dts = current_dts;
         current_pts += packet.duration;
         current_dts += packet.duration;
 
-        // Запись пакета в выходной файл
+        // Write into output file
         ret = av_interleaved_write_frame(output_format_context, &packet);
         av_packet_unref(&packet);
         if (ret < 0) {
-            // Обработка ошибки
+            av_log(NULL, AV_LOG_ERROR, "Could not write 2 packet into output file\n");
             break;
         }
     }
@@ -723,7 +722,7 @@ int FFmpegWrapper::mergePairAudio(std::string& src1, std::string& src2, std::str
         std::cerr << "Error while extracting audio\n";
         return ret;
     }
-    
+
     this->mergeAudioSourcePair(first_filename, second_filename, output_filename);
     
     return 0;
@@ -786,20 +785,177 @@ int FFmpegWrapper::mergeTrackAudio(Track track){
         }
     }
 
-    std::rename(merge_1_filename.c_str(), (track.name + ".wav").c_str());
+    std::rename(merge_1_filename.c_str(), (std::string("tmp/") + track.name + ".wav").c_str());
+    this->track_sources.push_back(std::string("tmp/") + track.name + ".wav");
 
     return 0;
 }
 
 int mergeTrackVideo();
 
-int mergeAudioTracks();
+int FFmpegWrapper::mergePairAudioTracks(std::string& src1, std::string& src2, std::string& output_filename){
+    AVFormatContext *input_format_context1 = nullptr;
+    AVFormatContext *input_format_context2 = nullptr;
+
+    int ret = avformat_open_input(&input_format_context1, src1.c_str(), nullptr, nullptr);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not open input 1\n");
+        return ret;
+    }
+
+    ret = avformat_open_input(&input_format_context2, src2.c_str(), nullptr, nullptr);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not open input 2\n");
+        avformat_close_input(&input_format_context1);
+        return ret;
+    }
+
+    ret = avformat_find_stream_info(input_format_context1, nullptr);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not find stream 1 info\n");
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    ret = avformat_find_stream_info(input_format_context2, nullptr);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not find stream 2 info\n");
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    AVFormatContext *output_format_context = nullptr;
+    ret = avformat_alloc_output_context2(&output_format_context, nullptr, nullptr, output_filename.c_str());
+    if (!output_format_context) {
+        av_log(NULL, AV_LOG_ERROR, "Could not allocate output context\n");
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    AVStream *output_stream = avformat_new_stream(output_format_context, nullptr);
+    if (!output_stream) {
+        av_log(NULL, AV_LOG_ERROR, "Could not create new stream\n");
+        avformat_free_context(output_format_context);
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    // Copy param from input stream
+    AVCodecParameters *input_codec_params = input_format_context1->streams[0]->codecpar;
+    ret = avcodec_parameters_copy(output_stream->codecpar, input_codec_params);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not findcopy parameters from input stream\n");
+        avformat_free_context(output_format_context);
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    ret = avio_open(&output_format_context->pb, output_filename.c_str(), AVIO_FLAG_WRITE);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not open output file\n");
+        avformat_free_context(output_format_context);
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    ret = avformat_write_header(output_format_context, nullptr);
+    if (ret < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Could not write header into output file\n");
+        avio_closep(&output_format_context->pb);
+        avformat_free_context(output_format_context);
+        avformat_close_input(&input_format_context1);
+        avformat_close_input(&input_format_context2);
+        return ret;
+    }
+
+    while (true) {
+        AVPacket packet1, packet2;
+        ret = av_read_frame(input_format_context1, &packet1);
+        ret = av_read_frame(input_format_context2, &packet2);
+
+        if (ret < 0) {
+            break;
+        }
+
+        // Muxing packets
+        int size = std::min(packet1.size, packet2.size);
+        for (int i = 0; i < size; i += 4) { // PCM 32 bit
+            float sample1 = *(float*)(packet1.data + i);
+            float sample2 = *(float*)(packet2.data + i);
+            // Calculating mean
+            float mixed_sample = (sample1 + sample2) / 2.0f;
+            *(float*)(packet1.data + i) = mixed_sample;
+        }
+
+        // Write muxed packet into output file
+        ret = av_interleaved_write_frame(output_format_context, &packet1);
+        av_packet_unref(&packet1);
+        av_packet_unref(&packet2);
+        if (ret < 0) {
+            av_log(NULL, AV_LOG_ERROR, "Could not write packet into output file\n");
+            break;
+        }
+    }
+
+    av_write_trailer(output_format_context);
+    avio_closep(&output_format_context->pb);
+    avformat_free_context(output_format_context);
+    avformat_close_input(&input_format_context1);
+    avformat_close_input(&input_format_context2);
+
+    return 0;
+}
+
+int FFmpegWrapper::mergeAudioTracks(){
+    int ret;
+    std::string merge_1_filename = "tmp/tmp_merged_pair_1.wav";
+    std::string merge_2_filename = "tmp/tmp_merged_pair_2.wav";
+    std::string final_track_name = "tmp/final-audio-track.wav";
+
+    std::cout << "Num tracks: " << this->track_sources.size() << "\n";
+
+    if(this->track_sources.size() == 1){
+        std::rename(std::string("tmp/audio-track-1.wav").c_str(), final_track_name.c_str());
+        return 0;
+    }
+    else{
+        for(int i = 0; i < this->track_sources.size(); i++){
+            if(i == 0){
+                if((ret = this->mergePairAudioTracks(this->track_sources[i], this->track_sources[i + 1], merge_1_filename)) < 0){
+                    std::cerr << "Cannot merge tracks into final track\n";
+                    return ret;
+                }
+                i++;
+            }
+            else{
+                if((ret = this->mergePairAudioTracks(merge_1_filename, this->track_sources[i], merge_2_filename)) < 0){
+                    std::cerr << "Cannot merge tracks into final track\n";
+                    return ret;
+                }
+                remove(merge_1_filename.c_str());
+                std::rename(merge_2_filename.c_str(), merge_1_filename.c_str());
+            }
+        }
+
+        std::rename(merge_1_filename.c_str(), (final_track_name).c_str());
+    }
+
+    return 0;
+}
 
 int mergeVideoTracks();
 
-int applyVideoTransform();
+int applyVideoTransform(std::string& src);
 
-int applyAudioTransform();
+int FFmpegWrapper::applyAudioTransform(std::string& src){
+
+}
 
 int applyAllVideoTransforms();
 
@@ -815,16 +971,13 @@ int FFmpegWrapper::process(){
     std::cout << "Done configuring timeline\n";
 
     for(auto& track: this->tracks){
-        if((ret = this->mergeTrackAudio(track)) < 0){
-            std::cerr << "Error while merging track \"" << track.name << "\"\n";
-            return ret;
+        if(track.type == "audio"){
+            if((ret = this->mergeTrackAudio(track)) < 0){
+                std::cerr << "Error while merging track \"" << track.name << "\"\n";
+                return ret;
+            }
         }
     }
 
-    // std::string output_file_1 = "tmp/tmp_1.wav";
-    // std::string output_file_2 = "tmp/tmp_2.wav";
-    // std::string output_file_3 = "tmp/tmp_merge_1.wav";
-
-    // this->mergePairAudio(src, src, output_file_3, 10, 20, 30, 40);
-    // this->createAudioVoid(10, 48000, 2);
+    this->mergeAudioTracks();
 }

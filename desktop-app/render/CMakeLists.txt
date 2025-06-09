@@ -74,4 +74,17 @@ target_link_libraries(render PRIVATE ${FFMPEG_LIBRARIES})
 
 add_custom_command(TARGET render POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/ffmpeg/bin" "${CMAKE_BINARY_DIR}")
+    ${CMAKE_SOURCE_DIR}/ffmpeg/bin ${CMAKE_BINARY_DIR})
+
+if(BUILD_SHARED_LIB)
+    file(MAKE_DIRECTORY ${CMAKE_SOURCE_DIR}/dll)
+
+    add_custom_command(TARGET render POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/ffmpeg/bin ${CMAKE_SOURCE_DIR}/dll
+    )
+
+    add_custom_command(TARGET render  POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:render> ${CMAKE_SOURCE_DIR}/dll
+    )
+endif()
