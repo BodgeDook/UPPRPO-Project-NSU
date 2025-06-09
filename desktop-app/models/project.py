@@ -9,6 +9,8 @@ from PyQt5.QtCore import QStandardPaths
 from .timeline import TimelineModel
 from .render import PlayerModel  # your existing C++/FFmpeg wrapper
 
+# bump this whenever you make a breaking change to project.json format
+SCHEMA_VERSION = 1
 
 class Project:
     """
@@ -70,9 +72,25 @@ class Project:
         with open(json_path, "r") as f:
             data = json.load(f)
 
+        # 1) Check schema version (in the future you could migrate here)
+        file_version = data.get("schema_version", 0)
+        if file_version != SCHEMA_VERSION:
+            # TODO: run migration routines if file_version < SCHEMA_VERSION
+            pass
+
         # Recreate the TimelineModel from stored clip data
         timeline_model = TimelineModel.from_dict(data["timeline_model"])
 
+        # # 3) Bind a player to the first clip, or blank
+        # clips = data.get("clips", [])
+        # if clips:
+        #     first_path = os.path.join(project_dir, clips[0]["asset_rel_path"])
+        #     player = PlayerModel(first_path)
+        # else:
+        #     player = PlayerModel.blank()
+        # proj = cls(project_dir, timeline_model, player, metadata=data.get("metadata", {}))
+        # return proj
+    
         # If at least one asset exists, point the PlayerModel to it (for preview)
         if data.get("clips"):
             first_clip = data["clips"][0]
@@ -93,11 +111,13 @@ class Project:
     def save(self):
         """
         Serialize project to project.json, including:
+          - schema_version
           - metadata
           - timeline_model.to_dict()
           - clips list with relative paths for assets
         """
         data = {
+            "schema_version": SCHEMA_VERSION,
             "metadata": self.metadata,
             "timeline_model": self.timeline_model.to_dict(),
             # We'll store a flat list of clips with their asset paths:
@@ -153,5 +173,97 @@ class Project:
 
         # 7) Persist the project
         self.save()
-
         return clip_dict
+    
+    def list_assets(self):
+        """
+        Return a list of all asset paths (relative to project_dir) in assets/.
+        """
+        rels = []
+        for fname in os.listdir(self.assets_dir):
+            absf = os.path.join(self.assets_dir, fname)
+            if os.path.isfile(absf):
+                rels.append(os.path.relpath(absf, self.project_dir))
+        return rels
+
+    def add_clip_from_asset(self, asset_rel_path, start_frame):
+        """
+        Insert a clip (referencing an existing asset) at start_frame.
+        Simple overlap resolution: any existing clip that overlaps
+        is bumped forward so ranges don’t collide.
+        """
+        # 1) Load its length via PlayerModel
+        abs_path = os.path.join(self.project_dir, asset_rel_path)
+        new_player = PlayerModel(abs_path)
+        length = new_player.total_frames
+        new_start = start_frame
+        new_end = new_start + length - 1
+
+        # 2) Nudge any overlapping existing clips
+        for clip in self.timeline_model.get_clips():
+            cs, ce = clip["start_frame"], clip["end_frame"]
+            # overlap if cs ≤ new_end AND ce ≥ new_start
+            if not (ce < new_start or cs > new_end):
+                shift = (new_end + 1) - cs
+                clip["start_frame"] += shift
+                clip["end_frame"]   += shift
+        # emit so timeline repaints the nudged clips
+        self.timeline_model.dataChanged.emit()
+
+        # 3) Build the new clip dict
+        cid = self.timeline_model.next_clip_id()
+        clip_dict = {
+            "id": cid,
+            "start_frame": new_start,
+            "end_frame": new_end,
+            "asset_rel_path": asset_rel_path,
+        }
+        # 4) Insert into timeline
+        self.timeline_model.add_clip_dict(clip_dict)
+
+        # 5) Switch preview to this asset
+        self.player = new_player
+        # 6) Update overall timeline length (if needed)
+        self.timeline_model.total_frames = max(
+            self.timeline_model.total_frames, new_end + 1
+        )
+        # 7) Persist
+        self.save()
+        return clip_dict
+    
+    def get_clip_at_frame(self, frame_number: int):
+        """
+        Return the clip dict whose [start_frame, end_frame] covers
+        frame_number, or None if there’s no clip there.
+        """
+        for clip in self.timeline_model.get_clips():
+            if clip["start_frame"] <= frame_number <= clip["end_frame"]:
+                return clip
+        return None
+    
+    # ------------------------------------------------------------------
+    # NEW: Given a global frame index, tell the UI which file+position
+    #      to show.  Returns (absolute_path, position_ms) or None.
+    # ------------------------------------------------------------------
+    # def source_at_frame(self, frame: int) -> Tuple[str, int]:
+    #     """
+    #     Look up the clip that covers `frame` and translate the global frame
+    #     into a timestamp **inside that clip**.
+
+    #     Returns:
+    #         (absolute_file_path, position_ms) if a clip exists there,
+    #         or None if the play-head is on an empty gap.
+    #     """
+    #     clip = self.timeline_model.get_clip_at_frame(frame)
+    #     if clip is None:
+    #         return None
+
+    #     # absolute file path
+    #     abs_path = os.path.join(self.project_dir, clip["asset_rel_path"])
+
+    #     # convert global frame → local position in ms
+    #     local_frame = frame - clip["start_frame"]
+    #     fps         = clip.get("fps", 30.0)          # sensible fallback
+    #     pos_ms      = int(local_frame / fps * 1000)
+
+    #     return abs_path, pos_ms

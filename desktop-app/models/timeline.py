@@ -64,9 +64,10 @@ class TimelineModel(QObject):
 
         self.dataChanged.emit()
 
-    def split_clip(self, clip_id, at_frame):
-        # (unchanged) split logic goes here if you have it
-        self.dataChanged.emit()
+    # def split_clip(self, clip_id, at_frame):
+    #     # (unchanged) split logic goes here if you have it
+    #     self.dataChanged.emit()
+
 
     def set_playhead(self, frame_number):
         self.playhead = frame_number
@@ -76,6 +77,20 @@ class TimelineModel(QObject):
         self.current_tool = tool_name
         self.dataChanged.emit()
 
-    def save_to_file(self, path):
-        # You probably won’t call this directly, since Project.save() handles it.
-        pass
+    # def save_to_file(self, path):
+    #     # You probably won’t call this directly, since Project.save() handles it.
+    #     pass
+
+    def source_at_frame(self, frame: int) -> tuple[str, int] | None:
+        """
+        Return (absolute_file_path, position_ms) for the given global frame.
+        The caller will decide whether that implies a media switch.
+        """
+        clip = self.get_clip_at_frame(frame)
+        if not clip:
+            return None
+
+        abs_path = os.path.join(self.project_dir, clip["asset_rel_path"])
+        rel_frame = frame - clip["start_frame"]
+        pos_ms = int(rel_frame / clip["fps"] * 1000)
+        return abs_path, pos_ms

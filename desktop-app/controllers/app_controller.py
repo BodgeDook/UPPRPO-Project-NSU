@@ -29,7 +29,30 @@ class AppController:
         self.auth_controller.auth_successful.connect(self._handle_auth_success)
 
     def start(self):
-        self.welcome.show()
+        # self.welcome.show()
+        if os.getenv("DEVELOP_MACHINE"):
+            # 1) ensure dev-cache exists
+            default_loc = os.path.join(
+                os.path.dirname(os.path.dirname(__file__)),
+                "dev-cache"
+            )
+            os.makedirs(default_loc, exist_ok=True)
+
+            # 2) pick (or create) a test project folder
+            test_proj_dir = os.path.join(default_loc, "test-project")
+            project = None
+            if os.path.exists(os.path.join(test_proj_dir, "project.json")):
+                project = Project.load_from_file(
+                    os.path.join(test_proj_dir, "project.json")
+                )
+            else:
+                project = Project.create_new(test_proj_dir)
+
+            # 3) open the editor on that project
+            self._open_editor(project_dir=test_proj_dir)
+        else:
+            # normal, require login/register
+            self.welcome.show()
 
     def _show_login(self):
         dialog = QDialog(self.welcome)
