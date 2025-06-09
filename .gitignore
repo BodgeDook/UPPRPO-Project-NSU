@@ -14,3 +14,4 @@ myTests
 .env
 /desktop-app/dev-cache/cache
 /desktop-app/__pycache__
+/.pytest_cache
