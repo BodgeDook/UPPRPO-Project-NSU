@@ -1,13 +1,8 @@
-render/*.mp4
 .vscode
-render/test_ffmpeg.cpp
-render/build
 .DS_Store
 video_venv
 myTests
 *.code-workspace
-/render/build/*
-/render/build/CMakeFiles
 */__pycache__
 *.pyc
 /ui/__pycache__
@@ -15,3 +10,7 @@ myTests
 /desktop-app/dev-cache/cache
 /desktop-app/__pycache__
 /.pytest_cache
+/desktop-app/render/*.mp4
+/desktop-app/render/build
+/desktop-app/render/_videooperations.*
+/desktop-app/render/config.json
