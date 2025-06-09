@@ -1,3 +1,0 @@
-run build.sh
-cd build
-run render with -help parameter to see usage help
