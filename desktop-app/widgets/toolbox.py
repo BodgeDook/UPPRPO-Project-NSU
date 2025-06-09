@@ -12,10 +12,4 @@ class ToolboxWidget(QWidget):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        tools = ["Select", "Cut", "Trim", "Razor"]
-        for t in tools:
-            btn = QPushButton(t)
-            btn.clicked.connect(lambda checked, name=t: self.tool_selected.emit(name))
-            layout.addWidget(btn)
-
         layout.addStretch(1)
