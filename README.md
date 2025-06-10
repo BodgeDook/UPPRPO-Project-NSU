@@ -102,10 +102,7 @@ project-root/
 # 📚 Table of Contents
 
 - [.env setting](#env-setting)
-- [Launch variants](#launch-variant)
-  - [Local](#local-testing)
-  - [With docker](#docker-testing)
-  - [With ready domen](#our-server-option)
+- [Launch](#start-testing-our-app)
 - [SQL tables](#info-about-sql)
 - [Password requrments](#password-requirments)
 - [FastApi requests](#fastapi-requests)
@@ -128,44 +125,9 @@ EMAIL_PASSWORD - it is the app password of the Google account from which the mes
 You can read it in detail [here.](https://support.google.com/mail/answer/185833?hl=en&ref_topic=3394217&sjid=5235200406851987490-EU)
 
 ---
-# Launch variant:
-- local testing
-- creating server part in docker by yourself 
-- reling by us test the application for the first time using a default server with our domain.
----
-## Local Testing
-**Setting virtual env:**
-```shell
-root/server/registration/$ pip install -r requirements.txt
-```
-**Launchin FastApi app:**
-```
-uvicorn main:app --reload
-```
-**Launching UI:**
-After all you could start testing our app: 
-```shell
-root/desktop-app/$ python3 main.py
-```
----
 
-## Docker testing
-**Launching server:**
-If you want to test app with docker containers just follow this comand:
-```
-root/server/registration/$ docker-compose up --build
-```
-_make sure that docker daemon is running_
 
-**Launching UI:**
-After all you could start testing our app: 
-```shell
-root/desktop-app/$ python3 main.py
-```
----
-
-## Our server option:
-**just type:**
+# Start testing our app: 
 ```shell
 root/desktop-app/$ python3 main.py
 ```
