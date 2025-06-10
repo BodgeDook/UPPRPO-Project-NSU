@@ -118,7 +118,8 @@ int FFmpegWrapper::extractAudio(std::string& input_file, std::string& output_fil
     }
     av_channel_layout_copy(&encode_ctx->ch_layout, &dec_ch_layout);
 
-    encode_ctx->sample_rate = decode_ctx->sample_rate;
+    // encode_ctx->sample_rate = decode_ctx->sample_rate;
+    encode_ctx->sample_rate = this->settings.sample_rate;
     encode_ctx->sample_fmt = encoder->sample_fmts[0];
     encode_ctx->time_base = {1, encode_ctx->sample_rate};
 
@@ -403,10 +404,97 @@ int FFmpegWrapper::extractAudio(std::string& input_file, std::string& output_fil
 }
 
 int FFmpegWrapper::extractVideo(std::string& input_file, std::string& output_file, double from_sec, double to_sec){
+    int ret = 0;
+
+    AVFormatContext *input_fmt_ctx = nullptr;
+    AVFormatContext *output_fmt_ctx = nullptr;
+    AVCodecContext *decode_ctx = nullptr;
+    AVCodecContext *encode_ctx = nullptr;
+    SwrContext* swr_ctx = nullptr;
+    AVPacket *pkt = nullptr;
+    AVPacket *enc_pkt = nullptr;
+    AVFrame *frame = nullptr;
+    AVFrame *converted_frame = nullptr;
+    AVChannelLayout dec_ch_layout{};
+
+    int video_stream_index = -1;
+
+    if ((ret = avformat_open_input(&input_fmt_ctx, input_file.c_str(), nullptr, nullptr)) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Unable to open %s. Error code: %s\n", input_file.c_str(), ret);
+        avformat_close_input(&input_fmt_ctx);
+        return ret;
+    }
+
+    // Find streams info
+    if ((ret = avformat_find_stream_info(input_fmt_ctx, nullptr)) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Unable to find stream info. Error code: %s\n", ret);
+        avformat_close_input(&input_fmt_ctx);
+        return ret;
+    }
+
+    // Find video stream
+    video_stream_index = av_find_best_stream(input_fmt_ctx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
+    if (video_stream_index < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Unable to find audio stream in %s\n", input_file.c_str());
+        ret = AVERROR_STREAM_NOT_FOUND;
+        avformat_close_input(&input_fmt_ctx);
+        return ret;
+    }
+    AVStream* video_stream = input_fmt_ctx->streams[video_stream_index];
+    AVRational time_base = video_stream->time_base;
+
+    // Rescaling timestamps "from" and "to" from seconds to pts (Presentation Timestamps)
+    long long from_pts = av_rescale_q(static_cast<long long>(from_sec * AV_TIME_BASE), AV_TIME_BASE_Q, time_base);
+    if(to_sec == -1)
+        to_sec = av_q2d(video_stream->time_base) * video_stream->duration;
+    long long to_pts = av_rescale_q(static_cast<long long>(to_sec * AV_TIME_BASE), AV_TIME_BASE_Q, time_base);
+    long long output_pts = 0;
+
+    // Decoder setup
+    const AVCodec* decoder = avcodec_find_decoder(video_stream->codecpar->codec_id);
+    if (!decoder) {
+        av_log(NULL, AV_LOG_ERROR, "Failed to find decoder\n");
+        ret = AVERROR_DECODER_NOT_FOUND;
+        avformat_close_input(&input_fmt_ctx);
+        return ret;
+    }
+    decode_ctx = avcodec_alloc_context3(decoder);
+    if (!decode_ctx) {
+        ret = AVERROR(ENOMEM);
+        avformat_close_input(&input_fmt_ctx);
+        avcodec_free_context(&decode_ctx);
+        return ret;
+    }
+    avcodec_parameters_to_context(decode_ctx, video_stream->codecpar);
+    if ((ret = avcodec_open2(decode_ctx, decoder, nullptr)) < 0) {
+        av_log(NULL, AV_LOG_ERROR, "Failed to open decoder. Error code: %s\n", ret);
+        avformat_close_input(&input_fmt_ctx);
+        avcodec_free_context(&decode_ctx);
+        return ret;
+    }
+
+    // Encoder setup
+    const AVCodec* encoder = avcodec_find_encoder_by_name("libx264");
+    if (!encoder) {
+        av_log(NULL, AV_LOG_ERROR, "Failed to find libx264 encoder\n");
+        ret = AVERROR_ENCODER_NOT_FOUND;
+        avformat_close_input(&input_fmt_ctx);
+        avcodec_free_context(&decode_ctx);
+        return ret;
+    }
+    encode_ctx = avcodec_alloc_context3(encoder);
+    if (!encode_ctx) {
+        ret = AVERROR(ENOMEM);
+        avformat_close_input(&input_fmt_ctx);
+        avcodec_free_context(&decode_ctx);
+        avcodec_free_context(&encode_ctx);
+        return ret;
+    }
+
     
 }
 
-int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int sample_rate, int channels){
+int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int channels){
     int ret;
 
     AVFormatContext* fmt_ctx = nullptr;
@@ -433,8 +521,8 @@ int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int s
     }
 
     AVCodecContext* codec_ctx = avcodec_alloc_context3(codec);
-    codec_ctx->sample_rate = sample_rate;
-    codec_ctx->time_base = {1, sample_rate};
+    codec_ctx->sample_rate = this->settings.sample_rate;
+    codec_ctx->time_base = {1, this->settings.sample_rate};
     codec_ctx->sample_fmt = AV_SAMPLE_FMT_S32;
 
     av_channel_layout_default(&codec_ctx->ch_layout, channels);
@@ -481,14 +569,14 @@ int FFmpegWrapper::createAudioVoid(std::string& filename, double duration, int s
     frame->nb_samples = nb_samples;
 
     frame->format = codec_ctx->sample_fmt;
-    frame->sample_rate = sample_rate;
+    frame->sample_rate = this->settings.sample_rate;
     av_channel_layout_copy(&frame->ch_layout, &codec_ctx->ch_layout);
     if((ret = av_frame_get_buffer(frame, 0)) < 0){
         av_log(NULL, AV_LOG_ERROR, "Could not get buffer for frame (%d)\n", ret);
         return ret;
     }
 
-    int64_t total_samples   = static_cast<int64_t>(duration * sample_rate);
+    int64_t total_samples   = static_cast<int64_t>(duration * this->settings.sample_rate);
     int64_t written_samples = 0;
     while (written_samples < total_samples) {
         // при необходимости подгоняем последний пакет под остаток
@@ -707,7 +795,6 @@ int FFmpegWrapper::mergeAudioSourcePair(std::string& src1, std::string& src2, st
 int FFmpegWrapper::mergePairAudio(std::string& src1, std::string& src2, std::string& output_filename, double from1, double to1, double from2, double to2){
     std::string first_filename = "tmp/tmp_audio_1.wav";
     std::string second_filename = "tmp/tmp_audio_2.wav";
-    std::string void_filename = "tmp/void.wav";
 
     int ret;
 
@@ -727,6 +814,10 @@ int FFmpegWrapper::mergePairAudio(std::string& src1, std::string& src2, std::str
 
     this->mergeAudioSourcePair(first_filename, second_filename, output_filename);
     
+    // Clean tmp
+    // remove(first_filename.c_str());
+    // remove(second_filename.c_str());
+
     return 0;
 }
 
@@ -742,13 +833,13 @@ int FFmpegWrapper::mergeTrackAudio(Track track){
 
     for(auto& item: track.items){
         if(item.type == "void_audio"){
-            if((ret = this->createAudioVoid(item.source, item.end - item.begin, 48000, 2)) < 0){
+            if((ret = this->createAudioVoid(item.source, item.end - item.begin, 2)) < 0){
                 ret = -1;
                 std::cerr << "Error while creating void audio\n";
                 return ret;
             }
         }
-        else if(item.type == "audio"){
+        if(item.type == "audio" || item.type == "void_audio"){
             sources.push_back(item.source);
             time_markers.push_back({item.begin, item.end});
         }
@@ -947,6 +1038,12 @@ int FFmpegWrapper::mergeAudioTracks(){
 
         std::rename(merge_1_filename.c_str(), (final_track_name).c_str());
     }
+
+    // Clean tmp
+    remove(merge_1_filename.c_str());
+
+    // for(auto& source: this->track_sources)
+    //     remove(source.c_str());
 
     return 0;
 }

@@ -61,8 +61,8 @@ private:
     int applyAllVideoTransforms();
     int applyAllAudioTransforms();
 
-    int createAudioVoid(std::string& filename, double duration, int sample_rate, int channels);
-    int createVideoVoid(std::string& filename, double duration, int sample_rate, int channels);
+    int createAudioVoid(std::string& filename, double duration, int channels);
+    int createVideoVoid(std::string& filename, double duration, int channels);
 
     int extractAudio(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
     int extractVideo(std::string& input_file, std::string& output_file, double from_sec, double to_sec);

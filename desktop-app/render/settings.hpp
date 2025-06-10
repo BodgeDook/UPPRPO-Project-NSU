@@ -8,4 +8,5 @@ struct Settings{
     int dst_width;
     int dst_height;
     int framerate;
+    int sample_rate;
 };
