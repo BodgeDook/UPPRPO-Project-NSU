@@ -20,7 +20,7 @@ from widgets.preview import VideoPlayer
 # from widgets.preview import PreviewWidget
 from widgets.timeline import TimelineWidget
 from widgets.toolbox import ToolboxWidget
-from models.render import PlayerModel
+# from models.render import PlayerModel
 
 
 class EditorWindow(QMainWindow):

@@ -1,96 +1,44 @@
-# desktop-app/models/timeline_model.py
-
+from typing import List, Optional
 from PyQt5.QtCore import QObject, pyqtSignal
+from .track import Track
+from .playhead import Playhead
+from .clip import Clip
 
+# add these two methods inside Clip for (de)serialization:
+# @staticmethod
+# def from_dict(d: Dict[str,int]) -> "Clip": return Clip(d["asset_path"], d["in_frame"], d["out_frame"], d["timeline_start_frame"])
+# def to_dict(self) -> Dict[str,int]: return {"asset_path": self.asset_path, "in_frame": self.in_frame, "out_frame": self.out_frame, "timeline_start_frame": self.timeline_start_frame}
 
 class TimelineModel(QObject):
     """
-    Holds clip data, playhead, and current tool. 
-    Provides methods to add new clips and serialize/deserialize.
+    Owns all tracks, plus a playhead.
+    Emits timelineChanged when clips/tracks mutate.
     """
+    timelineChanged = pyqtSignal()
+    playheadMoved = pyqtSignal(int)  # current frame
 
-    dataChanged = pyqtSignal()
-
-    def __init__(self, duration_frames=0):
+    def __init__(self, fps: float = 30.0, num_tracks: int = 1):
         super().__init__()
-        self.total_frames = duration_frames
-        self.clips = []  # list of dicts: {id, start_frame, end_frame, asset_rel_path}
-        self.current_tool = "Select"
-        self.playhead = 0
-        self._next_id = 1
+        self.fps = fps
+        self.tracks: List[Track] = [Track(f"Track {i+1}") for i in range(num_tracks)]
+        self.playhead = Playhead(fps=self.fps)
+        self.playhead.positionChanged.connect(self._on_playhead_moved)
 
-    @classmethod
-    def from_dict(cls, data):
-        """
-        Recreate a TimelineModel from a dictionary (as saved in project.json).
-        """
-        obj = cls(duration_frames=data.get("total_frames", 0))
-        obj.clips = data.get("clips", [])
-        obj.playhead = data.get("playhead", 0)
-        obj.current_tool = data.get("current_tool", "Select")
+    def _on_playhead_moved(self, frame: int):
+        self.playheadMoved.emit(frame)
 
-        # Determine next ID from existing clips
-        existing_ids = [clip["id"] for clip in obj.clips]
-        obj._next_id = max(existing_ids, default=0) + 1
-        return obj
+    def add_clip(self, clip: Clip, track_index: int = 0):
+        self.tracks[track_index].add_clip(clip)
+        self.timelineChanged.emit()
 
-    def to_dict(self):
-        """
-        Serialize model state for saving in project.json.
-        """
-        return {
-            "total_frames": self.total_frames,
-            "clips": self.clips,
-            "playhead": self.playhead,
-            "current_tool": self.current_tool,
-        }
+    def get_clip_at(self, frame: int, track_index: int = 0) -> Optional[Clip]:
+        return self.tracks[track_index].clip_at(frame)
 
-    def next_clip_id(self):
-        _id = self._next_id
-        self._next_id += 1
-        return _id
+    def play(self):
+        self.playhead.play()
 
-    def get_clips(self):
-        return self.clips
+    def stop(self):
+        self.playhead.stop()
 
-    def add_clip_dict(self, clip_dict):
-        """
-        Add a new clip entry (with keys 'id', 'start_frame', 'end_frame', 'asset_rel_path').
-        """
-        self.clips.append(clip_dict)
-        # If this clip extends beyond total_frames, update total_frames
-        if clip_dict["end_frame"] + 1 > self.total_frames:
-            self.total_frames = clip_dict["end_frame"] + 1
-
-        self.dataChanged.emit()
-
-    # def split_clip(self, clip_id, at_frame):
-    #     # (unchanged) split logic goes here if you have it
-    #     self.dataChanged.emit()
-
-
-    def set_playhead(self, frame_number):
-        self.playhead = frame_number
-        self.dataChanged.emit()
-
-    def set_current_tool(self, tool_name):
-        self.current_tool = tool_name
-        self.dataChanged.emit()
-
-    # def save_to_file(self, path):
-    #     # You probably won’t call this directly, since Project.save() handles it.
-    #     pass
-
-    def source_at_frame(self, frame: int) -> tuple[str, int] | None:
-        """
-        Return (absolute_file_path, position_ms) for the given global frame.
-        The caller will decide whether that implies a media switch.
-        """
-        clip = self.get_clip_at_frame(frame)
-        if not clip:
-            return None
-
-        abs_path = os.path.join(self.project_dir, clip["asset_rel_path"])
-        rel_frame = frame - clip["start_frame"]
-        pos_ms = int(rel_frame / clip["fps"] * 1000)
-        return abs_path, pos_ms
+    def seek(self, frame: int):
+        self.playhead.seek(frame)

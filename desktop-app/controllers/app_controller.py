@@ -43,7 +43,7 @@ class AppController:
             project = None
             if os.path.exists(os.path.join(test_proj_dir, "project.json")):
                 project = Project.load_from_file(
-                    os.path.join(test_proj_dir, "project.json")
+                    os.path.join(test_proj_dir) #"project.json"
                 )
             else:
                 project = Project.create_new(test_proj_dir)
