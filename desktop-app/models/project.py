@@ -63,8 +63,7 @@ class Project:
         os.makedirs(assets_dir, exist_ok=True)
         os.makedirs(cache_dir, exist_ok=True)
 
-        # Instantiate an empty TimelineModel (0 frames initially)
-        timeline_model = TimelineModel(duration_frames=0)
+        timeline_model = TimelineModel(fps=fps, num_tracks=num_tracks)
 
         # Instantiate a “blank” player that can produce black frames until we import something
         player_model = PlayerModel.blank()
