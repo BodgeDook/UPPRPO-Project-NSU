@@ -29,7 +29,7 @@ class AppController:
         self.auth_controller.auth_successful.connect(self._handle_auth_success)
 
     def start(self):
-        # self.welcome.show()
+        self.welcome.show()
         if os.getenv("DEVELOP_MACHINE"):
             # 1) ensure dev-cache exists
             default_loc = os.path.join(
