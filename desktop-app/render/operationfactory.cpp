@@ -58,7 +58,14 @@ int OperationFactory::parseSettings(){
             if(settings.HasMember("codec") && settings["codec"].IsString())
                 this->settings.codec = settings["codec"].GetString();
             else{
-                std::cerr << "Error: config.json doesn't have \"codec\" member" << std::endl;
+                std::cerr << "Error: config.json doesn't have \"codec\" mem ber" << std::endl;
+                return 1;
+            }
+
+            if(settings.HasMember("sample_rate") && settings["sample_rate"].IsInt())
+                this->settings.sample_rate = settings["sample_rate"].GetInt();
+            else{
+                std::cerr << "Error: config.json doesn't have \"sample_rate\" member" << std::endl;
                 return 1;
             }
 
