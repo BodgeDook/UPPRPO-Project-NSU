@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install dependencies
       run: |
-        pip install pytest PyQt5 httpx fastapi passlib asyncpg python-dotenv
+        pip install pytest PyQt5 httpx fastapi passlib asyncpg python-dotenv pydantic[email]
     # - name: Install dependencies
     #   run: |
     #     pip install -r server/registration/requirements.txt
