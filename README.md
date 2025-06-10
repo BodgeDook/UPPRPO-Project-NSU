@@ -38,18 +38,17 @@ uMovie/
 │   ├─ requirements.txt    # Python dependencies for the UI
 │
 ├── server/
-│   ├─ app/                # Backend application code (API, business logic, etc.)
 │   ├─ registration/       # User registration/login module
 │   ├─ tests/              # Server-side tests
+│   ├─ auth.py             # Endpoints for authorization
+│   ├─ verification.py     # Endpoints for email verification
 │   ├─ Dockerfile          # Docker setup for the backend server
+│   ├─ docker-compose.yml  # Rules for docker containers
+│   ├─ init.sql            # Create tables code (not ORM)
 │   ├─ requirements.txt    # Python dependencies for the backend
 │   ├─ main.py             # Server entry point
+│   ├─ db.py               # Rules for connecting to db
 │
-├── database/
-│   ├─ schema.sql          # PostgreSQL database schema and seed data if applicable
-│   ├─ Dockerfile          # Docker setup for the database
-│
-├── docker-compose.yml      # Multi-container Docker Compose setup
 ├── docs/                   # Project documentation (design docs, API docs, etc.)
 ├── .gitignore
 ├── .env-example
@@ -111,7 +110,7 @@ project-root/
 # Env setting
 First of all you should create an *.env* file to work with your PostgreSQL database and Google account, from which confirmation codes will be sent.
 There should be such constance:
-```
+```shell
 EMAIL_SENDER=
 EMAIL_PASSWORD=
 POSTGRES_USER=
@@ -129,11 +128,16 @@ You can read it in detail [here.](https://support.google.com/mail/answer/185833?
 
 # Start testing our app: 
 ```shell
+root/desktop-app/$ pip install -r requirements.txt
+```
+
+```shell
 root/desktop-app/$ python3 main.py
 ```
+Done! You've launched Umovie video editor!
+
 ---
-Done! You launched Umovie video editor!
----
+
 ## info about SQL
 
 **users table**
