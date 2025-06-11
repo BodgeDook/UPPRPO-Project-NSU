@@ -41,8 +41,10 @@ int OperationFactory::parseSettings(){
     if(this->status == 0){
         if(this->doc.HasMember("settings") && doc["settings"].IsObject()){
             auto settings = doc["settings"].GetObject();
-            if(settings.HasMember("title") && settings["title"].IsString())
+            if(settings.HasMember("title") && settings["title"].IsString()){
                 this->settings.outputFilePath = settings["title"].GetString();
+                this->settings.outputFilePath += ".mkv";
+            }
             else{
                 std::cerr << "Error: config.json doesn't have \"title\" member" << std::endl;
                 return 1;

@@ -8,6 +8,7 @@ extern "C" {
     #include <libswscale/swscale.h>
     #include <libavcodec/avcodec.h>
     #include <libavutil/imgutils.h>
+    #include <libavutil/opt.h>
     #include <libavutil/channel_layout.h>
     #include <libavfilter/avfilter.h>
     #include <libavfilter/buffersrc.h>
@@ -67,5 +68,5 @@ private:
     int extractAudio(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
     int extractVideo(std::string& input_file, std::string& output_file, double from_sec, double to_sec);
 
-    int combineVideoAudio(std::string& video_src, std::string& audio_src);
+    int muxVideoAudio(std::string& videoSrc, std::string& audioSrc, std::string& outputPath);
 };
