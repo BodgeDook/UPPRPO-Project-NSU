@@ -15,9 +15,11 @@ from styles import (apply_button_style, apply_disabled_button_style, apply_label
 from settings_window import SettingsWindow
 
 class VideoEditor(QMainWindow):
+
     def __init__(self):
         super().__init__()
-        self.initUI()
+
+        self.initUI()  # Вызываем initUI первым
         self.setupUndoRedo()
         self.setupAutosave()
         theme_manager.theme_changed.connect(self.update_theme)
@@ -29,16 +31,35 @@ class VideoEditor(QMainWindow):
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        main_layout = QVBoxLayout(central_widget)
-        main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout = QVBoxLayout(central_widget)  # Сохраняем ссылку на layout
+        self.main_layout.setContentsMargins(0, 0, 0, 0)
 
+        # Верхний сплиттер для инструментов и предпросмотра
         top_splitter = QSplitter(Qt.Horizontal)
         
+        # Панель инструментов (расширенная)
+        toolbox = QWidget()
+        toolbox_layout = QVBoxLayout(toolbox)
+        self.play_btn = QPushButton("Play")
+        self.pause_btn = QPushButton("Pause")
+        self.trim_btn = QPushButton("Trim")
+        self.export_btn = QPushButton("Export")
+        apply_button_style(self.play_btn)
+        apply_button_style(self.pause_btn)
+        apply_button_style(self.trim_btn)
+        apply_button_style(self.export_btn)
+        toolbox_layout.addWidget(self.play_btn)
+        toolbox_layout.addWidget(self.pause_btn)
+        toolbox_layout.addWidget(self.trim_btn)
+        toolbox_layout.addWidget(self.export_btn)
+        toolbox.setFixedWidth(150)
+
         tools_panel = QWidget()
         tools_layout = QHBoxLayout(tools_panel)
-        
         self.create_video_tools(tools_layout)
         self.create_audio_tools(tools_layout)
+        tools_layout.addWidget(toolbox)  # Добавляем новую панель
+        tools_panel.setLayout(tools_layout)
 
         self.preview_widget = QGraphicsView()
         self.preview_scene = QGraphicsScene()
@@ -48,17 +69,63 @@ class VideoEditor(QMainWindow):
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
-        top_splitter.setSizes([400, 900])
+        top_splitter.setSizes([600, 900])  # Устанавливаем пропорции (600 для инструментов, 900 для предпросмотра)
 
+        # Таймлайн
+        timeline_widget = QGraphicsView()
+        timeline_widget.setMinimumHeight(150)
+        self.timeline_scene = QGraphicsScene()
+        timeline_widget.setScene(self.timeline_scene)
+        clip = self.timeline_scene.addRect(10, 10, 200, 50, brush=Qt.blue)
+        self.timeline_clips = [{"item": clip, "start": 0, "duration": 200}]  # Инициализация списка
+
+        # Собираем всё в вертикальный layout
+        self.main_layout.addWidget(top_splitter)
+        self.main_layout.addWidget(timeline_widget)
+
+        self.createTopToolbars()
+        self.connect_buttons()  # Подключаем действия кнопок после создания всех виджетов
+
+    def init_timeline(self):
         timeline_widget = QGraphicsView()
         timeline_widget.setMinimumHeight(150)
         self.timeline_scene = QGraphicsScene()
         timeline_widget.setScene(self.timeline_scene)
 
-        main_layout.addWidget(top_splitter)
-        main_layout.addWidget(timeline_widget)
+        # Исправленный вызов addRect без указания pen=None
+        clip = self.timeline_scene.addRect(10, 10, 200, 50, brush=Qt.blue)
+        self.timeline_clips.append({"item": clip, "start": 0, "duration": 200})
+        timeline_widget.setScene(self.timeline_scene)
+        self.main_layout.addWidget(timeline_widget)
 
-        self.createTopToolbars()
+    def trim_video(self):
+        if self.timeline_clips:
+            clip_data = self.timeline_clips[0]
+            current_width = clip_data["item"].rect().width()
+            if current_width > 50:  # Минимальная длина клипа
+                clip_data["item"].setRect(10, 10, current_width - 20, 50)
+                clip_data["duration"] -= 20
+                print(f"Trimmed clip to {clip_data['duration']} units")
+
+    def connect_buttons(self):
+        self.play_btn.clicked.connect(self.play_video)
+        self.pause_btn.clicked.connect(self.pause_video)
+        self.trim_btn.clicked.connect(self.trim_video)
+        self.export_btn.clicked.connect(self.export_video)
+
+    def play_video(self):
+        print("Playing video...")  # Заглушка, нужно интегрировать QMediaPlayer
+
+    def pause_video(self):
+        print("Pausing video...")  # Заглушка
+
+    def trim_video(self):
+        print("Trimming video...")  # Заглушка, реализуем в таймлайне
+
+    def export_video(self):
+        file_path, _ = QFileDialog.getSaveFileName(self, "Export Video", "", "Video Files (*.mp4 *.avi)")
+        if file_path:
+            print(f"Exporting to {file_path}")  # Заглушка
 
     def create_video_tools(self, parent_layout):
         video_group = QGroupBox("Video Tools")
