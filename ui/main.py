@@ -1,6 +1,8 @@
 import sys
-from PyQt5.QtCore import Qt, QTimer, QSize, QUrl
-from PyQt5.QtGui import QKeySequence, QIcon
+import cv2
+import numpy as np
+from PyQt5.QtCore import Qt, QTimer, QSize, QUrl, QRectF, pyqtSignal, QObject
+from PyQt5.QtGui import QKeySequence, QIcon, QPixmap, QImage, QPainter
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
                              QToolBar, QAction, QProgressBar, QLabel, QSlider, QComboBox,
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
@@ -15,18 +17,26 @@ from styles import (apply_button_style, apply_disabled_button_style, apply_label
 from settings_window import SettingsWindow
 
 class VideoEditor(QMainWindow):
+    frameUpdated = pyqtSignal(int)  # Сигнал для обновления кадра
 
     def __init__(self):
         super().__init__()
-
-        self.initUI()  # Вызываем initUI первым
+        self.player = QMediaPlayer(self)
+        self.video_widget = QVideoWidget()
+        self.player.setVideoOutput(self.video_widget)
+        self.capture = None  # Для OpenCV VideoCapture
+        self.timeline_frames = []  # Список кадров для таймлайна
+        self.current_preview = None  # Текущий кадр в превью
+        self.last_frame_idx = -1  # Для отслеживания последнего кадра
+        self.initUI()
         self.setupUndoRedo()
         self.setupAutosave()
         theme_manager.theme_changed.connect(self.update_theme)
+        self.frameUpdated.connect(self.update_preview_frame)
 
     def initUI(self):
         self.setWindowTitle('PyVideo Editor')
-        self.setGeometry(100, 100, 1280, 720)  # Уменьшенный размер для контроля
+        self.setGeometry(100, 100, 1280, 720)
         apply_window_style(self)
         
         central_widget = QWidget()
@@ -35,13 +45,10 @@ class VideoEditor(QMainWindow):
         self.main_layout.setContentsMargins(0, 0, 0, 0)
         self.main_layout.setSpacing(0)
 
-        # Вертикальный сплиттер для всего интерфейса
         main_splitter = QSplitter(Qt.Vertical)
-
-        # Горизонтальный сплиттер для инструментов и предпросмотра
         top_splitter = QSplitter(Qt.Horizontal)
         
-        # Панель инструментов (расширенная)
+        # Панель инструментов
         toolbox = QWidget()
         toolbox_layout = QVBoxLayout(toolbox)
         self.play_btn = QPushButton("Play")
@@ -68,88 +75,137 @@ class VideoEditor(QMainWindow):
         self.preview_widget = QGraphicsView()
         self.preview_scene = QGraphicsScene()
         self.preview_widget.setScene(self.preview_scene)
-        self.video_widget = QVideoWidget()
         self.preview_scene.addWidget(self.video_widget)
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
-        top_splitter.setSizes([400, 800])  # Пропорции для инструментов и предпросмотра
+        top_splitter.setSizes([tools_panel.sizeHint().width(), tools_panel.sizeHint().height()])  # Синхронизация с tools_panel
 
         # Таймлайн
-        self.timeline_widget = QGraphicsView()  # Сохраняем ссылку на виджет
+        self.timeline_widget = QGraphicsView()
         self.timeline_scene = QGraphicsScene()
         self.timeline_widget.setScene(self.timeline_scene)
-        clip = self.timeline_scene.addRect(10, 10, 1000, 50, brush=Qt.blue)  # Начальные размеры
-        self.timeline_clips = [{"item": clip, "start": 0, "duration": 1000}]  # Синхронизируем duration
-
-        # Настраиваем растяжение таймлайна
         self.timeline_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         main_splitter.addWidget(top_splitter)
         main_splitter.addWidget(self.timeline_widget)
-        main_splitter.setStretchFactor(0, 2)  # Уменьшаем вес верхней части
-        main_splitter.setStretchFactor(1, 1)  # Увеличиваем вес таймлайна
+        main_splitter.setStretchFactor(0, 2)
+        main_splitter.setStretchFactor(1, 1)
         self.main_layout.addWidget(main_splitter)
 
         self.createTopToolbars()
-        self.connect_buttons()  # Подключаем действия кнопок
+        self.connect_buttons()
 
-        # Корректное переопределение resizeEvent
         self.timeline_widget.resizeEvent = self.resize_timeline
 
-    def resize_timeline(self, event):
-        if self.timeline_clips:
-            new_width = self.timeline_widget.width() - 20  # Учитываем отступы
-            new_height = self.timeline_widget.height() - 20  # Адаптируем высоту
-            if new_width > 50 and new_height > 50:
-                clip_data = self.timeline_clips[0]
-                clip_data["item"].setRect(10, 10, new_width, new_height)  # Обновляем ширину и высоту
-                clip_data["duration"] = new_width  # Сохраняем duration как ширину
-                # Обновляем размер сцены, чтобы она соответствовала виджету
-                self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
-        event.accept()  # Корректно принимаем событие
+    def generate_timeline_frames(self):
+        self.timeline_scene.clear()
+        self.timeline_frames.clear()
+        if self.capture is None or not self.capture.isOpened():
+            return
+        width = self.timeline_widget.width() - 20
+        height = self.timeline_widget.height() - 20
+        if width <= 50 or height <= 50:
+            return
 
-    def trim_video(self):
-        if self.timeline_clips:
-            clip_data = self.timeline_clips[0]
-            current_width = clip_data["item"].rect().width()
-            if current_width > 50:  # Минимальная длина клипа
-                clip_data["item"].setRect(10, 10, current_width - 20, 50)
-                clip_data["duration"] -= 20
-                print(f"Trimmed clip to {clip_data['duration']} units")
+        total_frames = int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = self.capture.get(cv2.CAP_PROP_FPS)
+        duration = total_frames / fps if fps > 0 else 1
+        frame_step = max(1, total_frames // 10)  # 10 кадров для таймлайна
+
+        for i in range(0, total_frames, frame_step):
+            self.capture.set(cv2.CAP_PROP_POS_FRAMES, i)
+            ret, frame = self.capture.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                frame_width = int(width // 10)
+                frame_height = int(height - 20)
+                frame = cv2.resize(frame, (frame_width, frame_height))
+                image = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+                pixmap = QPixmap.fromImage(image)
+                frame_item = self.timeline_scene.addPixmap(pixmap)
+                x_pos = min((i / total_frames) * width, width - frame_width)  # Обрезка по краям
+                frame_item.setPos(x_pos, 10)
+                self.timeline_frames.append({"item": frame_item, "pos": x_pos, "frame_idx": i})
+        self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
+
+    def resize_timeline(self, event):
+        if self.timeline_frames:
+            self.generate_timeline_frames()
+        event.accept()
+
+    def export_video(self):
+        file_path, _ = QFileDialog.getOpenFileName(self, "Import Video", "", "Video Files (*.mp4 *.avi)")
+        if file_path:
+            if self.capture is not None:
+                self.capture.release()
+            self.capture = cv2.VideoCapture(file_path)
+            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))
+            self.player.play()
+            QTimer.singleShot(100, lambda: self.player.pause())  # Пауза после загрузки
+            self.generate_timeline_frames()
+
+    def update_preview_frame(self, frame_idx):
+        if self.capture is not None and self.capture.isOpened() and frame_idx != self.last_frame_idx:
+            self.capture.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+            ret, frame = self.capture.read()
+            if ret:
+                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                preview_width = self.preview_widget.width()
+                preview_height = self.preview_widget.height()
+                frame = cv2.resize(frame, (preview_width, preview_height))  # Растяжение на всё доступное пространство
+                image = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
+                pixmap = QPixmap.fromImage(image)
+                if self.current_preview:
+                    self.preview_scene.removeItem(self.current_preview)
+                self.current_preview = self.preview_scene.addPixmap(pixmap)
+                self.current_preview.setPos(0, 0)  # Занимает всё окно
+            self.last_frame_idx = frame_idx
+
+    def update_preview(self, event):
+        pos = event.pos()
+        if self.timeline_frames and self.capture is not None and self.capture.isOpened():
+            total_width = self.timeline_widget.width() - 20
+            frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
+            self.frameUpdated.emit(frame_idx)
+        event.accept()
+
+    def mousePressEvent(self, event):
+        if self.timeline_widget.underMouse():
+            pos = self.timeline_widget.mapFromGlobal(event.globalPos())
+            if self.timeline_frames and self.capture is not None and self.capture.isOpened():
+                total_width = self.timeline_widget.width() - 20
+                frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
+                frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
+                self.frameUpdated.emit(frame_idx)
+        super().mousePressEvent(event)
 
     def connect_buttons(self):
         self.play_btn.clicked.connect(self.play_video)
         self.pause_btn.clicked.connect(self.pause_video)
         self.trim_btn.clicked.connect(self.trim_video)
         self.export_btn.clicked.connect(self.export_video)
+        self.timeline_widget.mouseMoveEvent = self.update_preview
 
     def play_video(self):
-        print("Playing video...")  # Заглушка, нужно интегрировать QMediaPlayer
+        self.player.play()
 
     def pause_video(self):
-        print("Pausing video...")  # Заглушка
+        self.player.pause()
 
     def trim_video(self):
-        print("Trimming video...")  # Заглушка, реализуем в таймлайне
-
-    def export_video(self):
-        file_path, _ = QFileDialog.getSaveFileName(self, "Export Video", "", "Video Files (*.mp4 *.avi)")
-        if file_path:
-            print(f"Exporting to {file_path}")  # Заглушка
+        print("Trimming video...")
 
     def create_video_tools(self, parent_layout):
         video_group = QGroupBox("Video Tools")
         layout = QVBoxLayout()
-
         size_group = QGroupBox("Size & Orientation")
         size_layout = QVBoxLayout()
-        
         self.aspect_ratio_combo = QComboBox()
         self.aspect_ratio_combo.addItems(["16:9", "4:3", "1:1", "9:16", "Custom"])
         size_layout.addWidget(QLabel("Aspect Ratio:"))
         apply_label_style(size_layout.itemAt(size_layout.count()-1).widget())
         size_layout.addWidget(self.aspect_ratio_combo)
-
         self.rotation_buttons = QHBoxLayout()
         for angle in [0, 90, 180, 270]:
             btn = QPushButton(f"{angle}°")
@@ -160,76 +216,60 @@ class VideoEditor(QMainWindow):
         size_layout.addLayout(self.rotation_buttons)
         size_group.setLayout(size_layout)
         layout.addWidget(size_group)
-
         color_group = QGroupBox("Color Adjustment")
         color_layout = QVBoxLayout()
-        
         self.brightness_slider = self.create_slider("Brightness:", -100, 100)
         self.contrast_slider = self.create_slider("Contrast:", -100, 100)
         self.saturation_slider = self.create_slider("Saturation:", 0, 200)
-        
         color_layout.addWidget(self.brightness_slider)
         color_layout.addWidget(self.contrast_slider)
         color_layout.addWidget(self.saturation_slider)
         color_group.setLayout(color_layout)
         layout.addWidget(color_group)
-
         effects_group = QGroupBox("Effects")
         effects_layout = QVBoxLayout()
-        
         self.background_removal = QCheckBox("Remove Background")
         self.filters_combo = QComboBox()
         self.filters_combo.addItems(["None", "Sepia", "Grayscale", "Vintage", "Cool", "Warm"])
-        
         effects_layout.addWidget(self.background_removal)
         effects_layout.addWidget(QLabel("Video Filters:"))
         apply_label_style(effects_layout.itemAt(effects_layout.count()-1).widget())
         effects_layout.addWidget(self.filters_combo)
         effects_group.setLayout(effects_layout)
         layout.addWidget(effects_group)
-
         video_group.setLayout(layout)
         parent_layout.addWidget(video_group)
 
     def create_audio_tools(self, parent_layout):
         audio_group = QGroupBox("Audio Tools")
         layout = QVBoxLayout()
-
         volume_group = QGroupBox("Volume Control")
         volume_layout = QVBoxLayout()
-        
         self.volume_slider = self.create_slider("Master Volume:", 0, 200)
         volume_layout.addWidget(self.volume_slider)
         volume_group.setLayout(volume_layout)
         layout.addWidget(volume_group)
-
         eq_group = QGroupBox("Equalizer")
         eq_layout = QVBoxLayout()
-        
         self.low_freq_slider = self.create_slider("Low (60Hz):", -20, 20)
         self.mid_freq_slider = self.create_slider("Mid (1kHz):", -20, 20)
         self.high_freq_slider = self.create_slider("High (16kHz):", -20, 20)
-        
         eq_layout.addWidget(self.low_freq_slider)
         eq_layout.addWidget(self.mid_freq_slider)
         eq_layout.addWidget(self.high_freq_slider)
         eq_group.setLayout(eq_layout)
         layout.addWidget(eq_group)
-
         noise_group = QGroupBox("Noise Reduction")
         noise_layout = QVBoxLayout()
-        
         self.noise_reduction = QCheckBox("Enable Noise Reduction")
         self.noise_threshold = QSpinBox()
         self.noise_threshold.setRange(0, 100)
-        
         noise_layout.addWidget(self.noise_reduction)
         noise_layout.addWidget(QLabel("Threshold:"))
         apply_label_style(noise_layout.itemAt(noise_layout.count()-1).widget())
         noise_layout.addWidget(self.noise_threshold)
         noise_group.setLayout(noise_layout)
         layout.addWidget(noise_group)
-
         audio_group.setLayout(layout)
         parent_layout.addWidget(audio_group)
 
@@ -250,36 +290,25 @@ class VideoEditor(QMainWindow):
         file_toolbar = QToolBar('File Toolbar')
         file_toolbar.setIconSize(QSize(24, 24))
         self.addToolBar(Qt.TopToolBarArea, file_toolbar)
-
-        action_icons = {
-            'New': QStyle.SP_FileIcon,
-            'Open': QStyle.SP_DialogOpenButton,
-            'Save': QStyle.SP_DialogSaveButton,
-            'Export': QStyle.SP_DialogYesButton
-        }
-
+        action_icons = {'New': QStyle.SP_FileIcon, 'Open': QStyle.SP_DialogOpenButton,
+                       'Save': QStyle.SP_DialogSaveButton, 'Export': QStyle.SP_DialogYesButton}
         for text, icon in action_icons.items():
             action = QAction(QIcon(''), text, self)
             if icon:
                 action.setIcon(self.style().standardIcon(icon))
             file_toolbar.addAction(action)
-
         progress_toolbar = QToolBar('Progress Toolbar')
         self.addToolBar(Qt.TopToolBarArea, progress_toolbar)
-        
         self.progress_bar = QProgressBar()
         self.progress_bar.setFixedWidth(200)
         progress_toolbar.addWidget(self.progress_bar)
 
     def setupUndoRedo(self):
         self.undo_stack = QUndoStack(self)
-        
         undo_action = self.undo_stack.createUndoAction(self, 'Undo')
         undo_action.setShortcuts(QKeySequence.Undo)
-        
         redo_action = self.undo_stack.createRedoAction(self, 'Redo')
         redo_action.setShortcuts(QKeySequence.Redo)
-        
         edit_menu = self.menuBar().addMenu('Edit')
         edit_menu.addAction(undo_action)
         edit_menu.addAction(redo_action)
@@ -310,63 +339,45 @@ class WelcomeWindowUnsigned(QWidget):
         self.setWindowTitle('uMovie - Welcome')
         self.setGeometry(300, 300, 800, 600)
         apply_welcome_window_style(self)
-
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
-
         title_label = QLabel("uMovie")
         apply_title_style(title_label)
         main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
-
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(20)
-
         new_project_btn = QPushButton("New Project")
         apply_button_style(new_project_btn)
         new_project_btn.clicked.connect(self.open_new_project)
         buttons_layout.addWidget(new_project_btn)
-
         open_project_btn = QPushButton("Open Project")
         apply_button_style(open_project_btn)
         open_project_btn.clicked.connect(self.open_project)
         buttons_layout.addWidget(open_project_btn)
-
         login_register_btn = QPushButton("Login/Register")
         apply_disabled_button_style(login_register_btn)
         login_register_btn.clicked.connect(self.open_login_register)
         buttons_layout.addWidget(login_register_btn)
-
         main_layout.addLayout(buttons_layout)
-
         why_register_btn = QPushButton("Why register?")
         apply_link_style(why_register_btn)
         why_register_btn.clicked.connect(self.open_why_register)
         main_layout.addWidget(why_register_btn, alignment=Qt.AlignCenter)
-
         recent_label = QLabel("Recent")
         apply_label_style(recent_label)
         main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
-
         recent_table = QTableWidget(4, 3)
         recent_table.setHorizontalHeaderLabels(["Project", "Time", "Date"])
         recent_table.setFixedSize(300, 150)
         recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
-
-        recent_data = [
-            ("project 4", "12:34", "Yesterday"),
-            ("project 3", "23:32", "Monday"),
-            ("project 2", "02:02", "16.03"),
-            ("project 1", "13:57", "16.12.2024")
-        ]
-
+        recent_data = [("project 4", "12:34", "Yesterday"), ("project 3", "23:32", "Monday"),
+                       ("project 2", "02:02", "16.03"), ("project 1", "13:57", "16.12.2024")]
         for row, (project, time, date) in enumerate(recent_data):
             recent_table.setItem(row, 0, QTableWidgetItem(project))
             recent_table.setItem(row, 1, QTableWidgetItem(time))
             recent_table.setItem(row, 2, QTableWidgetItem(date))
-
         recent_table.resizeColumnsToContents()
         main_layout.addWidget(recent_table, alignment=Qt.AlignRight)
-
         self.setLayout(main_layout)
 
     def open_new_project(self):
@@ -413,58 +424,41 @@ class WelcomeWindowSigned(QWidget):
         self.setWindowTitle('uMovie - Welcome')
         self.setGeometry(300, 300, 800, 600)
         apply_welcome_window_style(self)
-
         main_layout = QVBoxLayout()
         main_layout.setAlignment(Qt.AlignCenter)
-
         title_label = QLabel("uMovie")
         apply_title_style(title_label)
         main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
-
         buttons_layout = QVBoxLayout()
         buttons_layout.setSpacing(20)
-
         new_project_btn = QPushButton("New Project")
         apply_button_style(new_project_btn)
         new_project_btn.clicked.connect(self.open_new_project)
         buttons_layout.addWidget(new_project_btn)
-
         open_project_btn = QPushButton("Open Project")
         apply_button_style(open_project_btn)
         open_project_btn.clicked.connect(self.open_project)
         buttons_layout.addWidget(open_project_btn)
-
         account_management_btn = QPushButton("Account Management")
         apply_button_style(account_management_btn)
         account_management_btn.clicked.connect(self.open_account_management)
         buttons_layout.addWidget(account_management_btn)
-
         main_layout.addLayout(buttons_layout)
-
         recent_label = QLabel("Recent")
         apply_label_style(recent_label)
         main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
-
         recent_table = QTableWidget(4, 3)
         recent_table.setHorizontalHeaderLabels(["Project", "Time", "Date"])
         recent_table.setFixedSize(300, 150)
         recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
-
-        recent_data = [
-            ("project 4", "12:34", "Yesterday"),
-            ("project 3", "23:32", "Monday"),
-            ("project 2", "02:02", "16.03"),
-            ("project 1", "13:57", "16.12.2024")
-        ]
-
+        recent_data = [("project 4", "12:34", "Yesterday"), ("project 3", "23:32", "Monday"),
+                       ("project 2", "02:02", "16.03"), ("project 1", "13:57", "16.12.2024")]
         for row, (project, time, date) in enumerate(recent_data):
             recent_table.setItem(row, 0, QTableWidgetItem(project))
             recent_table.setItem(row, 1, QTableWidgetItem(time))
             recent_table.setItem(row, 2, QTableWidgetItem(date))
-
         recent_table.resizeColumnsToContents()
         main_layout.addWidget(recent_table, alignment=Qt.AlignRight)
-
         self.setLayout(main_layout)
 
     def open_new_project(self):
@@ -495,7 +489,7 @@ class WelcomeWindowSigned(QWidget):
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     print("Application initialized")
-    is_signed_in = True # False for new users
+    is_signed_in = True
     if is_signed_in:
         welcome_window = WelcomeWindowSigned()
     else:
