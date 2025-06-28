@@ -207,7 +207,7 @@ class VideoEditor(QMainWindow):
 
     def play_video(self):
         if self.timeline_frames:
-            self.animation_timer.start(33)  # ~30 FPS (1000 ms / 30 = 33 ms)
+            self.animation_timer.start(103)  # ~100 FPS (1000 ms / 30 = 33 ms)
 
     def pause_video(self):
         if self.animation_timer.isActive():
