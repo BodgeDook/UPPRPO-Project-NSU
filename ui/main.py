@@ -8,8 +8,6 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
                              QUndoStack, QGroupBox, QPushButton, QSpinBox, QFileDialog, QTableWidget,
                              QTableWidgetItem, QSizePolicy)
-from PyQt5.QtMultimediaWidgets import QVideoWidget
-from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtGui import QDesktopServices
 
 from styles import (apply_button_style, apply_disabled_button_style, apply_label_style,
@@ -17,17 +15,18 @@ from styles import (apply_button_style, apply_disabled_button_style, apply_label
 from settings_window import SettingsWindow
 
 class VideoEditor(QMainWindow):
-    frameUpdated = pyqtSignal(int)  # Сигнал для обновления кадра
+    frameUpdated = pyqtSignal(int)  # Signal for frame updates
 
     def __init__(self):
         super().__init__()
-        self.player = QMediaPlayer(self)
-        self.video_widget = QVideoWidget()
-        self.player.setVideoOutput(self.video_widget)
-        self.capture = None  # Для OpenCV VideoCapture
-        self.timeline_frames = []  # Список кадров для таймлайна
-        self.current_preview = None  # Текущий кадр в превью
-        self.last_frame_idx = -1  # Для отслеживания последнего кадра
+
+        self.capture = None  # For OpenCV VideoCapture (оставим для генерации кадров)
+        self.timeline_frames = []  # List of timeline frames
+        self.current_preview = None  # Current preview frame
+        self.last_frame_idx = -1  # Track the last frame
+        self.current_frame_idx = 0  # Текущий индекс кадра для анимации
+        self.animation_timer = QTimer(self)  # Таймер для анимации
+        self.animation_timer.timeout.connect(self.animate_frame)
         self.initUI()
         self.setupUndoRedo()
         self.setupAutosave()
@@ -35,6 +34,11 @@ class VideoEditor(QMainWindow):
         self.frameUpdated.connect(self.update_preview_frame)
 
     def initUI(self):
+        self.play_btn   = QPushButton("Play")
+        self.pause_btn  = QPushButton("Pause")
+        self.trim_btn   = QPushButton("Trim")
+        self.export_btn = QPushButton("Export")
+
         self.setWindowTitle('PyVideo Editor')
         self.setGeometry(100, 100, 1280, 720)
         apply_window_style(self)
@@ -47,24 +51,14 @@ class VideoEditor(QMainWindow):
 
         main_splitter = QSplitter(Qt.Vertical)
         top_splitter = QSplitter(Qt.Horizontal)
-        
-        # Панель инструментов
+
+        # Toolbox слева
         toolbox = QWidget()
         toolbox_layout = QVBoxLayout(toolbox)
-        self.play_btn = QPushButton("Play")
-        self.pause_btn = QPushButton("Pause")
-        self.trim_btn = QPushButton("Trim")
-        self.export_btn = QPushButton("Export")
-        apply_button_style(self.play_btn)
-        apply_button_style(self.pause_btn)
-        apply_button_style(self.trim_btn)
-        apply_button_style(self.export_btn)
-        toolbox_layout.addWidget(self.play_btn)
-        toolbox_layout.addWidget(self.pause_btn)
-        toolbox_layout.addWidget(self.trim_btn)
-        toolbox_layout.addWidget(self.export_btn)
+        for btn in (self.play_btn, self.pause_btn, self.trim_btn, self.export_btn):
+            apply_button_style(btn)
+            toolbox_layout.addWidget(btn)
         toolbox.setFixedWidth(150)
-
         tools_panel = QWidget()
         tools_layout = QHBoxLayout(tools_panel)
         self.create_video_tools(tools_layout)
@@ -72,20 +66,26 @@ class VideoEditor(QMainWindow):
         tools_layout.addWidget(toolbox)
         tools_panel.setLayout(tools_layout)
 
+        # Превью-окно с QGraphicsView
         self.preview_widget = QGraphicsView()
+        self.preview_widget.setRenderHint(QPainter.SmoothPixmapTransform)  # Для лучшего масштабирования
         self.preview_scene = QGraphicsScene()
         self.preview_widget.setScene(self.preview_scene)
-        self.preview_scene.addWidget(self.video_widget)
+        self.preview_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.preview_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.preview_widget.setAlignment(Qt.AlignCenter)  # Центрирование содержимого
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
-        top_splitter.setSizes([tools_panel.sizeHint().width(), tools_panel.sizeHint().height()])  # Синхронизация с tools_panel
+        top_splitter.setStretchFactor(0, 0)
+        top_splitter.setStretchFactor(1, 1)
 
         # Таймлайн
         self.timeline_widget = QGraphicsView()
-        self.timeline_scene = QGraphicsScene()
+        self.timeline_scene  = QGraphicsScene()
         self.timeline_widget.setScene(self.timeline_scene)
         self.timeline_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         main_splitter.addWidget(top_splitter)
         main_splitter.addWidget(self.timeline_widget)
         main_splitter.setStretchFactor(0, 2)
@@ -94,7 +94,6 @@ class VideoEditor(QMainWindow):
 
         self.createTopToolbars()
         self.connect_buttons()
-
         self.timeline_widget.resizeEvent = self.resize_timeline
 
     def generate_timeline_frames(self):
@@ -110,7 +109,7 @@ class VideoEditor(QMainWindow):
         total_frames = int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
         fps = self.capture.get(cv2.CAP_PROP_FPS)
         duration = total_frames / fps if fps > 0 else 1
-        frame_step = max(1, total_frames // 10)  # 10 кадров для таймлайна
+        frame_step = max(1, total_frames // 10)  # 10 frames for timeline
 
         for i in range(0, total_frames, frame_step):
             self.capture.set(cv2.CAP_PROP_POS_FRAMES, i)
@@ -123,7 +122,7 @@ class VideoEditor(QMainWindow):
                 image = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
                 pixmap = QPixmap.fromImage(image)
                 frame_item = self.timeline_scene.addPixmap(pixmap)
-                x_pos = min((i / total_frames) * width, width - frame_width)  # Обрезка по краям
+                x_pos = min((i / total_frames) * width, width - frame_width)
                 frame_item.setPos(x_pos, 10)
                 self.timeline_frames.append({"item": frame_item, "pos": x_pos, "frame_idx": i})
         self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
@@ -132,34 +131,37 @@ class VideoEditor(QMainWindow):
         if self.timeline_frames:
             self.generate_timeline_frames()
         event.accept()
-
+    
     def export_video(self):
         file_path, _ = QFileDialog.getOpenFileName(self, "Import Video", "", "Video Files (*.mp4 *.avi)")
-        if file_path:
-            if self.capture is not None:
-                self.capture.release()
-            self.capture = cv2.VideoCapture(file_path)
-            self.player.setMedia(QMediaContent(QUrl.fromLocalFile(file_path)))
-            self.player.play()
-            QTimer.singleShot(100, lambda: self.player.pause())  # Пауза после загрузки
-            self.generate_timeline_frames()
+        if not file_path:
+            return
+        if self.capture:
+            self.capture.release()
+        self.capture = cv2.VideoCapture(file_path)
+        self.generate_timeline_frames()
+        # Устанавливаем первый кадр как начальный для превью
+        if self.timeline_frames:
+            self.current_frame_idx = 0
+            self.update_preview_frame(self.timeline_frames[0]["frame_idx"])
 
     def update_preview_frame(self, frame_idx):
-        if self.capture is not None and self.capture.isOpened() and frame_idx != self.last_frame_idx:
-            self.capture.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
-            ret, frame = self.capture.read()
-            if ret:
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                preview_width = self.preview_widget.width()
-                preview_height = self.preview_widget.height()
-                frame = cv2.resize(frame, (preview_width, preview_height))  # Растяжение на всё доступное пространство
-                image = QImage(frame.data, frame.shape[1], frame.shape[0], frame.strides[0], QImage.Format_RGB888)
-                pixmap = QPixmap.fromImage(image)
-                if self.current_preview:
-                    self.preview_scene.removeItem(self.current_preview)
-                self.current_preview = self.preview_scene.addPixmap(pixmap)
-                self.current_preview.setPos(0, 0)  # Занимает всё окно
+        if self.timeline_frames:
+            # Находим ближайший кадр из таймлайна
+            closest_frame = min(self.timeline_frames, key=lambda x: abs(x["frame_idx"] - frame_idx))
+            if self.current_preview:
+                self.preview_scene.removeItem(self.current_preview)
+            pixmap = closest_frame["item"].pixmap()
+            # Масштабируем кадр до размера preview_widget с сохранением пропорций
+            preview_width = self.preview_widget.width()
+            preview_height = self.preview_widget.height()
+            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
+            self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+            self.current_frame_idx = self.timeline_frames.index(closest_frame)
             self.last_frame_idx = frame_idx
+            # Устанавливаем размер сцены под виджет
+            self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
     def update_preview(self, event):
         pos = event.pos()
@@ -187,11 +189,40 @@ class VideoEditor(QMainWindow):
         self.export_btn.clicked.connect(self.export_video)
         self.timeline_widget.mouseMoveEvent = self.update_preview
 
+    def animate_frame(self):
+        if self.timeline_frames:
+            self.current_frame_idx = (self.current_frame_idx + 1) % len(self.timeline_frames)
+            frame = self.timeline_frames[self.current_frame_idx]
+            if self.current_preview:
+                self.preview_scene.removeItem(self.current_preview)
+            pixmap = frame["item"].pixmap()
+            # Масштабируем кадр до размера preview_widget с сохранением пропорций
+            preview_width = self.preview_widget.width()
+            preview_height = self.preview_widget.height()
+            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
+            self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+            # Устанавливаем размер сцены под виджет
+            self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
+
     def play_video(self):
-        self.player.play()
+        if self.timeline_frames:
+            self.animation_timer.start(33)  # ~30 FPS (1000 ms / 30 = 33 ms)
 
     def pause_video(self):
-        self.player.pause()
+        if self.animation_timer.isActive():
+            self.animation_timer.stop()
+            # Оставляем текущий кадр
+            if self.timeline_frames and self.current_preview:
+                frame = self.timeline_frames[self.current_frame_idx]
+                self.preview_scene.removeItem(self.current_preview)
+                pixmap = frame["item"].pixmap()
+                preview_width = self.preview_widget.width()
+                preview_height = self.preview_widget.height()
+                scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
+                self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+                self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
     def trim_video(self):
         print("Trimming video...")
@@ -210,7 +241,7 @@ class VideoEditor(QMainWindow):
         for angle in [0, 90, 180, 270]:
             btn = QPushButton(f"{angle}°")
             apply_button_style(btn)
-            self.rotation_buttons.addWidget(btn)
+            self.rotation_buttonsp = self.rotation_buttons.addWidget(btn)
         size_layout.addWidget(QLabel("Rotation:"))
         apply_label_style(size_layout.itemAt(size_layout.count()-1).widget())
         size_layout.addLayout(self.rotation_buttons)
@@ -329,91 +360,6 @@ class VideoEditor(QMainWindow):
             apply_label_style(widget)
         self.update()
 
-class WelcomeWindowUnsigned(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
-        theme_manager.theme_changed.connect(self.update_theme)
-
-    def initUI(self):
-        self.setWindowTitle('uMovie - Welcome')
-        self.setGeometry(300, 300, 800, 600)
-        apply_welcome_window_style(self)
-        main_layout = QVBoxLayout()
-        main_layout.setAlignment(Qt.AlignCenter)
-        title_label = QLabel("uMovie")
-        apply_title_style(title_label)
-        main_layout.addWidget(title_label, alignment=Qt.AlignCenter)
-        buttons_layout = QVBoxLayout()
-        buttons_layout.setSpacing(20)
-        new_project_btn = QPushButton("New Project")
-        apply_button_style(new_project_btn)
-        new_project_btn.clicked.connect(self.open_new_project)
-        buttons_layout.addWidget(new_project_btn)
-        open_project_btn = QPushButton("Open Project")
-        apply_button_style(open_project_btn)
-        open_project_btn.clicked.connect(self.open_project)
-        buttons_layout.addWidget(open_project_btn)
-        login_register_btn = QPushButton("Login/Register")
-        apply_disabled_button_style(login_register_btn)
-        login_register_btn.clicked.connect(self.open_login_register)
-        buttons_layout.addWidget(login_register_btn)
-        main_layout.addLayout(buttons_layout)
-        why_register_btn = QPushButton("Why register?")
-        apply_link_style(why_register_btn)
-        why_register_btn.clicked.connect(self.open_why_register)
-        main_layout.addWidget(why_register_btn, alignment=Qt.AlignCenter)
-        recent_label = QLabel("Recent")
-        apply_label_style(recent_label)
-        main_layout.addWidget(recent_label, alignment=Qt.AlignRight)
-        recent_table = QTableWidget(4, 3)
-        recent_table.setHorizontalHeaderLabels(["Project", "Time", "Date"])
-        recent_table.setFixedSize(300, 150)
-        recent_table.setEditTriggers(QTableWidget.NoEditTriggers)
-        recent_data = [("project 4", "12:34", "Yesterday"), ("project 3", "23:32", "Monday"),
-                       ("project 2", "02:02", "16.03"), ("project 1", "13:57", "16.12.2024")]
-        for row, (project, time, date) in enumerate(recent_data):
-            recent_table.setItem(row, 0, QTableWidgetItem(project))
-            recent_table.setItem(row, 1, QTableWidgetItem(time))
-            recent_table.setItem(row, 2, QTableWidgetItem(date))
-        recent_table.resizeColumnsToContents()
-        main_layout.addWidget(recent_table, alignment=Qt.AlignRight)
-        self.setLayout(main_layout)
-
-    def open_new_project(self):
-        self.editor = VideoEditor()
-        self.editor.show()
-        self.close()
-
-    def open_project(self):
-        folder_path = QFileDialog.getExistingDirectory(self, "Select Project Folder")
-        if folder_path:
-            print(f"Selected folder: {folder_path}")
-
-    def open_login_register(self):
-        from auth_window import AuthView, AuthViewModel, AuthModel
-        self.auth_window = AuthView(AuthViewModel(AuthModel()))
-        self.auth_window.show()
-
-    def open_why_register(self):
-        QDesktopServices.openUrl(QUrl("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
-
-    def update_theme(self, theme):
-        apply_welcome_window_style(self)
-        for widget in self.findChildren(QPushButton):
-            if widget.text() == "Login/Register":
-                apply_disabled_button_style(widget)
-            elif widget.text() == "Why register?":
-                apply_link_style(widget)
-            else:
-                apply_button_style(widget)
-        for widget in self.findChildren(QLabel):
-            if widget.text() == "uMovie":
-                apply_title_style(widget)
-            else:
-                apply_label_style(widget)
-        self.update()
-
 class WelcomeWindowSigned(QWidget):
     def __init__(self):
         super().__init__()
@@ -493,7 +439,7 @@ if __name__ == '__main__':
     if is_signed_in:
         welcome_window = WelcomeWindowSigned()
     else:
-        welcome_window = WelcomeWindowUnsigned()
+        pass # welcome_window = WelcomeWindowUnsigned()
     welcome_window.show()
     print("Window shown, starting event loop")
     sys.exit(app.exec_())
