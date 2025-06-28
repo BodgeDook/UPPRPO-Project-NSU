@@ -152,12 +152,12 @@ class VideoEditor(QMainWindow):
             if self.current_preview:
                 self.preview_scene.removeItem(self.current_preview)
             pixmap = closest_frame["item"].pixmap()
-            # Масштабируем кадр до размера preview_widget с сохранением пропорций
+            # Растягиваем кадр до полного размера preview_widget
             preview_width = self.preview_widget.width()
             preview_height = self.preview_widget.height()
-            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
             self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
-            self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+            self.current_preview.setPos(0, 0)
             self.current_frame_idx = self.timeline_frames.index(closest_frame)
             self.last_frame_idx = frame_idx
             # Устанавливаем размер сцены под виджет
@@ -196,12 +196,12 @@ class VideoEditor(QMainWindow):
             if self.current_preview:
                 self.preview_scene.removeItem(self.current_preview)
             pixmap = frame["item"].pixmap()
-            # Масштабируем кадр до размера preview_widget с сохранением пропорций
+            # Растягиваем кадр до полного размера preview_widget
             preview_width = self.preview_widget.width()
             preview_height = self.preview_widget.height()
-            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
             self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
-            self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+            self.current_preview.setPos(0, 0)
             # Устанавливаем размер сцены под виджет
             self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
@@ -219,9 +219,9 @@ class VideoEditor(QMainWindow):
                 pixmap = frame["item"].pixmap()
                 preview_width = self.preview_widget.width()
                 preview_height = self.preview_widget.height()
-                scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
                 self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
-                self.current_preview.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
+                self.current_preview.setPos(0, 0)
                 self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
     def trim_video(self):
