@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QToolBar, QAction, QProgressBar, QLabel, QSlider, QComboBox,
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
                              QUndoStack, QGroupBox, QPushButton, QSpinBox, QFileDialog, QTableWidget,
-                             QTableWidgetItem)
+                             QTableWidgetItem, QSizePolicy)
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtGui import QDesktopServices
@@ -26,15 +26,19 @@ class VideoEditor(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle('PyVideo Editor')
-        self.setGeometry(0, 0, 1920, 1080)
+        self.setGeometry(100, 100, 1280, 720)  # Уменьшенный размер для контроля
         apply_window_style(self)
         
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        self.main_layout = QVBoxLayout(central_widget)  # Сохраняем ссылку на layout
+        self.main_layout = QVBoxLayout(central_widget)
         self.main_layout.setContentsMargins(0, 0, 0, 0)
+        self.main_layout.setSpacing(0)
 
-        # Верхний сплиттер для инструментов и предпросмотра
+        # Вертикальный сплиттер для всего интерфейса
+        main_splitter = QSplitter(Qt.Vertical)
+
+        # Горизонтальный сплиттер для инструментов и предпросмотра
         top_splitter = QSplitter(Qt.Horizontal)
         
         # Панель инструментов (расширенная)
@@ -58,7 +62,7 @@ class VideoEditor(QMainWindow):
         tools_layout = QHBoxLayout(tools_panel)
         self.create_video_tools(tools_layout)
         self.create_audio_tools(tools_layout)
-        tools_layout.addWidget(toolbox)  # Добавляем новую панель
+        tools_layout.addWidget(toolbox)
         tools_panel.setLayout(tools_layout)
 
         self.preview_widget = QGraphicsView()
@@ -69,34 +73,40 @@ class VideoEditor(QMainWindow):
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
-        top_splitter.setSizes([600, 900])  # Устанавливаем пропорции (600 для инструментов, 900 для предпросмотра)
+        top_splitter.setSizes([400, 800])  # Пропорции для инструментов и предпросмотра
 
         # Таймлайн
-        timeline_widget = QGraphicsView()
-        timeline_widget.setMinimumHeight(150)
+        self.timeline_widget = QGraphicsView()  # Сохраняем ссылку на виджет
         self.timeline_scene = QGraphicsScene()
-        timeline_widget.setScene(self.timeline_scene)
-        clip = self.timeline_scene.addRect(10, 10, 200, 50, brush=Qt.blue)
-        self.timeline_clips = [{"item": clip, "start": 0, "duration": 200}]  # Инициализация списка
+        self.timeline_widget.setScene(self.timeline_scene)
+        clip = self.timeline_scene.addRect(10, 10, 1000, 50, brush=Qt.blue)  # Начальные размеры
+        self.timeline_clips = [{"item": clip, "start": 0, "duration": 1000}]  # Синхронизируем duration
 
-        # Собираем всё в вертикальный layout
-        self.main_layout.addWidget(top_splitter)
-        self.main_layout.addWidget(timeline_widget)
+        # Настраиваем растяжение таймлайна
+        self.timeline_widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        main_splitter.addWidget(top_splitter)
+        main_splitter.addWidget(self.timeline_widget)
+        main_splitter.setStretchFactor(0, 2)  # Уменьшаем вес верхней части
+        main_splitter.setStretchFactor(1, 1)  # Увеличиваем вес таймлайна
+        self.main_layout.addWidget(main_splitter)
 
         self.createTopToolbars()
-        self.connect_buttons()  # Подключаем действия кнопок после создания всех виджетов
+        self.connect_buttons()  # Подключаем действия кнопок
 
-    def init_timeline(self):
-        timeline_widget = QGraphicsView()
-        timeline_widget.setMinimumHeight(150)
-        self.timeline_scene = QGraphicsScene()
-        timeline_widget.setScene(self.timeline_scene)
+        # Корректное переопределение resizeEvent
+        self.timeline_widget.resizeEvent = self.resize_timeline
 
-        # Исправленный вызов addRect без указания pen=None
-        clip = self.timeline_scene.addRect(10, 10, 200, 50, brush=Qt.blue)
-        self.timeline_clips.append({"item": clip, "start": 0, "duration": 200})
-        timeline_widget.setScene(self.timeline_scene)
-        self.main_layout.addWidget(timeline_widget)
+    def resize_timeline(self, event):
+        if self.timeline_clips:
+            new_width = self.timeline_widget.width() - 20  # Учитываем отступы
+            new_height = self.timeline_widget.height() - 20  # Адаптируем высоту
+            if new_width > 50 and new_height > 50:
+                clip_data = self.timeline_clips[0]
+                clip_data["item"].setRect(10, 10, new_width, new_height)  # Обновляем ширину и высоту
+                clip_data["duration"] = new_width  # Сохраняем duration как ширину
+                # Обновляем размер сцены, чтобы она соответствовала виджету
+                self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
+        event.accept()  # Корректно принимаем событие
 
     def trim_video(self):
         if self.timeline_clips:
