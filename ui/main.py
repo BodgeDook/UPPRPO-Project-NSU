@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QH
                              QToolBar, QAction, QProgressBar, QLabel, QSlider, QComboBox,
                              QGraphicsView, QGraphicsScene, QSplitter, QCheckBox, QStyle,
                              QUndoStack, QGroupBox, QPushButton, QSpinBox, QFileDialog, QTableWidget,
-                             QTableWidgetItem, QSizePolicy)
+                             QTableWidgetItem, QSizePolicy, QMessageBox)
 from PyQt5.QtGui import QDesktopServices
 
 from styles import (apply_button_style, apply_disabled_button_style, apply_label_style,
@@ -20,13 +20,15 @@ class VideoEditor(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.capture = None  # For OpenCV VideoCapture (оставим для генерации кадров)
+        self.capture = None  # For OpenCV VideoCapture
         self.timeline_frames = []  # List of timeline frames
         self.current_preview = None  # Current preview frame
         self.last_frame_idx = -1  # Track the last frame
-        self.current_frame_idx = 0  # Текущий индекс кадра для анимации
-        self.animation_timer = QTimer(self)  # Таймер для анимации
+        self.current_frame_idx = 0  # Current frame index for animation
+        self.animation_timer = QTimer(self)  # Timer for animation
         self.animation_timer.timeout.connect(self.animate_frame)
+        self.cut_start_frame = None  # Start frame for cutting
+        self.cut_end_frame = None  # End frame for cutting
         self.initUI()
         self.setupUndoRedo()
         self.setupAutosave()
@@ -36,7 +38,7 @@ class VideoEditor(QMainWindow):
     def initUI(self):
         self.play_btn   = QPushButton("Play")
         self.pause_btn  = QPushButton("Pause")
-        self.trim_btn   = QPushButton("Trim")
+        self.cut_btn    = QPushButton("Cut")  # Renamed from trim_btn to cut_btn
         self.export_btn = QPushButton("Export")
 
         self.setWindowTitle('PyVideo Editor')
@@ -55,7 +57,7 @@ class VideoEditor(QMainWindow):
         # Toolbox слева
         toolbox = QWidget()
         toolbox_layout = QVBoxLayout(toolbox)
-        for btn in (self.play_btn, self.pause_btn, self.trim_btn, self.export_btn):
+        for btn in (self.play_btn, self.pause_btn, self.cut_btn, self.export_btn):
             apply_button_style(btn)
             toolbox_layout.addWidget(btn)
         toolbox.setFixedWidth(150)
@@ -179,13 +181,19 @@ class VideoEditor(QMainWindow):
                 total_width = self.timeline_widget.width() - 20
                 frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
                 frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
+                if event.button() == Qt.LeftButton and self.cut_start_frame is None:
+                    self.cut_start_frame = frame_idx
+                    QMessageBox.information(self, "Cut Start", f"Set start frame: {frame_idx}")
+                elif event.button() == Qt.LeftButton and self.cut_start_frame is not None and self.cut_end_frame is None:
+                    self.cut_end_frame = frame_idx
+                    QMessageBox.information(self, "Cut End", f"Set end frame: {frame_idx}")
                 self.frameUpdated.emit(frame_idx)
         super().mousePressEvent(event)
 
     def connect_buttons(self):
         self.play_btn.clicked.connect(self.play_video)
         self.pause_btn.clicked.connect(self.pause_video)
-        self.trim_btn.clicked.connect(self.trim_video)
+        self.cut_btn.clicked.connect(self.cut_video)  # Updated to call cut_video
         self.export_btn.clicked.connect(self.export_video)
         self.timeline_widget.mouseMoveEvent = self.update_preview
 
@@ -207,7 +215,7 @@ class VideoEditor(QMainWindow):
 
     def play_video(self):
         if self.timeline_frames:
-            self.animation_timer.start(103)  # ~100 FPS (1000 ms / 30 = 33 ms)
+            self.animation_timer.start(103)  # ~10 FPS
 
     def pause_video(self):
         if self.animation_timer.isActive():
@@ -224,8 +232,38 @@ class VideoEditor(QMainWindow):
                 self.current_preview.setPos(0, 0)
                 self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
-    def trim_video(self):
-        print("Trimming video...")
+    def cut_video(self):
+        if self.capture is None or not self.capture.isOpened() or self.cut_start_frame is None or self.cut_end_frame is None:
+            QMessageBox.warning(self, "Error", "Please set both start and end frames for cutting.")
+            return
+
+        if self.cut_start_frame > self.cut_end_frame:
+            self.cut_start_frame, self.cut_end_frame = self.cut_end_frame, self.cut_start_frame
+
+        output_path, _ = QFileDialog.getSaveFileName(self, "Save Cut Video", "", "Video Files (*.mp4 *.avi)")
+        if not output_path:
+            return
+
+        # Получаем параметры исходного видео
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # или 'XVID' для .avi
+        fps = self.capture.get(cv2.CAP_PROP_FPS)
+        width = int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+        out = cv2.VideoWriter(output_path, fourcc, fps, (width, height))
+
+        self.capture.set(cv2.CAP_PROP_POS_FRAMES, self.cut_start_frame)
+        for frame_idx in range(self.cut_start_frame, self.cut_end_frame + 1):
+            ret, frame = self.capture.read()
+            if ret:
+                out.write(frame)
+            else:
+                break
+
+        out.release()
+        QMessageBox.information(self, "Success", f"Video cut and saved to {output_path}")
+        self.cut_start_frame = None
+        self.cut_end_frame = None
 
     def create_video_tools(self, parent_layout):
         video_group = QGroupBox("Video Tools")
