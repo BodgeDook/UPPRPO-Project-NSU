@@ -29,6 +29,7 @@ class VideoEditor(QMainWindow):
         self.animation_timer.timeout.connect(self.animate_frame)
         self.cut_start_frame = None  # Start frame for cutting
         self.cut_end_frame = None  # End frame for cutting
+        self.is_cutting = False  # State to track cutting mode
         self.initUI()
         self.setupUndoRedo()
         self.setupAutosave()
@@ -38,7 +39,9 @@ class VideoEditor(QMainWindow):
     def initUI(self):
         self.play_btn   = QPushButton("Play")
         self.pause_btn  = QPushButton("Pause")
-        self.cut_btn    = QPushButton("Cut")  # Renamed from trim_btn to cut_btn
+        self.cut_btn    = QPushButton("Start Cut")  # Переименована для ясности
+        self.confirm_cut_btn = QPushButton("Confirm Cut")  # Новая кнопка для подтверждения
+        self.confirm_cut_btn.setEnabled(False)  # Изначально отключена
         self.export_btn = QPushButton("Export")
 
         self.setWindowTitle('PyVideo Editor')
@@ -57,7 +60,7 @@ class VideoEditor(QMainWindow):
         # Toolbox слева
         toolbox = QWidget()
         toolbox_layout = QVBoxLayout(toolbox)
-        for btn in (self.play_btn, self.pause_btn, self.cut_btn, self.export_btn):
+        for btn in (self.play_btn, self.pause_btn, self.cut_btn, self.confirm_cut_btn, self.export_btn):
             apply_button_style(btn)
             toolbox_layout.addWidget(btn)
         toolbox.setFixedWidth(150)
@@ -181,7 +184,7 @@ class VideoEditor(QMainWindow):
         event.accept()
 
     def mousePressEvent(self, event):
-        if self.timeline_widget.underMouse():
+        if self.timeline_widget.underMouse() and self.is_cutting:
             pos = self.timeline_widget.mapFromGlobal(event.globalPos())
             if self.timeline_frames and self.capture is not None and self.capture.isOpened():
                 total_width = self.timeline_widget.width() - 20
@@ -190,6 +193,7 @@ class VideoEditor(QMainWindow):
                 if event.button() == Qt.LeftButton and self.cut_start_frame is None:
                     self.cut_start_frame = frame_idx
                     QMessageBox.information(self, "Cut Start", f"Set start frame: {frame_idx}")
+                    self.confirm_cut_btn.setEnabled(True)  # Активируем кнопку подтверждения
                 elif event.button() == Qt.LeftButton and self.cut_start_frame is not None and self.cut_end_frame is None:
                     self.cut_end_frame = frame_idx
                     QMessageBox.information(self, "Cut End", f"Set end frame: {frame_idx}")
@@ -199,7 +203,8 @@ class VideoEditor(QMainWindow):
     def connect_buttons(self):
         self.play_btn.clicked.connect(self.play_video)
         self.pause_btn.clicked.connect(self.pause_video)
-        self.cut_btn.clicked.connect(self.cut_video)  # Updated to call cut_video
+        self.cut_btn.clicked.connect(self.start_cutting)
+        self.confirm_cut_btn.clicked.connect(self.cut_video)  # Подтверждение обрезки
         self.export_btn.clicked.connect(self.export_video)
         self.timeline_widget.mouseMoveEvent = self.update_preview
 
@@ -238,8 +243,21 @@ class VideoEditor(QMainWindow):
                 self.current_preview.setPos(0, 0)
                 self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
+    def start_cutting(self):
+        if self.capture is None or not self.capture.isOpened():
+            QMessageBox.warning(self, "Error", "Please import a video first.")
+            return
+        if not self.is_cutting:
+            self.is_cutting = True
+            self.cut_start_frame = None
+            self.cut_end_frame = None
+            self.confirm_cut_btn.setEnabled(False)  # Отключаем кнопку подтверждения до выбора первого кадра
+            QMessageBox.information(self, "Cutting Mode", "Click on the timeline to set the start frame, then the end frame.")
+        else:
+            QMessageBox.warning(self, "Cutting Mode", "Already in cutting mode. Select frames first.")
+
     def cut_video(self):
-        if self.capture is None or not self.capture.isOpened() or self.cut_start_frame is None or self.cut_end_frame is None:
+        if self.cut_start_frame is None or self.cut_end_frame is None:
             QMessageBox.warning(self, "Error", "Please set both start and end frames for cutting.")
             return
 
@@ -270,6 +288,8 @@ class VideoEditor(QMainWindow):
         QMessageBox.information(self, "Success", f"Video cut and saved to {output_path}")
         self.cut_start_frame = None
         self.cut_end_frame = None
+        self.is_cutting = False
+        self.confirm_cut_btn.setEnabled(False)  # Отключаем кнопку после обрезки
 
     def create_video_tools(self, parent_layout):
         video_group = QGroupBox("Video Tools")
