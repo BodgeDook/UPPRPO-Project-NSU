@@ -1,6 +1,5 @@
 import sys
 import cv2
-import numpy as np
 from PyQt5.QtCore import Qt, QTimer, QSize, QUrl, QRectF, pyqtSignal, QObject
 from PyQt5.QtGui import QKeySequence, QIcon, QPixmap, QImage, QPainter
 from PyQt5.QtWidgets import (QMainWindow, QApplication, QWidget, QVBoxLayout, QHBoxLayout,
@@ -39,9 +38,9 @@ class VideoEditor(QMainWindow):
     def initUI(self):
         self.play_btn   = QPushButton("Play")
         self.pause_btn  = QPushButton("Pause")
-        self.cut_btn    = QPushButton("Start Cut")  # Переименована для ясности
-        self.confirm_cut_btn = QPushButton("Confirm Cut")  # Новая кнопка для подтверждения
-        self.confirm_cut_btn.setEnabled(False)  # Изначально отключена
+        self.cut_btn    = QPushButton("Start Cut")
+        self.confirm_cut_btn = QPushButton("Confirm Cut")
+        self.confirm_cut_btn.setEnabled(False)
         self.export_btn = QPushButton("Export")
 
         self.setWindowTitle('PyVideo Editor')
@@ -73,20 +72,20 @@ class VideoEditor(QMainWindow):
 
         # Превью-окно с QGraphicsView
         self.preview_widget = QGraphicsView()
-        self.preview_widget.setRenderHint(QPainter.SmoothPixmapTransform)  # Для лучшего масштабирования
+        self.preview_widget.setRenderHint(QPainter.SmoothPixmapTransform)
         self.preview_scene = QGraphicsScene()
         self.preview_widget.setScene(self.preview_scene)
         self.preview_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.preview_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.preview_widget.setAlignment(Qt.AlignCenter)  # Центрирование содержимого
-        self.preview_widget.resizeEvent = self.resize_preview  # Добавляем обработчик изменения размера
+        self.preview_widget.setAlignment(Qt.AlignCenter)
+        self.preview_widget.resizeEvent = self.resize_preview
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
         top_splitter.setStretchFactor(0, 0)
         top_splitter.setStretchFactor(1, 1)
 
-        # Таймлайн
+        # Timeline
         self.timeline_widget = QGraphicsView()
         self.timeline_scene  = QGraphicsScene()
         self.timeline_widget.setScene(self.timeline_scene)
@@ -146,7 +145,6 @@ class VideoEditor(QMainWindow):
             self.capture.release()
         self.capture = cv2.VideoCapture(file_path)
         self.generate_timeline_frames()
-        # Устанавливаем первый кадр как начальный для превью
         if self.timeline_frames:
             self.current_frame_idx = 0
             self.update_preview_frame(self.timeline_frames[0]["frame_idx"])
@@ -158,12 +156,10 @@ class VideoEditor(QMainWindow):
 
     def update_preview_frame(self, frame_idx):
         if self.timeline_frames:
-            # Находим ближайший кадр из таймлайна
             closest_frame = min(self.timeline_frames, key=lambda x: abs(x["frame_idx"] - frame_idx))
             if self.current_preview:
                 self.preview_scene.removeItem(self.current_preview)
             pixmap = closest_frame["item"].pixmap()
-            # Растягиваем кадр до полного размера preview_widget
             preview_width = self.preview_widget.width()
             preview_height = self.preview_widget.height()
             scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
@@ -171,7 +167,6 @@ class VideoEditor(QMainWindow):
             self.current_preview.setPos(0, 0)
             self.current_frame_idx = self.timeline_frames.index(closest_frame)
             self.last_frame_idx = frame_idx
-            # Устанавливаем размер сцены под виджет
             self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
     def update_preview(self, event):
@@ -180,7 +175,7 @@ class VideoEditor(QMainWindow):
             total_width = self.timeline_widget.width() - 20
             frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
             frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
-            self.frameUpdated.emit(frame_idx)  # Всегда обновляем превью при движении мыши
+            self.frameUpdated.emit(frame_idx)
         event.accept()
 
     def mousePressEvent(self, event):
@@ -190,12 +185,12 @@ class VideoEditor(QMainWindow):
                 total_width = self.timeline_widget.width() - 20
                 frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
                 frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
-                self.frameUpdated.emit(frame_idx)  # Обновляем превью при клике
+                self.frameUpdated.emit(frame_idx)
                 if self.is_cutting:
                     if event.button() == Qt.LeftButton and self.cut_start_frame is None:
                         self.cut_start_frame = frame_idx
                         QMessageBox.information(self, "Cut Start", f"Set start frame: {frame_idx}")
-                        self.confirm_cut_btn.setEnabled(True)  # Активируем кнопку подтверждения
+                        self.confirm_cut_btn.setEnabled(True)
                     elif event.button() == Qt.LeftButton and self.cut_start_frame is not None and self.cut_end_frame is None:
                         self.cut_end_frame = frame_idx
                         QMessageBox.information(self, "Cut End", f"Set end frame: {frame_idx}")
@@ -205,7 +200,7 @@ class VideoEditor(QMainWindow):
         self.play_btn.clicked.connect(self.play_video)
         self.pause_btn.clicked.connect(self.pause_video)
         self.cut_btn.clicked.connect(self.start_cutting)
-        self.confirm_cut_btn.clicked.connect(self.cut_video)  # Подтверждение обрезки
+        self.confirm_cut_btn.clicked.connect(self.cut_video)
         self.export_btn.clicked.connect(self.export_video)
         self.timeline_widget.mouseMoveEvent = self.update_preview
 
@@ -216,13 +211,11 @@ class VideoEditor(QMainWindow):
             if self.current_preview:
                 self.preview_scene.removeItem(self.current_preview)
             pixmap = frame["item"].pixmap()
-            # Растягиваем кадр до полного размера preview_widget
             preview_width = self.preview_widget.width()
             preview_height = self.preview_widget.height()
             scaled_pixmap = pixmap.scaled(preview_width, preview_height, Qt.IgnoreAspectRatio, Qt.SmoothTransformation)
             self.current_preview = self.preview_scene.addPixmap(scaled_pixmap)
             self.current_preview.setPos(0, 0)
-            # Устанавливаем размер сцены под виджет
             self.preview_scene.setSceneRect(0, 0, preview_width, preview_height)
 
     def play_video(self):
@@ -232,7 +225,6 @@ class VideoEditor(QMainWindow):
     def pause_video(self):
         if self.animation_timer.isActive():
             self.animation_timer.stop()
-            # Оставляем текущий кадр
             if self.timeline_frames and self.current_preview:
                 frame = self.timeline_frames[self.current_frame_idx]
                 self.preview_scene.removeItem(self.current_preview)
@@ -252,7 +244,7 @@ class VideoEditor(QMainWindow):
             self.is_cutting = True
             self.cut_start_frame = None
             self.cut_end_frame = None
-            self.confirm_cut_btn.setEnabled(False)  # Отключаем кнопку подтверждения до выбора первого кадра
+            self.confirm_cut_btn.setEnabled(False)
             QMessageBox.information(self, "Cutting Mode", "Click on the timeline to set the start frame, then the end frame.")
         else:
             QMessageBox.warning(self, "Cutting Mode", "Already in cutting mode. Select frames first.")
@@ -269,8 +261,7 @@ class VideoEditor(QMainWindow):
         if not output_path:
             return
 
-        # Получаем параметры исходного видео
-        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # или 'XVID' для .avi
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v') # or 'XVID' для .avi
         fps = self.capture.get(cv2.CAP_PROP_FPS)
         width = int(self.capture.get(cv2.CAP_PROP_FRAME_WIDTH))
         height = int(self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -290,7 +281,7 @@ class VideoEditor(QMainWindow):
         self.cut_start_frame = None
         self.cut_end_frame = None
         self.is_cutting = False
-        self.confirm_cut_btn.setEnabled(False)  # Отключаем кнопку после обрезки
+        self.confirm_cut_btn.setEnabled(False)
 
     def create_video_tools(self, parent_layout):
         video_group = QGroupBox("Video Tools")
