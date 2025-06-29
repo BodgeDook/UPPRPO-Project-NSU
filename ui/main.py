@@ -76,6 +76,7 @@ class VideoEditor(QMainWindow):
         self.preview_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.preview_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.preview_widget.setAlignment(Qt.AlignCenter)  # Центрирование содержимого
+        self.preview_widget.resizeEvent = self.resize_preview  # Добавляем обработчик изменения размера
 
         top_splitter.addWidget(tools_panel)
         top_splitter.addWidget(self.preview_widget)
@@ -146,6 +147,11 @@ class VideoEditor(QMainWindow):
         if self.timeline_frames:
             self.current_frame_idx = 0
             self.update_preview_frame(self.timeline_frames[0]["frame_idx"])
+
+    def resize_preview(self, event):
+        if self.current_preview and self.timeline_frames:
+            self.update_preview_frame(self.timeline_frames[self.current_frame_idx]["frame_idx"])
+        event.accept()
 
     def update_preview_frame(self, frame_idx):
         if self.timeline_frames:
