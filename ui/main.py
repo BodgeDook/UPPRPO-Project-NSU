@@ -1,6 +1,6 @@
 import sys
 from PyQt5.QtWidgets import QApplication
-from welcome_window import WelcomeWindowSigned
+from .welcome_window import WelcomeWindowSigned
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
@@ -13,3 +13,8 @@ if __name__ == '__main__':
     welcome_window.show()
     print("Window shown, starting event loop")
     sys.exit(app.exec_())
+
+'''
+to launch the application:
+python -m ui.main
+'''

@@ -2,9 +2,9 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QTableWidget, QTableWidgetItem, QFileDialog
 from PyQt5.QtCore import Qt
 
-from styles import apply_button_style, apply_welcome_window_style, apply_label_style, apply_title_style, theme_manager
-from video_editor import VideoEditor
-from settings_window import SettingsWindow
+from .styles import apply_button_style, apply_welcome_window_style, apply_label_style, apply_title_style, theme_manager
+from .video_editor import VideoEditor
+from .settings_window import SettingsWindow
 
 class WelcomeWindowSigned(QWidget):
     def __init__(self):

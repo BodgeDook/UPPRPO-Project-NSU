@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, pyqtSignal
-from settings_manager import settings_manager
+from .settings_manager import settings_manager
 
 class ThemeManager(QObject):
     theme_changed = pyqtSignal(str)

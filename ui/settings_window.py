@@ -3,10 +3,10 @@ from PyQt5.QtWidgets import (QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QCo
                              QLabel, QLineEdit, QTableWidget, QTableWidgetItem, QStackedWidget)
 from PyQt5.QtCore import Qt
 
-from styles import apply_welcome_window_style, apply_button_style, apply_label_style, apply_title_style, apply_disabled_button_style, theme_manager
-from settings_manager import settings_manager
+from .styles import apply_welcome_window_style, apply_button_style, apply_label_style, apply_title_style, apply_disabled_button_style, theme_manager
+from .settings_manager import settings_manager
 
-from auth_window import PasswordLevel
+from .auth_window import PasswordLevel
 import re
 
 class SettingsWindow(QWidget):

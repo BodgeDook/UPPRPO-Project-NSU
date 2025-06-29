@@ -1,11 +1,13 @@
 # ui/video_editor.py
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QGraphicsView, QGraphicsScene, QPushButton, QGroupBox, QToolBar, QAction, QProgressBar, QFileDialog, QMessageBox, QComboBox, QCheckBox, QSlider, QSpinBox, QUndoStack, QSizePolicy, QStyle, QLabel
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QGraphicsView, QGraphicsScene,\
+QPushButton, QGroupBox, QToolBar, QAction, QProgressBar, QFileDialog, QMessageBox, QComboBox, QCheckBox, QSlider, QSpinBox,\
+QUndoStack, QSizePolicy, QStyle, QLabel
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt5.QtGui import QPainter, QIcon, QPixmap, QImage, QKeySequence
 
-from styles import apply_button_style, apply_window_style, apply_label_style, theme_manager
-from video_processor import VideoProcessor
-from timeline_manager import TimelineManager
+from .styles import apply_button_style, apply_window_style, apply_label_style, theme_manager
+from .video_processor import VideoProcessor
+from .timeline_manager import TimelineManager
 
 class VideoEditor(QMainWindow):
     frameUpdated = pyqtSignal(int)
