@@ -8,11 +8,10 @@ class TimelineManager:
     def __init__(self, editor):
         self.editor = editor
         self.timeline_frames = []
-        self.timeline_widget = None  # Инициализируем как None, присвоим позже
-        self.timeline_scene = None   # Инициализируем как None, присвоим позже
+        self.timeline_widget = None
+        self.timeline_scene = None
 
     def setup(self):
-        # Вызывается после инициализации UI в VideoEditor
         self.timeline_widget = self.editor.timeline_widget
         self.timeline_scene = self.editor.timeline_scene
         self.timeline_widget.mousePressEvent = self.mousePressEvent

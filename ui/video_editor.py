@@ -35,7 +35,7 @@ class VideoEditor(QMainWindow):
         self.cut_btn = QPushButton("Start Cut")
         self.confirm_cut_btn = QPushButton("Confirm Cut")
         self.confirm_cut_btn.setEnabled(False)
-        self.cancel_cut_btn = QPushButton("Cancel Cut")  # Добавлена кнопка отмены
+        self.cancel_cut_btn = QPushButton("Cancel Cut")
         self.cancel_cut_btn.setEnabled(False)
         self.export_btn = QPushButton("Export")
 
@@ -265,7 +265,7 @@ class VideoEditor(QMainWindow):
         self.pause_btn.clicked.connect(self.pause_video)
         self.cut_btn.clicked.connect(self.start_cutting)
         self.confirm_cut_btn.clicked.connect(self.cut_video)
-        self.cancel_cut_btn.clicked.connect(self.cancel_cutting)  # Подключение кнопки отмены
+        self.cancel_cut_btn.clicked.connect(self.cancel_cutting)
         self.export_btn.clicked.connect(self.video_processor.export_video)
 
     def play_video(self):
@@ -311,7 +311,7 @@ class VideoEditor(QMainWindow):
         self.cut_end_frame = None
         self.is_cutting = False
         self.confirm_cut_btn.setEnabled(False)
-        self.cancel_cut_btn.setEnabled(False)  # Деактивируем кнопку отмены
+        self.cancel_cut_btn.setEnabled(False)
 
     def cancel_cutting(self):
         if self.is_cutting:
