@@ -25,7 +25,7 @@ class VideoEditor(QMainWindow):
         self.is_cutting = False
         self.initUI()
         self.timeline_manager = TimelineManager(self)
-        self.timeline_manager.setup()  # Добавлено
+        self.timeline_manager.setup()
         self.setupUndoRedo()
         self.setupAutosave()
         theme_manager.theme_changed.connect(self.update_theme)
@@ -297,7 +297,7 @@ class VideoEditor(QMainWindow):
             self.cut_start_frame = None
             self.cut_end_frame = None
             self.confirm_cut_btn.setEnabled(False)
-            self.cancel_cut_btn.setEnabled(True)  # Активируем кнопку отмены
+            self.cancel_cut_btn.setEnabled(True)
             QMessageBox.information(self, "Cutting Mode", "Click on the timeline to set the start frame, then the end frame.")
         else:
             QMessageBox.warning(self, "Cutting Mode", "Already in cutting mode. Select frames or cancel first.")
