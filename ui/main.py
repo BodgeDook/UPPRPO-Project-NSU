@@ -180,24 +180,25 @@ class VideoEditor(QMainWindow):
             total_width = self.timeline_widget.width() - 20
             frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
             frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
-            self.frameUpdated.emit(frame_idx)
+            self.frameUpdated.emit(frame_idx)  # Всегда обновляем превью при движении мыши
         event.accept()
 
     def mousePressEvent(self, event):
-        if self.timeline_widget.underMouse() and self.is_cutting:
+        if self.timeline_widget.underMouse():
             pos = self.timeline_widget.mapFromGlobal(event.globalPos())
             if self.timeline_frames and self.capture is not None and self.capture.isOpened():
                 total_width = self.timeline_widget.width() - 20
                 frame_idx = int((pos.x() / total_width) * self.capture.get(cv2.CAP_PROP_FRAME_COUNT))
                 frame_idx = min(max(0, frame_idx), int(self.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
-                if event.button() == Qt.LeftButton and self.cut_start_frame is None:
-                    self.cut_start_frame = frame_idx
-                    QMessageBox.information(self, "Cut Start", f"Set start frame: {frame_idx}")
-                    self.confirm_cut_btn.setEnabled(True)  # Активируем кнопку подтверждения
-                elif event.button() == Qt.LeftButton and self.cut_start_frame is not None and self.cut_end_frame is None:
-                    self.cut_end_frame = frame_idx
-                    QMessageBox.information(self, "Cut End", f"Set end frame: {frame_idx}")
-                self.frameUpdated.emit(frame_idx)
+                self.frameUpdated.emit(frame_idx)  # Обновляем превью при клике
+                if self.is_cutting:
+                    if event.button() == Qt.LeftButton and self.cut_start_frame is None:
+                        self.cut_start_frame = frame_idx
+                        QMessageBox.information(self, "Cut Start", f"Set start frame: {frame_idx}")
+                        self.confirm_cut_btn.setEnabled(True)  # Активируем кнопку подтверждения
+                    elif event.button() == Qt.LeftButton and self.cut_start_frame is not None and self.cut_end_frame is None:
+                        self.cut_end_frame = frame_idx
+                        QMessageBox.information(self, "Cut End", f"Set end frame: {frame_idx}")
         super().mousePressEvent(event)
 
     def connect_buttons(self):
