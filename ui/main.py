@@ -17,4 +17,6 @@ if __name__ == '__main__':
 '''
 to launch the application:
 python -m ui.main
+
+it all works mostly stable :)
 '''
