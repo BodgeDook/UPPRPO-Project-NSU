@@ -1,1 +1,0 @@
- "D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avcodec.lib" "D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avformat.lib" "D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/avutil.lib" "D:/prog/UPPRPO-Project-NSU/render/ffmpeg/lib/swscale.lib" -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

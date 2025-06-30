@@ -1,7 +1,3 @@
-mkdir build
-cd build
-# mkdir testbuild
-# cd testbuild
-# cmake -G "MinGW Makefiles" ../..
-cmake -G "MinGW Makefiles" ..
-make
+rmdir build
+cmake -S . -B build -G "MinGW Makefiles"
+cmake --build build

@@ -1,16 +1,40 @@
 #pragma once
 #include <string_view>
 #include <vector>
-#include "videooperations.hpp"
+#include <string>
+#include <vector>
+#include <iostream>
+
+#include <rapidjson/document.h>
+
+// #include "videooperations.hpp"
+#include "track.hpp"
+#include "settings.hpp"
 
 class OperationFactory{
 public:
+    OperationFactory();
     OperationFactory(std::string_view jsonFilePath);
-    void createOperationsList();
-    std::vector<VideoOperation*> getOperationList();
+
+    int parseSettings();
+
+    int parseTracks();
+
+    void testParse() const;
+
+    Settings getSettings() const;
+
+    std::vector<Track> getTracks() const;
 
 private:
-    std::string jsonFilePath;
-    std::vector<VideoOperation*> videoOperations;
+    char readBuffer[65536];
 
+    int status;
+
+    rapidjson::Document doc;
+    
+    std::string jsonFilePath;
+
+    Settings settings;
+    std::vector<Track> tracks;
 };
