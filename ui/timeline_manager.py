@@ -32,50 +32,31 @@ class TimelineManager:
         total_frames = int(self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT))
         frame_step = max(1, total_frames // 10)  # Показываем примерно 10 кадров
 
-        # Расчёт ширины кадра
-        frame_width = max(50, int(width / (total_frames / frame_step)))
-        frame_height = max(50, int(height - 20))
+        # Расчёт ширины кадра как в старой версии
+        frame_width = int(width // 10)
+        frame_height = int(height - 20)
 
         for i in range(0, total_frames, frame_step):
             self.editor.video_processor.capture.set(cv2.CAP_PROP_POS_FRAMES, i)
             ret, frame = self.editor.video_processor.capture.read()
             if ret:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # Масштабируем кадр сразу
+                # Масштабируем кадр сразу под текущий размер
                 frame = cv2.resize(frame, (frame_width, frame_height))
                 image = QImage(frame.data, frame_width, frame_height, frame.strides[0], QImage.Format_RGB888)
                 pixmap = QPixmap.fromImage(image)
                 frame_item = self.timeline_scene.addPixmap(pixmap)
-                # Позиционируем равномерно
-                x_pos = (i / frame_step) * frame_width
+                # Позиционируем пропорционально, как в старой версии
+                x_pos = min((i / total_frames) * width, width - frame_width)
                 frame_item.setPos(x_pos, 10)
                 self.timeline_frames.append({"item": frame_item, "frame_idx": i, "original_pixmap": pixmap})
         self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
 
     def resize_timeline(self, event):
-        if not self.timeline_frames:
-            return
-        width = self.timeline_widget.width() - 20
-        height = self.timeline_widget.height() - 20
-        if width <= 50 or height <= 50:
-            return
-
-        total_frames = len(self.timeline_frames)
-        frame_width = max(50, int(width / total_frames))
-        frame_height = max(50, int(height - 20))
-
-        for idx, frame_data in enumerate(self.timeline_frames):
-            item = frame_data["item"]
-            original_pixmap = frame_data["original_pixmap"]
-            scaled_pixmap = original_pixmap.scaled(frame_width, frame_height, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            item.setPixmap(scaled_pixmap)
-            # Плотное расположение с фиксированной шириной
-            x_pos = idx * frame_width
-            item.setPos(x_pos, 10)
-
-        self.timeline_scene.setSceneRect(0, 0, self.timeline_widget.width(), self.timeline_widget.height())
-        if event:
-            event.accept()
+        if self.timeline_frames:
+            # Перегенерируем кадры, как в старой версии
+            self.generate_timeline_frames()
+        event.accept()
 
     def update_preview(self, event):
         if self.timeline_widget is None or self.timeline_scene is None:
@@ -86,7 +67,7 @@ class TimelineManager:
             frame_idx = int((pos.x() / total_width) * self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT))
             frame_idx = min(max(0, frame_idx), int(self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
             self.editor.frameUpdated.emit(frame_idx)
-            # Обновляем превью с оригинальным качеством
+            # Обновляем превью с оригинальным кадром
             closest_frame = min(self.timeline_frames, key=lambda x: abs(x["frame_idx"] - frame_idx))
             preview_width = self.editor.preview_widget.width()
             preview_height = self.editor.preview_widget.height()
