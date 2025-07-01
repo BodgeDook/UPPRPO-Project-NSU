@@ -1,5 +1,5 @@
 render/*.mp4
-ui/*.mp4
+ui/test_videos/
 .vscode
 render/test_ffmpeg.cpp
 render/build
