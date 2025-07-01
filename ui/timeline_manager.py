@@ -72,6 +72,9 @@ class TimelineManager:
             preview_item = self.editor.preview_scene.addPixmap(scaled_pixmap)
             preview_item.setPos((preview_width - scaled_pixmap.width()) / 2, (preview_height - scaled_pixmap.height()) / 2)
         event.accept()
+    
+    '''
+    old cut method:
 
     def mousePressEvent(self, event):
         if self.timeline_widget is None or not self.timeline_widget.underMouse():
@@ -88,6 +91,29 @@ class TimelineManager:
                     QMessageBox.information(self.editor, "Cut Start", f"Set start frame: {frame_idx}")
                     self.editor.confirm_cut_btn.setEnabled(True)
                 elif event.button() == Qt.LeftButton and self.editor.cut_start_frame is not None and self.editor.cut_end_frame is None:
+                    self.editor.cut_end_frame = frame_idx
+                    QMessageBox.information(self.editor, "Cut End", f"Set end frame: {frame_idx}")
+        event.accept()
+    '''
+
+    def mousePressEvent(self, event):
+        if self.timeline_widget is None or not self.timeline_widget.underMouse():
+            return
+        pos = self.timeline_widget.mapFromGlobal(event.globalPos())
+        if self.timeline_frames and self.editor.video_processor.capture is not None and self.editor.video_processor.capture.isOpened():
+            total_width = self.timeline_widget.width() - 20
+            frame_idx = int((pos.x() / total_width) * self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT))
+            frame_idx = min(max(0, frame_idx), int(self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT) - 1))
+            self.editor.frameUpdated.emit(frame_idx)
+            if self.editor.is_cutting:
+                if event.button() == Qt.LeftButton and self.editor.cut_start_frame is None:
+                    self.editor.cut_start_frame = frame_idx
+                    QMessageBox.information(self.editor, "Cut Start", f"Set start frame: {frame_idx}")
+                    self.editor.confirm_cut_btn.setEnabled(True)
+                elif event.button() == Qt.LeftButton and self.editor.cut_start_frame is not None and self.editor.cut_end_frame is None:
+                    if frame_idx <= self.editor.cut_start_frame:
+                        QMessageBox.warning(self.editor, "Invalid Selection", "End frame cannot be less than or equal to start frame. Please select a later frame.")
+                        return  # Прерываем выполнение функции
                     self.editor.cut_end_frame = frame_idx
                     QMessageBox.information(self.editor, "Cut End", f"Set end frame: {frame_idx}")
         event.accept()
