@@ -30,9 +30,8 @@ class TimelineManager:
             return
 
         total_frames = int(self.editor.video_processor.capture.get(cv2.CAP_PROP_FRAME_COUNT))
-        frame_step = max(1, total_frames // 10)  # Показываем примерно 10 кадров
+        frame_step = max(1, total_frames // 10)
 
-        # Расчёт ширины кадра как в старой версии
         frame_width = int(width // 10)
         frame_height = int(height - 20)
 
@@ -41,12 +40,10 @@ class TimelineManager:
             ret, frame = self.editor.video_processor.capture.read()
             if ret:
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # Масштабируем кадр сразу под текущий размер
                 frame = cv2.resize(frame, (frame_width, frame_height))
                 image = QImage(frame.data, frame_width, frame_height, frame.strides[0], QImage.Format_RGB888)
                 pixmap = QPixmap.fromImage(image)
                 frame_item = self.timeline_scene.addPixmap(pixmap)
-                # Позиционируем пропорционально, как в старой версии
                 x_pos = min((i / total_frames) * width, width - frame_width)
                 frame_item.setPos(x_pos, 10)
                 self.timeline_frames.append({"item": frame_item, "frame_idx": i, "original_pixmap": pixmap})
@@ -54,7 +51,6 @@ class TimelineManager:
 
     def resize_timeline(self, event):
         if self.timeline_frames:
-            # Перегенерируем кадры, как в старой версии
             self.generate_timeline_frames()
         event.accept()
 
